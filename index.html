@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Encadenadas Pro</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap');
+        
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(to bottom, #e0f2fe 0%, #ffedd5 60%, #8b5a2b 100%);
+            touch-action: manipulation;
+        }
+
+        .madera-textura {
+            background-color: #e6b981;
+            background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(139, 90, 43, 0.05) 10px, rgba(139, 90, 43, 0.05) 20px);
+            border: 4px solid #a67c52;
+            box-shadow: inset 0 0 10px rgba(139,90,43,0.5), 0 8px 15px rgba(0,0,0,0.2);
+        }
+
+        .cadena-eslabon {
+            background: repeating-linear-gradient(90deg, #94a3b8, #cbd5e1 50%, #94a3b8);
+            border: 2px solid #64748b;
+        }
+        
+        ::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex flex-col items-center justify-between p-4 select-none">
+
+    <div class="absolute inset-0 z-0 pointer-events-none opacity-20 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PHBhdGggZD0iTTAgMGg0MHY0MEgweiIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik0wIDIwaDQwTTIwIDB2NDAiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLW9wYWNpdHk9Ii4xIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=')]"></div>
+
+    <!-- Menú Modal de Inicio -->
+    <div id="modal-menu" class="absolute inset-0 z-50 bg-black/60 flex flex-col items-center justify-center p-6 backdrop-blur-sm transition-opacity">
+        <div class="madera-textura w-full max-w-sm rounded-3xl p-6 flex flex-col items-center shadow-2xl transform transition-transform scale-100">
+            <h1 class="text-4xl font-black text-slate-800 drop-shadow-md tracking-wide mb-2">PALABRA</h1>
+            <h2 class="text-3xl font-black text-orange-600 drop-shadow-md mb-8 tracking-wide">ENCADENADAS</h2>
+            
+            <p class="text-lg font-bold text-[#5c3a21] mb-2 text-center">Introduce tu nombre:</p>
+            <input type="text" id="input-nombre" placeholder="Humano" class="w-full mb-6 py-2 px-4 rounded-xl text-center font-bold text-lg text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
+            
+            <button id="btn-pve-menu" class="w-full bg-white border-4 border-orange-500 rounded-xl py-3 px-4 mb-4 text-xl font-extrabold text-blue-600 shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
+                <span>👤 Humano vs 🤖 Servidor</span>
+            </button>
+            
+            <button id="btn-pvp-menu" class="w-full bg-white border-4 border-blue-500 rounded-xl py-3 px-4 text-xl font-extrabold text-orange-600 shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
+                <span>👤 Humano vs 👤 Humano</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Header Activo -->
+    <header class="z-10 w-full max-w-md flex flex-col items-center mt-2 relative">
+        <div class="madera-textura text-center py-2 px-6 rounded-2xl w-4/5 relative shadow-lg">
+            <h1 class="text-2xl font-black text-slate-800 drop-shadow-md tracking-wide">ENCADENADAS</h1>
+            <div id="indicador-turno" class="mt-1 text-sm font-bold text-white bg-[#5c3a21] rounded-full px-3 py-1 inline-block transition-colors">
+                Esperando...
+            </div>
+        </div>
+    </header>
+
+    <main id="game-board" class="z-10 flex-1 w-full max-w-md flex flex-col justify-end items-center pb-4 space-y-2 overflow-y-auto relative">
+    </main>
+
+    <!-- Controles -->
+    <footer class="z-20 w-full max-w-md bg-[#8b5a2b] border-t-8 border-[#5c3a21] rounded-t-3xl p-4 shadow-2xl relative">
+        <div class="absolute -top-6 right-4 text-3xl transform rotate-12 pointer-events-none">✏️</div>
+        <div class="absolute -top-4 left-6 text-2xl transform -rotate-12 pointer-events-none">🧽</div>
+
+        <!-- Botón de Me Rindo -->
+        <button id="btn-rendirse" class="absolute -top-14 right-4 bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-full shadow-lg border-2 border-red-800 flex items-center gap-1 active:scale-95 transition-transform z-30">
+            <span>🏳️</span> Me rindo
+        </button>
+
+        <div id="alert-box" class="hidden absolute -top-16 left-0 right-0 mx-auto w-11/12 bg-red-500 text-white text-center py-2 px-4 rounded-xl font-bold shadow-lg transition-all duration-300 opacity-0 z-50"></div>
+
+        <div id="controls-container" class="flex items-center gap-3">
+            <button id="mic-btn" class="bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white p-4 rounded-full shadow-lg transition-transform transform active:scale-95 flex-shrink-0 disabled:opacity-50 disabled:active:scale-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+            </button>
+            <div class="flex-1 bg-white rounded-2xl flex items-center px-4 py-2 shadow-inner border-2 border-orange-200 focus-within:border-orange-500 transition-colors">
+                <input type="text" id="text-input" placeholder="Escribe tu palabra..." class="w-full bg-transparent outline-none text-lg font-bold text-slate-700 placeholder-slate-400 disabled:bg-transparent">
+                <button id="send-btn" class="ml-2 text-orange-500 font-black text-xl disabled:opacity-50">➔</button>
+            </div>
+        </div>
+        
+        <!-- Botón Volver a Jugar (oculto por defecto) -->
+        <button id="btn-reiniciar" class="hidden w-full bg-green-500 hover:bg-green-600 text-white font-black text-xl py-4 rounded-2xl shadow-lg border-4 border-green-700 active:scale-95 transition-transform uppercase tracking-widest">
+            🔄 Volver al Menú
+        </button>
+
+        <div class="text-center mt-2 text-orange-200 text-sm font-semibold" id="mic-status">Micrófono apagado</div>
+    </footer>    <script>
+        const gameBoard = document.getElementById('game-board');
+        const micBtn = document.getElementById('mic-btn');
+        const micStatus = document.getElementById('mic-status');
+        const textInput = document.getElementById('text-input');
+        const sendBtn = document.getElementById('send-btn');
+        const alertBox = document.getElementById('alert-box');
+        const modalMenu = document.getElementById('modal-menu');
+        const indicadorTurno = document.getElementById('indicador-turno');
+        const inputNombre = document.getElementById('input-nombre');
+        const btnRendirse = document.getElementById('btn-rendirse');
+        const btnReiniciar = document.getElementById('btn-reiniciar');
+        const btnPveMenu = document.getElementById('btn-pve-menu');
+        const btnPvpMenu = document.getElementById('btn-pvp-menu');
+        const controlsContainer = document.getElementById('controls-container');
+
+        let historialPalabras = [];
+        let silabaObjetivo = "";
+        let modoActual = ""; 
+        let esTurnoMaquina = false;
+        let nombreJugador = "Humano";
+        let juegoTerminado = false;
+        let currentUtterance = null; 
+
+        const diccionarioEmojis = {
+            'brasa': '🔥', 'sapo': '🐸', 'pomo': '🚪', 'mono': '🐵',
+            'camino': '🛤️', 'planeta': '🌍', 'tesoro': '💎', 'castillo': '🏰', 
+            'pelota': '⚽', 'casa': '🏠', 'coche': '🚗', 'pato': '🦆', 'taza': '☕',
+            'lupa': '🔍', 'vaca': '🐄', 'zorro': '🦊', 'perro': '🐶', 'llave': '🔑',
+            'roca': '🪨', 'rápido': '⚡'
+        };
+
+        const palabrasArranque = ['palabra', 'camino', 'verano', 'planeta', 'tesoro', 'espejo', 'castillo', 'naranja', 'pelota', 'regalo'];
+        
+        const coletillas = [
+            "Mmm...", "A ver, a ver...", "Déjame pensar...", 
+            "Esta es difícil...", "Voy a buscar en mi base de datos...", 
+            "A ver qué se me ocurre...", "Interesante..."
+        ];
+
+        function actualizarBotonesMenu() {
+            let val = inputNombre.value.trim();
+            let nombreMostrar = val !== "" ? val : "Humano";
+            btnPveMenu.innerHTML = `<span>👤 ${nombreMostrar} vs 🤖 Servidor</span>`;
+            btnPvpMenu.innerHTML = `<span>👤 ${nombreMostrar} vs 👤 Humano</span>`;
+        }
+
+        function hablar(texto, callback) {
+            if (!('speechSynthesis' in window)) {
+                if (callback) callback();
+                return;
+            }
+            window.speechSynthesis.cancel();
+            currentUtterance = new SpeechSynthesisUtterance(texto);
+            currentUtterance.lang = 'es-ES';
+            currentUtterance.rate = 1.0; 
+            currentUtterance.pitch = 1.05; 
+            
+            let tiempoEspera = (texto.length * 100) + 2000; 
+            let fallbackTimeout = setTimeout(() => {
+                if (callback) { callback(); callback = null; }
+            }, tiempoEspera);
+
+            currentUtterance.onend = () => { 
+                clearTimeout(fallbackTimeout);
+                if (callback) { callback(); callback = null; } 
+            };
+            currentUtterance.onerror = () => { 
+                clearTimeout(fallbackTimeout);
+                if (callback) { callback(); callback = null; } 
+            };
+            
+            window.speechSynthesis.speak(currentUtterance);
+        }
+
+        async function verificarPalabraEnServidor(palabra) {
+            try {
+                let res = await fetch(`https://api.datamuse.com/words?sp=${palabra}&v=es`);
+                let data = await res.json();
+                return data.some(item => item.word.toLowerCase() === palabra.toLowerCase());
+            } catch (error) {
+                return true; 
+            }
+        }
+
+        async function obtenerPalabraDeServidor(prefijo) {
+            try {
+                let res = await fetch(`https://api.datamuse.com/words?sp=${prefijo}*&v=es&max=100`);
+                let data = await res.json();
+                return data.map(item => item.word);
+            } catch (error) {
+                return [];
+            }
+        }
+
+        function silabear(palabra) {
+            let p = palabra.toLowerCase().trim();
+            const vocalesFuertes = 'aeoáéóíú'; 
+            const inseparables = ['br','bl','cr','cl','dr','fr','fl','gr','gl','pr','pl','tr','ch','ll','rr'];
+            let silabas = [];
+            let silabaActual = "";
+            const isVocal = (c) => 'aeiouáéíóúü'.includes(c);
+            const isConsonante = (c) => c && !isVocal(c);
+
+            for (let i = 0; i < p.length; i++) {
+                let char = p[i];
+                silabaActual += char;
+                let next1 = p[i+1] || ''; let next2 = p[i+2] || ''; let next3 = p[i+3] || '';
+                
+                if (isVocal(char)) {
+                    if (isVocal(next1) && vocalesFuertes.includes(char) && vocalesFuertes.includes(next1)) {
+                        silabas.push(silabaActual); silabaActual = ""; continue;
+                    }
+                    if (isConsonante(next1)) {
+                        if (isVocal(next2)) {
+                            silabas.push(silabaActual); silabaActual = "";
+                        } else if (isConsonante(next2)) {
+                            if (isVocal(next3)) {
+                                let grupo = next1 + next2;
+                                if (inseparables.includes(grupo)) {
+                                    silabas.push(silabaActual); silabaActual = "";
+                                } else {
+                                    silabaActual += next1; silabas.push(silabaActual); silabaActual = ""; i++;
+                                }
+                            } else if (isConsonante(next3)) {
+                                let grupo = next2 + next3;
+                                if (inseparables.includes(grupo)) {
+                                    silabaActual += next1; silabas.push(silabaActual); silabaActual = ""; i++;
+                                } else {
+                                    silabaActual += next1 + next2; silabas.push(silabaActual); silabaActual = ""; i += 2;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (silabaActual !== "") {
+                if (silabas.length > 0 && !/[aeiouáéíóúü]/.test(silabaActual)) {
+                    silabas[silabas.length - 1] += silabaActual;
+                } else {
+                    silabas.push(silabaActual);
+                }
+            }
+            
+            const hardcoded = {
+                'palabra': ['pa','la','bra'], 'brasa': ['bra','sa'], 'sapo': ['sa','po'],
+                'pomo': ['po','mo'], 'mono': ['mo','no'], 'noto': ['no','to'], 
+                'tope': ['to','pe'], 'perro': ['pe','rro'], 'roca': ['ro','ca'],
+                'carta': ['car','ta'], 'taco': ['ta','co'], 'camino': ['ca','mi','no'], 
+                'verano': ['ve','ra','no'], 'planeta': ['pla','ne','ta'], 'tesoro': ['te','so','ro'], 
+                'espejo': ['es','pe','jo'], 'castillo': ['cas','ti','llo'], 'naranja': ['na','ran','ja']
+            };
+            return hardcoded[p] || silabas;
+        }
+
+        function normalizarSílaba(silaba) {
+            return silaba.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/rr/g, "r");
+        }
+              function mostrarAlerta(mensaje) {
+            alertBox.textContent = mensaje;
+            alertBox.classList.remove('hidden', 'opacity-0');
+            setTimeout(() => alertBox.classList.add('opacity-0', 'hidden'), 3500);
+        }
+
+        function actualizarInterfazTurno(texto, colorBg) {
+            indicadorTurno.textContent = texto;
+            indicadorTurno.className = `mt-1 text-sm font-bold text-white rounded-full px-4 py-1 inline-block shadow-md transition-colors ${colorBg}`;
+        }
+
+        function bloquearInputs(bloquear) {
+            textInput.disabled = bloquear;
+            sendBtn.disabled = bloquear;
+            micBtn.disabled = bloquear;
+            if (bloquear) {
+                btnRendirse.classList.add('opacity-50', 'pointer-events-none');
+                if (isListening) detenerMicrofono();
+            } else {
+                btnRendirse.classList.remove('opacity-50', 'pointer-events-none');
+            }
+        }
+
+        function mostrarFinJuego() {
+            juegoTerminado = true;
+            controlsContainer.classList.add('hidden');
+            btnRendirse.classList.add('hidden');
+            btnReiniciar.classList.remove('hidden');
+            if (isListening) detenerMicrofono();
+        }
+
+        function recargarJuego() {
+            window.location.reload();
+        }
+
+        function agregarPalabraUI(palabra, silabas, esInicial = false, esDeMaquina = false) {
+            const wrapObj = document.createElement('div');
+            wrapObj.className = "flex flex-col items-center animate-[flotar_3s_ease-in-out_infinite] w-full relative my-2";
+            
+            if (!esInicial) {
+                const link = document.createElement('div');
+                link.className = "h-8 w-4 border-l-4 border-r-4 border-slate-400 bg-slate-200 rounded-full my-1 absolute -top-6 z-0 shadow-sm";
+                wrapObj.appendChild(link);
+            }
+
+            const wordDiv = document.createElement('div');
+            const borderColor = esDeMaquina ? 'border-purple-500' : 'border-orange-500';
+            const textColor = esDeMaquina ? 'text-purple-700' : 'text-blue-600';
+            
+            wordDiv.className = `flex items-center text-4xl font-extrabold uppercase z-10 px-6 py-3 rounded-full bg-white border-4 ${borderColor} shadow-xl relative ${textColor} transition-all`;
+            
+            silabas.forEach((sil, index) => {
+                const span = document.createElement('span');
+                span.textContent = sil;
+                if (index === 0 && !esInicial) span.className = esDeMaquina ? "text-purple-500" : "text-orange-500";
+                else if (index === silabas.length - 1) span.className = "text-green-600";
+                wordDiv.appendChild(span);
+            });
+
+            if (diccionarioEmojis[palabra.toLowerCase()]) {
+                const emojiSpan = document.createElement('span');
+                emojiSpan.textContent = diccionarioEmojis[palabra.toLowerCase()];
+                emojiSpan.className = "absolute -top-6 -right-6 text-5xl animate-bounce drop-shadow-lg";
+                wordDiv.appendChild(emojiSpan);
+            }
+
+            wrapObj.appendChild(wordDiv);
+            gameBoard.appendChild(wrapObj);
+            gameBoard.scrollTop = gameBoard.scrollHeight;
+        }
+
+        function arranqueVinculado(modo) {
+            let val = inputNombre.value.trim();
+            nombreJugador = val !== "" ? val : "Humano";
+            modoActual = modo;
+            
+            hablar(`¡Hola ${nombreJugador}! Vamos a jugar.`, () => {
+                iniciarJuegoTablero();
+            });
+            modalMenu.classList.add('hidden');
+        }
+
+        function iniciarJuegoTablero() {
+            historialPalabras = [];
+            gameBoard.innerHTML = ''; 
+
+            const palabraInicial = palabrasArranque[Math.floor(Math.random() * palabrasArranque.length)];
+            let silabasIniciales = silabear(palabraInicial);
+            
+            historialPalabras.push(palabraInicial);
+            silabaObjetivo = silabasIniciales[silabasIniciales.length - 1];
+            
+            agregarPalabraUI(palabraInicial, silabasIniciales, true, false);
+            
+            hablar(palabraInicial, () => {
+                esTurnoMaquina = false;
+                actualizarInterfazTurno(`🗣️ Turno de ${nombreJugador}`, "bg-blue-500");
+                bloquearInputs(false);
+                if (!isListening) iniciarMicrofono();
+            });
+        }
+
+        async function juegaMaquina() {
+            if (modoActual !== 'pve' || juegoTerminado) return;
+
+            actualizarInterfazTurno("🌐 Servidor buscando...", "bg-purple-500");
+            
+            let querySílaba = normalizarSílaba(silabaObjetivo);
+            let palabrasRed = await obtenerPalabraDeServidor(querySílaba);
+
+            let candidatas = palabrasRed.filter(p => {
+                if (historialPalabras.includes(p)) return false;
+                if (/[ \-]/.test(p)) return false; 
+                let silabas = silabear(p);
+                return normalizarSílaba(silabas[0]) === querySílaba;
+            });
+
+            if (candidatas.length > 0) {
+                let elegida = candidatas[Math.floor(Math.random() * candidatas.length)];
+                await procesarEntrada(elegida, true);
+            } else {
+                actualizarInterfazTurno(`¡Victoria de ${nombreJugador}!`, "bg-green-500");
+                hablar("¡Me he quedado sin palabras! ¡Has ganado, " + nombreJugador + "!", () => {
+                    mostrarFinJuego();
+                });
+            }
+        }
+
+        async function meRindo() {
+            if (esTurnoMaquina || textInput.disabled || juegoTerminado) return;
+            bloquearInputs(true);
+            actualizarInterfazTurno("Buscando una respuesta posible...", "bg-red-500");
+            
+            hablar("¿Te rindes? Déjame pensar si había alguna...", async () => {
+                let querySílaba = normalizarSílaba(silabaObjetivo);
+                let palabrasRed = await obtenerPalabraDeServidor(querySílaba);
+                let candidatas = palabrasRed.filter(p => {
+                    if (historialPalabras.includes(p)) return false;
+                    if (/[ \-]/.test(p)) return false;
+                    return normalizarSílaba(silabear(p)[0]) === querySílaba;
+                });
+
+                if (candidatas.length > 0) {
+                    let elegida = candidatas[0];
+                    hablar(`Podrías haber dicho: ${elegida}. ¡Gana la máquina!`, () => {
+                        mostrarFinJuego();
+                    });
+                } else {
+                    hablar("Pues he mirado y no había ninguna. ¡Ha sido un empate técnico!", () => {
+                        mostrarFinJuego();
+                    });
+                }
+            });
+        }
+
+        async function procesarEntrada(texto, esSistemaOMaquina = false) {
+            if ((esTurnoMaquina && !esSistemaOMaquina) || juegoTerminado) return;
+
+            let inputWord = texto.trim().toLowerCase().replace(/[.,!?;:]/g, '');
+            if (!inputWord) return;
+
+            if (historialPalabras.includes(inputWord)) {
+                mostrarAlerta(`La palabra '${inputWord}' ya se ha usado.`);
+                textInput.value = "";
+                return;
+            }
+
+            bloquearInputs(true);
+            actualizarInterfazTurno("Consultando diccionario...", "bg-yellow-500");
+
+            let silabasWord = silabear(inputWord);
+            let jugadaValida = false;
+            
+            let primeraSilaba = silabasWord[0];
+            let s1 = normalizarSílaba(primeraSilaba);
+            let s2 = normalizarSílaba(silabaObjetivo);
+            
+            if (s1 === s2) {
+                let existeEnRed = await verificarPalabraEnServidor(inputWord);
+                if (existeEnRed) {
+                    jugadaValida = true;
+                } else {
+                    mostrarAlerta(`'${inputWord}' no existe en el diccionario online.`);
+                }
+            } else {
+                mostrarAlerta(`¡Error! '${inputWord}' empieza por '${s1}'. Necesitas: '${s2}'`);
+            }
+
+            if (jugadaValida) {
+                historialPalabras.push(inputWord);
+                silabaObjetivo = silabasWord[silabasWord.length - 1];
+                
+                agregarPalabraUI(inputWord, silabasWord, false, esSistemaOMaquina);
+                
+                if (modoActual === 'pve') {
+                    if (esSistemaOMaquina) {
+                        hablar(inputWord, () => {
+                            esTurnoMaquina = false;
+                            actualizarInterfazTurno(`🗣️ Turno de ${nombreJugador}`, "bg-blue-500");
+                            bloquearInputs(false);
+                            textInput.focus();
+                            if (!isListening) iniciarMicrofono();
+                        });
+                    } else {
+                        esTurnoMaquina = true;
+                        actualizarInterfazTurno("🤖 Máquina pensando...", "bg-purple-500");
+                        
+                        let coletilla = coletillas[Math.floor(Math.random() * coletillas.length)];
+                        hablar(`${inputWord}. ${coletilla}`, () => {
+                            setTimeout(juegaMaquina, 500); 
+                        });
+                    }
+                } else {
+                    hablar(inputWord, () => {
+                        actualizarInterfazTurno("🗣️ Turno Libre", "bg-blue-500");
+                        bloquearInputs(false);
+                        if (!isListening) iniciarMicrofono();
+                    });
+                }
+            } else {
+                actualizarInterfazTurno("🗣️ Inténtalo de nuevo", "bg-blue-500");
+                bloquearInputs(false);
+                if (!isListening) iniciarMicrofono();
+            }
+            textInput.value = "";
+        }
+
+        // --- ASIGNACIÓN DE EVENTOS ---
+        inputNombre.addEventListener('input', actualizarBotonesMenu);
+        btnPveMenu.addEventListener('click', () => arranqueVinculado('pve'));
+        btnPvpMenu.addEventListener('click', () => arranqueVinculado('pvp'));
+        btnRendirse.addEventListener('click', meRindo);
+        btnReiniciar.addEventListener('click', recargarJuego);
+        micBtn.addEventListener('click', alternarMicrofono);
+        
+        sendBtn.addEventListener('click', () => {
+            if (!esTurnoMaquina) procesarEntrada(textInput.value);
+        });
+        textInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !esTurnoMaquina) procesarEntrada(textInput.value);
+        });
+
+        // --- WEB SPEECH API ---
+        let recon;
+        let isListening = false;
+        
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recon = new SpeechRecognition();
+            recon.lang = 'es-ES';
+            recon.continuous = true;
+            recon.interimResults = false;
+
+            recon.onstart = () => {
+                isListening = true;
+                micBtn.classList.replace('bg-blue-500', 'bg-red-500');
+                micBtn.classList.add('animate-pulse');
+                micStatus.textContent = "Escuchando...";
+            };
+
+            recon.onresult = (event) => {
+                const result = event.results[event.results.length - 1];
+                if (result.isFinal && !esTurnoMaquina && !juegoTerminado) {
+                    let transcript = result[0].transcript.trim().split(" ")[0];
+                    procesarEntrada(transcript);
+                }
+            };
+
+            recon.onerror = (event) => {
+                if (event.error !== 'no-speech') detenerMicrofono();
+            };
+
+            recon.onend = () => {
+                if (isListening && !esTurnoMaquina && !textInput.disabled && !juegoTerminado) {
+                    setTimeout(() => iniciarMicrofono(), 200); 
+                } else {
+                    detenerMicrofono();
+                }
+            };
+        } else {
+            micStatus.textContent = "Voz no soportada";
+            micBtn.disabled = true;
+            micBtn.classList.replace('bg-blue-500', 'bg-gray-400');
+        }
+
+        function iniciarMicrofono() {
+            if (esTurnoMaquina || textInput.disabled || juegoTerminado) return;
+            try { 
+                if (recon) recon.start(); 
+            } catch (err) {
+                console.warn("Micro en uso");
+            }
+        }
+
+        function alternarMicrofono() {
+            if (isListening) detenerMicrofono();
+            else iniciarMicrofono();
+        }
+
+        function detenerMicrofono() {
+            isListening = false;
+            try { if (recon) recon.stop(); } catch(e) {}
+            micBtn.classList.replace('bg-red-500', 'bg-blue-500');
+            micBtn.classList.remove('animate-pulse');
+            micStatus.textContent = "Micrófono apagado";
+        }
+    </script>
+</body>
+</html>
