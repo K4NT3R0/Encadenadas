@@ -1,0 +1,20 @@
+{
+  "name": "Encadenadas Pro",
+  "short_name": "Encadenadas",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffedd5",
+  "theme_color": "#8b5a2b",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/google/material-design-icons/master/png/hardware/videogame_asset/materialicons/24dp/2x/baseline_videogame_asset_black_24dp.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://raw.githubusercontent.com/google/material-design-icons/master/png/hardware/videogame_asset/materialicons/24dp/2x/baseline_videogame_asset_black_24dp.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
