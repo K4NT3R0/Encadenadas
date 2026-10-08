@@ -35,7 +35,6 @@
 
     <div class="absolute inset-0 z-0 pointer-events-none opacity-20 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PHBhdGggZD0iTTAgMGg0MHY0MEgweiIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik0wIDIwaDQwTTIwIDB2NDAiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLW9wYWNpdHk9Ii4xIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=')]"></div>
 
-    <!-- Menú Modal de Inicio -->
     <div id="modal-menu" class="absolute inset-0 z-50 bg-black/60 flex flex-col items-center justify-center p-6 backdrop-blur-sm transition-opacity">
         <div class="madera-textura w-full max-w-sm rounded-3xl p-6 flex flex-col items-center shadow-2xl transform transition-transform scale-100">
             <h1 class="text-4xl font-black text-slate-800 drop-shadow-md tracking-wide mb-2">PALABRA</h1>
@@ -54,7 +53,6 @@
         </div>
     </div>
 
-    <!-- Header Activo -->
     <header class="z-10 w-full max-w-md flex flex-col items-center mt-2 relative">
         <div class="madera-textura text-center py-2 px-6 rounded-2xl w-4/5 relative shadow-lg">
             <h1 class="text-2xl font-black text-slate-800 drop-shadow-md tracking-wide">ENCADENADAS</h1>
@@ -67,12 +65,10 @@
     <main id="game-board" class="z-10 flex-1 w-full max-w-md flex flex-col justify-end items-center pb-4 space-y-2 overflow-y-auto relative">
     </main>
 
-    <!-- Controles -->
     <footer class="z-20 w-full max-w-md bg-[#8b5a2b] border-t-8 border-[#5c3a21] rounded-t-3xl p-4 shadow-2xl relative">
         <div class="absolute -top-6 right-4 text-3xl transform rotate-12 pointer-events-none">✏️</div>
         <div class="absolute -top-4 left-6 text-2xl transform -rotate-12 pointer-events-none">🧽</div>
 
-        <!-- Botón de Me Rindo -->
         <button id="btn-rendirse" class="absolute -top-14 right-4 bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-full shadow-lg border-2 border-red-800 flex items-center gap-1 active:scale-95 transition-transform z-30">
             <span>🏳️</span> Me rindo
         </button>
@@ -91,13 +87,13 @@
             </div>
         </div>
         
-        <!-- Botón Volver a Jugar (oculto por defecto) -->
         <button id="btn-reiniciar" class="hidden w-full bg-green-500 hover:bg-green-600 text-white font-black text-xl py-4 rounded-2xl shadow-lg border-4 border-green-700 active:scale-95 transition-transform uppercase tracking-widest">
             🔄 Volver al Menú
         </button>
 
         <div class="text-center mt-2 text-orange-200 text-sm font-semibold" id="mic-status">Micrófono apagado</div>
-    </footer>    <script>
+    </footer>
+        <script>
         const gameBoard = document.getElementById('game-board');
         const micBtn = document.getElementById('mic-btn');
         const micStatus = document.getElementById('mic-status');
@@ -255,7 +251,7 @@
         function normalizarSílaba(silaba) {
             return silaba.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/rr/g, "r");
         }
-              function mostrarAlerta(mensaje) {
+                function mostrarAlerta(mensaje) {
             alertBox.textContent = mensaje;
             alertBox.classList.remove('hidden', 'opacity-0');
             setTimeout(() => alertBox.classList.add('opacity-0', 'hidden'), 3500);
@@ -482,7 +478,6 @@
             textInput.value = "";
         }
 
-        // --- ASIGNACIÓN DE EVENTOS ---
         inputNombre.addEventListener('input', actualizarBotonesMenu);
         btnPveMenu.addEventListener('click', () => arranqueVinculado('pve'));
         btnPvpMenu.addEventListener('click', () => arranqueVinculado('pvp'));
@@ -497,7 +492,6 @@
             if (e.key === 'Enter' && !esTurnoMaquina) procesarEntrada(textInput.value);
         });
 
-        // --- WEB SPEECH API ---
         let recon;
         let isListening = false;
         
