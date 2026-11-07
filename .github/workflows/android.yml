@@ -23,31 +23,82 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Preparar Icono (31341.png) y Pantalla Inicial (31336.png)
+      - name: Instalar herramientas y preparar imagenes y archivos web
         run: |
-          if [ -f "31341.png" ]; then cp "31341.png" icon.png; fi
-          if [ -f "31336.png" ]; then cp "31336.png" splash.png; fi
-          if [ ! -f "icon.png" ] && [ -f "icon-512.png" ]; then cp "icon-512.png" icon.png; fi
-          if [ ! -f "splash.png" ] && [ -f "icon.png" ]; then cp "icon.png" splash.png; fi
-          convert icon.png -resize 192x192 icon-192.png
-          convert icon.png -resize 512x512 icon-512.png
-          convert icon.png -resize 512x512 icon-maskable-512.png
-
-      - name: Preparar carpeta web y Capacitor con AdMob
-        run: |
-          mkdir -p www
-          cp index.html manifest.json sw.js icon-192.png icon-512.png icon-maskable-512.png splash.png www/
           npm init -y
-          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6 @capacitor-community/admob@6 @capacitor/assets
+          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6 @capacitor-community/admob@6 @capacitor/assets sharp
+
+          cat << 'EOF' > prepare.js
+          const fs = require('fs');
+          const sharp = require('sharp');
+
+          async function run() {
+            // 1. Crear manifest.json si no existe
+            if (!fs.existsSync('manifest.json')) {
+              fs.writeFileSync('manifest.json', JSON.stringify({
+                id: "./index.html",
+                name: "Encadenadas Pro",
+                short_name: "Encadenadas",
+                description: "Juego de palabras encadenadas por sílabas",
+                lang: "es",
+                start_url: "./index.html",
+                scope: "./",
+                display: "standalone",
+                orientation: "portrait",
+                background_color: "#ffedd5",
+                theme_color: "#8b5a2b",
+                icons: [
+                  { src: "icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+                  { src: "icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+                  { src: "icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" }
+                ]
+              }, null, 2));
+            }
+
+            // 2. Crear sw.js si no existe
+            if (!fs.existsSync('sw.js')) {
+              fs.writeFileSync('sw.js', `const C='encadenadas-v3';self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>self.clients.claim());self.addEventListener('fetch',e=>{});`);
+            }
+
+            // 3. Localizar icono y pantalla inicial (o generar respaldo si no se subieron)
+            const files = fs.readdirSync('.');
+            const findImg = (patterns) => {
+              for (const p of patterns) {
+                const found = files.find(f => f.toLowerCase().includes(p) && /\.(png|jpg|jpeg|webp)$/i.test(f));
+                if (found) return found;
+              }
+              return null;
+            };
+
+            let iconSrc = findImg(['31341', 'icon-512', 'icon-192', 'icon', 'logo']);
+            let splashSrc = findImg(['31336', 'splash', 'portada', 'inicio']);
+
+            const fallbackSvg = Buffer.from(`<svg width="1024" height="1024" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" rx="180" fill="#e6b981" stroke="#8b5a2b" stroke-width="40"/><text x="50%" y="45%" font-family="sans-serif" font-weight="900" font-size="140" fill="#1e293b" text-anchor="middle">PALA-LAZO</text><text x="50%" y="68%" font-family="sans-serif" font-weight="900" font-size="110" fill="#ea580c" text-anchor="middle">ENCADENADAS</text></svg>`);
+
+            const iconInput = iconSrc || fallbackSvg;
+            const splashInput = splashSrc || iconInput;
+
+            await sharp(iconInput).resize(192, 192).png().toFile('icon-192.png');
+            await sharp(iconInput).resize(512, 512).png().toFile('icon-512.png');
+            await sharp(iconInput).resize(512, 512).png().toFile('icon-maskable-512.png');
+            await sharp(splashInput).png().toFile('splash.png');
+
+            fs.mkdirSync('assets', { recursive: true });
+            await sharp(iconInput).resize(1024, 1024).png().toFile('assets/icon-only.png');
+            await sharp(splashInput).resize(2732, 2732, { fit: 'cover' }).png().toFile('assets/splash.png');
+            await sharp(splashInput).resize(2732, 2732, { fit: 'cover' }).png().toFile('assets/splash-dark.png');
+
+            fs.mkdirSync('www', { recursive: true });
+            for (const f of ['index.html', 'manifest.json', 'sw.js', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'splash.png']) {
+              if (fs.existsSync(f)) fs.copyFileSync(f, 'www/' + f);
+            }
+          }
+          run().catch(err => { console.error(err); process.exit(1); });
+          EOF
+
+          node prepare.js
           npx cap init "Encadenadas" "com.k4nt3r0.encadenadas" --web-dir www
           npx cap add android
-
-      - name: Generar Iconos Oficiales y Splash Nativos de Android
-        run: |
-          mkdir -p assets
-          convert icon.png -resize 1024x1024 assets/icon-only.png
-          convert splash.png -resize 2732x2732^ -gravity center -extent 2732x2732 assets/splash.png
-          cp assets/splash.png assets/splash-dark.png
           npx capacitor-assets generate --android --iconBackgroundColor '#e6b981' --splashBackgroundColor '#ffedd5' --splashBackgroundColorDark '#8b5a2b'
 
       - name: Activar Voz Nativa, Microfono y AdMob en Android
@@ -62,6 +113,7 @@ jobs:
           import android.Manifest;
           import android.content.Intent;
           import android.content.pm.PackageManager;
+          import android.os.Build;
           import android.os.Bundle;
           import android.os.Handler;
           import android.os.Looper;
@@ -71,8 +123,6 @@ jobs:
           import android.speech.tts.TextToSpeech;
           import android.speech.tts.UtteranceProgressListener;
           import android.webkit.JavascriptInterface;
-          import androidx.core.app.ActivityCompat;
-          import androidx.core.content.ContextCompat;
           import com.getcapacitor.BridgeActivity;
           import java.util.ArrayList;
           import java.util.Locale;
@@ -87,8 +137,10 @@ jobs:
               public void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
 
-                  if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-                      ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 101);
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                      if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                          requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, 101);
+                      }
                   }
 
                   tts = new TextToSpeech(this, status -> {
@@ -141,8 +193,8 @@ jobs:
                   @JavascriptInterface
                   public void startListening() {
                       mainHandler.post(() -> {
-                          if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-                              ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.RECORD_AUDIO}, 101);
+                          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                              requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, 101);
                               evalJs("window._onNativeSrError && window._onNativeSrError('not-allowed')");
                               return;
                           }
