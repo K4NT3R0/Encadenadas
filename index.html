@@ -1,794 +1,250 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#8b5a2b">
-<title>Encadenadas Pro</title>
-<link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/png" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
-<!-- Tailwind CDN (versión fijada). Para producción lo ideal es compilar el CSS. -->
-<script src="https://cdn.tailwindcss.com/3.4.17"></script>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap');
-html, body { height: 100%; }
-body {
-  font-family: 'Nunito', sans-serif;
-  background: linear-gradient(to bottom, #e0f2fe 0%, #ffedd5 60%, #8b5a2b 100%);
-  touch-action: manipulation;
-  height: 100vh;
-  height: 100dvh;
-}
-/* select-none en el body rompe la escritura en algunos Safari: los inputs lo anulan */
-input { -webkit-user-select: text; user-select: text; }
-.madera-textura {
-  background-color: #e6b981;
-  background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(139, 90, 43, 0.05) 10px, rgba(139, 90, 43, 0.05) 20px);
-  border: 4px solid #a67c52;
-  box-shadow: inset 0 0 10px rgba(139,90,43,0.5), 0 8px 15px rgba(0,0,0,0.2);
-}
-.cadena-eslabon {
-  background: repeating-linear-gradient(90deg, #94a3b8, #cbd5e1 50%, #94a3b8);
-  border: 2px solid #64748b;
-}
-@keyframes flotar {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
-}
-@media (prefers-reduced-motion: reduce) {
-  * { animation: none !important; transition: none !important; }
-}
-::-webkit-scrollbar { display: none; }
-</style>
-</head>
-<body class="w-full overflow-hidden flex flex-col items-center justify-between p-4 select-none">
+name: Fabricar App Encadenadas
 
-<div class="absolute inset-0 z-0 pointer-events-none opacity-20 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PHBhdGggZD0iTTAgMGg0MHY0MEgweiIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik0wIDIwaDQwTTIwIDB2NDAiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLW9wYWNpdHk9Ii4xIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=')]"></div>
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
 
-<div id="modal-menu" role="dialog" aria-modal="true" aria-labelledby="titulo-menu" class="absolute inset-0 z-50 bg-black/60 flex flex-col items-center justify-center p-6 backdrop-blur-sm transition-opacity">
-  <div class="madera-textura w-full max-w-sm rounded-3xl p-6 flex flex-col items-center shadow-2xl transform transition-transform scale-100">
-    <h1 id="titulo-menu" class="text-4xl font-black text-slate-800 drop-shadow-md tracking-wide mb-2">PALABRA</h1>
-    <h2 class="text-3xl font-black text-orange-600 drop-shadow-md mb-6 tracking-wide">ENCADENADAS</h2>
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar codigo del repositorio
+        uses: actions/checkout@v4
 
-    <label for="input-nombre" class="text-lg font-bold text-[#5c3a21] mb-1 text-center">Jugador 1:</label>
-    <input type="text" id="input-nombre" maxlength="20" placeholder="Humano" autocomplete="off" class="w-full mb-3 py-2 px-4 rounded-xl text-center font-bold text-lg text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-    <label for="input-nombre2" class="text-base font-bold text-[#5c3a21] mb-1 text-center">Jugador 2 (solo Humano vs Humano):</label>
-    <input type="text" id="input-nombre2" maxlength="20" placeholder="Humano 2" autocomplete="off" class="w-full mb-5 py-2 px-4 rounded-xl text-center font-bold text-lg text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
+      - name: Instalar Java 21 para Android
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
 
-    <button id="btn-pve-menu" class="w-full bg-white border-4 border-orange-500 rounded-xl py-3 px-4 mb-4 text-xl font-extrabold text-blue-600 shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
-      <span>👤 Humano vs 🤖 Servidor</span>
-    </button>
-    <button id="btn-pvp-menu" class="w-full bg-white border-4 border-blue-500 rounded-xl py-3 px-4 text-xl font-extrabold text-orange-600 shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
-      <span>👤 Humano vs 👤 Humano 2</span>
-    </button>
-    <p class="mt-4 text-xs font-bold text-[#5c3a21] text-center">Manos libres: di tu palabra en voz alta, o «me rindo» para rendirte.</p>
-  </div>
-</div>
+      - name: Preparar Icono (31341.png) y Pantalla Inicial (31336.png)
+        run: |
+          if [ -f "31341.png" ]; then cp "31341.png" icon.png; fi
+          if [ -f "31336.png" ]; then cp "31336.png" splash.png; fi
+          if [ ! -f "icon.png" ] && [ -f "icon-512.png" ]; then cp "icon-512.png" icon.png; fi
+          if [ ! -f "splash.png" ] && [ -f "icon.png" ]; then cp "icon.png" splash.png; fi
+          convert icon.png -resize 192x192 icon-192.png
+          convert icon.png -resize 512x512 icon-512.png
+          convert icon.png -resize 512x512 icon-maskable-512.png
 
-<header class="z-10 w-full max-w-md flex flex-col items-center mt-2 relative">
-  <div class="madera-textura text-center py-2 px-6 rounded-2xl w-4/5 relative shadow-lg">
-    <h1 class="text-2xl font-black text-slate-800 drop-shadow-md tracking-wide">ENCADENADAS</h1>
-    <div id="indicador-turno" aria-live="polite" class="mt-1 text-sm font-bold text-white bg-[#5c3a21] rounded-full px-3 py-1 inline-block transition-colors">
-      Esperando...
-    </div>
-  </div>
-</header>
+      - name: Preparar carpeta web y Capacitor con AdMob
+        run: |
+          mkdir -p www
+          cp index.html manifest.json sw.js icon-192.png icon-512.png icon-maskable-512.png splash.png www/
+          npm init -y
+          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6 @capacitor-community/admob@6 @capacitor/assets
+          npx cap init "Encadenadas" "com.k4nt3r0.encadenadas" --web-dir www
+          npx cap add android
 
-<main id="game-board" class="z-10 flex-1 w-full max-w-md flex flex-col justify-end items-center pb-4 space-y-2 overflow-y-auto relative">
-</main>
+      - name: Generar Iconos Oficiales y Splash Nativos de Android
+        run: |
+          mkdir -p assets
+          convert icon.png -resize 1024x1024 assets/icon-only.png
+          convert splash.png -resize 2732x2732^ -gravity center -extent 2732x2732 assets/splash.png
+          cp assets/splash.png assets/splash-dark.png
+          npx capacitor-assets generate --android --iconBackgroundColor '#e6b981' --splashBackgroundColor '#ffedd5' --splashBackgroundColorDark '#8b5a2b'
 
-<footer class="z-20 w-full max-w-md bg-[#8b5a2b] border-t-8 border-[#5c3a21] rounded-t-3xl p-4 shadow-2xl relative">
-  <div class="absolute -top-6 right-4 text-3xl transform rotate-12 pointer-events-none" aria-hidden="true">✏️</div>
-  <div class="absolute -top-4 left-6 text-2xl transform -rotate-12 pointer-events-none" aria-hidden="true">🧽</div>
+      - name: Activar Voz Nativa, Microfono y AdMob en Android
+        run: |
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          sed -i 's|</manifest>|<uses-permission android:name="android.permission.RECORD_AUDIO" /><queries><intent><action android:name="android.speech.RecognitionService" /></intent><intent><action android:name="android.intent.action.TTS_SERVICE" /></intent></queries></manifest>|g' "$MANIFEST"
+          sed -i 's|</application>|<meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6672720525194990~2961170754"/><meta-data android:name="com.google.android.gms.ads.DELAY_APP_MEASUREMENT_INIT" android:value="false"/></application>|g' "$MANIFEST"
 
-  <button id="btn-rendirse" class="absolute -top-14 right-4 bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-full shadow-lg border-2 border-red-800 flex items-center gap-1 active:scale-95 transition-transform z-30">
-    <span aria-hidden="true">🏳️</span> Me rindo
-  </button>
+          cat << 'EOF' > android/app/src/main/java/com/k4nt3r0/encadenadas/MainActivity.java
+          package com.k4nt3r0.encadenadas;
 
-  <div id="alert-box" role="alert" class="hidden absolute -top-16 left-0 right-0 mx-auto w-11/12 bg-red-500 text-white text-center py-2 px-4 rounded-xl font-bold shadow-lg transition-all duration-300 opacity-0 z-50"></div>
+          import android.Manifest;
+          import android.content.Intent;
+          import android.content.pm.PackageManager;
+          import android.os.Bundle;
+          import android.os.Handler;
+          import android.os.Looper;
+          import android.speech.RecognitionListener;
+          import android.speech.RecognizerIntent;
+          import android.speech.SpeechRecognizer;
+          import android.speech.tts.TextToSpeech;
+          import android.speech.tts.UtteranceProgressListener;
+          import android.webkit.JavascriptInterface;
+          import androidx.core.app.ActivityCompat;
+          import androidx.core.content.ContextCompat;
+          import com.getcapacitor.BridgeActivity;
+          import java.util.ArrayList;
+          import java.util.Locale;
 
-  <div id="controls-container" class="flex items-center gap-3">
-    <button id="mic-btn" aria-label="Activar o desactivar el micrófono" class="bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white p-4 rounded-full shadow-lg transition-transform transform active:scale-95 flex-shrink-0 disabled:opacity-50 disabled:active:scale-100">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-      </svg>
-    </button>
-    <div class="flex-1 bg-white rounded-2xl flex items-center px-4 py-2 shadow-inner border-2 border-orange-200 focus-within:border-orange-500 transition-colors">
-      <input type="text" id="text-input" aria-label="Tu palabra" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Escribe tu palabra..." class="w-full bg-transparent outline-none text-lg font-bold text-slate-700 placeholder-slate-400 disabled:bg-transparent">
-      <button id="send-btn" aria-label="Enviar palabra" class="ml-2 text-orange-500 font-black text-xl disabled:opacity-50">➔</button>
-    </div>
-  </div>
+          public class MainActivity extends BridgeActivity {
+              private TextToSpeech tts;
+              private SpeechRecognizer sr;
+              private Intent srIntent;
+              private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
-  <button id="btn-reiniciar" class="hidden w-full bg-green-500 hover:bg-green-600 text-white font-black text-xl py-4 rounded-2xl shadow-lg border-4 border-green-700 active:scale-95 transition-transform uppercase tracking-widest">
-    🔄 Volver al Menú
-  </button>
+              @Override
+              public void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
 
-  <div class="text-center mt-2 text-orange-200 text-sm font-semibold" id="mic-status" aria-live="polite">Micrófono apagado</div>
-</footer>
+                  if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                      ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 101);
+                  }
 
-<script>
-// ---------- Referencias al DOM ----------
-const gameBoard = document.getElementById('game-board');
-const micBtn = document.getElementById('mic-btn');
-const micStatus = document.getElementById('mic-status');
-const textInput = document.getElementById('text-input');
-const sendBtn = document.getElementById('send-btn');
-const alertBox = document.getElementById('alert-box');
-const modalMenu = document.getElementById('modal-menu');
-const indicadorTurno = document.getElementById('indicador-turno');
-const inputNombre = document.getElementById('input-nombre');
-const inputNombre2 = document.getElementById('input-nombre2');
-const btnRendirse = document.getElementById('btn-rendirse');
-const btnReiniciar = document.getElementById('btn-reiniciar');
-const btnPveMenu = document.getElementById('btn-pve-menu');
-const btnPvpMenu = document.getElementById('btn-pvp-menu');
-const controlsContainer = document.getElementById('controls-container');
+                  tts = new TextToSpeech(this, status -> {
+                      if (status == TextToSpeech.SUCCESS) {
+                          tts.setLanguage(new Locale("es", "ES"));
+                      }
+                  });
+                  tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+                      @Override public void onStart(String id) {}
+                      @Override public void onDone(String id) { evalJs("window._onNativeTtsDone && window._onNativeTtsDone()"); }
+                      @Override public void onError(String id) { evalJs("window._onNativeTtsDone && window._onNativeTtsDone()"); }
+                  });
 
-// ---------- Estado ----------
-let historialPalabras = [];
-let silabaObjetivo = "";
-let modoActual = ""; // 'pve' | 'pvp'
-let esTurnoMaquina = false;
-let nombres = ["Humano", "Humano 2"];
-let jugadorActual = 0; // 0 o 1 (en pve siempre 0)
-let juegoTerminado = false;
-let recon = null;
-let isListening = false;   // el reconocedor está realmente escuchando
-let micDeseado = false;    // el jugador quiere el micro encendido (solo se apaga a mano o al acabar la partida)
-let hablando = false;      // la app está hablando: se ignora lo que oiga el micro (eco)
-let ignorarVozHasta = 0;   // margen tras hablar para descartar la cola del eco
-let alertTimer = null;
-let cancelarHablaPrevia = null;
-let wakeLock = null;
-let silencio = null;
+                  srIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                  srIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                  srIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "es-ES");
+                  srIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
 
-const SOLO_LETRAS = /^[a-záéíóúüñ]+$/;
-const diccionarioEmojis = {
-  'brasa': '🔥', 'sapo': '🐸', 'pomo': '🚪', 'mono': '🐵',
-  'camino': '🛤️', 'planeta': '🌍', 'tesoro': '💎', 'castillo': '🏰',
-  'pelota': '⚽', 'casa': '🏠', 'coche': '🚗', 'pato': '🦆', 'taza': '☕',
-  'lupa': '🔍', 'vaca': '🐄', 'zorro': '🦊', 'perro': '🐶', 'llave': '🔑',
-  'roca': '🪨', 'rápido': '⚡'
-};
-const palabrasArranque = ['palabra', 'camino', 'verano', 'planeta', 'tesoro', 'espejo', 'castillo', 'naranja', 'pelota', 'regalo'];
-const coletillas = [
-  "Mmm...", "A ver, a ver...", "Déjame pensar...",
-  "Esta es difícil...", "Voy a buscar en mi base de datos...",
-  "A ver qué se me ocurre...", "Interesante..."
-];
+                  getBridge().getWebView().addJavascriptInterface(new NativeVoiceBridge(), "AndroidVoice");
+              }
 
-// ---------- Nombres (se recuerdan entre partidas) ----------
-function cargarNombres() {
-  try {
-    inputNombre.value = localStorage.getItem('encadenadas_n1') || "";
-    inputNombre2.value = localStorage.getItem('encadenadas_n2') || "";
-  } catch (e) { /* almacenamiento no disponible */ }
-  actualizarBotonesMenu();
-}
-function guardarNombres() {
-  try {
-    localStorage.setItem('encadenadas_n1', inputNombre.value.trim());
-    localStorage.setItem('encadenadas_n2', inputNombre2.value.trim());
-  } catch (e) { /* ignorar */ }
-}
-function actualizarBotonesMenu() {
-  const n1 = inputNombre.value.trim() || "Humano";
-  const n2 = inputNombre2.value.trim() || "Humano 2";
-  // textContent en vez de innerHTML: el nombre no se interpreta como HTML
-  btnPveMenu.firstElementChild.textContent = `👤 ${n1} vs 🤖 Servidor`;
-  btnPvpMenu.firstElementChild.textContent = `👤 ${n1} vs 👤 ${n2}`;
-}
+              private void evalJs(final String js) {
+                  mainHandler.post(() -> {
+                      if (getBridge() != null && getBridge().getWebView() != null) {
+                          getBridge().getWebView().evaluateJavascript(js, null);
+                      }
+                  });
+              }
 
-// ---------- Pantalla siempre activa + supervivencia con el móvil bloqueado ----------
-// La pantalla se mantiene encendida con la Screen Wake Lock API. El navegador la suelta cuando la
-// página deja de estar visible (p. ej. al bloquear a mano), así que se vuelve a pedir al regresar.
-// Con el dispositivo bloqueado se intenta mantener viva la página con un audio inaudible + sesión
-// multimedia; es un intento, no una garantía.
-async function pedirWakeLock() {
-  try {
-    if ('wakeLock' in navigator && !wakeLock && document.visibilityState === 'visible') {
-      wakeLock = await navigator.wakeLock.request('screen');
-      wakeLock.addEventListener('release', () => { wakeLock = null; });
-    }
-  } catch (e) { wakeLock = null; }
-}
+              public class NativeVoiceBridge {
+                  @JavascriptInterface
+                  public void speak(final String text) {
+                      mainHandler.post(() -> {
+                          if (tts != null) {
+                              Bundle params = new Bundle();
+                              tts.speak(text, TextToSpeech.QUEUE_FLUSH, params, "utt_" + System.currentTimeMillis());
+                          } else {
+                              evalJs("window._onNativeTtsDone && window._onNativeTtsDone()");
+                          }
+                      });
+                  }
 
-function crearSilencio() {
-  // WAV de 1 s, 8 kHz, 8 bits, con ruido de amplitud mínima para que cuente como audio activo
-  const n = 8000, b = new Uint8Array(44 + n), v = new DataView(b.buffer);
-  const w = (o, s) => [...s].forEach((c, i) => b[o + i] = c.charCodeAt(0));
-  w(0, 'RIFF'); v.setUint32(4, 36 + n, true); w(8, 'WAVEfmt '); v.setUint32(16, 16, true);
-  v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, 8000, true);
-  v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true);
-  w(36, 'data'); v.setUint32(40, n, true);
-  for (let i = 0; i < n; i++) b[44 + i] = 128 + (i % 2 ? 1 : -1);
-  const a = new Audio(URL.createObjectURL(new Blob([b], { type: 'audio/wav' })));
-  a.loop = true; a.volume = 0.05;
-  return a;
-}
-function prepararKeepAlive() { // se llama dentro de un toque del usuario para cumplir la política de autoplay
-  try {
-    silencio = silencio || crearSilencio();
-    silencio.play().then(() => silencio.pause()).catch(() => {});
-  } catch (e) { /* ignorar */ }
-}
-function partidaActiva() { return modoActual !== "" && !juegoTerminado; }
-function empezarKeepAlive() {
-  if (!partidaActiva() || !silencio) return;
-  silencio.play().catch(() => {});
-  try {
-    if ('mediaSession' in navigator) {
-      navigator.mediaSession.metadata = new MediaMetadata({ title: 'Encadenadas', artist: 'Partida en curso' });
-      navigator.mediaSession.playbackState = 'playing';
-    }
-  } catch (e) { /* ignorar */ }
-}
-function pararKeepAlive() {
-  try { if (silencio) silencio.pause(); } catch (e) {}
-  try { if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'none'; } catch (e) {}
-}
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') {
-    pararKeepAlive();
-    pedirWakeLock();
-    try { window.speechSynthesis.resume(); } catch (e) {}
-    arrancarRecon(); // si el micro cayó al bloquear, vuelve solo
-  } else {
-    empezarKeepAlive();
-  }
-});
+                  @JavascriptInterface
+                  public void stopSpeak() {
+                      mainHandler.post(() -> {
+                          if (tts != null) tts.stop();
+                      });
+                  }
 
-// ---------- Voz (síntesis) ----------
-// Si se encadenan dos hablar(), el callback de la locución cancelada se descarta.
-// Mientras la app habla, el micro sigue encendido pero se ignora lo que oye (evita el eco).
-function hablar(texto, callback) {
-  if (cancelarHablaPrevia) { cancelarHablaPrevia(); cancelarHablaPrevia = null; }
-  if (!('speechSynthesis' in window)) {
-    if (callback) callback();
-    return;
-  }
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(texto);
-  utterance.lang = 'es-ES';
-  utterance.rate = 1.0;
-  utterance.pitch = 1.05;
+                  @JavascriptInterface
+                  public void startListening() {
+                      mainHandler.post(() -> {
+                          if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                              ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.RECORD_AUDIO}, 101);
+                              evalJs("window._onNativeSrError && window._onNativeSrError('not-allowed')");
+                              return;
+                          }
+                          try {
+                              if (sr == null) {
+                                  sr = SpeechRecognizer.createSpeechRecognizer(MainActivity.this);
+                                  sr.setRecognitionListener(new RecognitionListener() {
+                                      @Override public void onReadyForSpeech(Bundle params) { evalJs("window._onNativeSrStart && window._onNativeSrStart()"); }
+                                      @Override public void onBeginningOfSpeech() {}
+                                      @Override public void onRmsChanged(float rmsdB) {}
+                                      @Override public void onBufferReceived(byte[] buffer) {}
+                                      @Override public void onEndOfSpeech() {}
+                                      @Override public void onError(int error) { evalJs("window._onNativeSrEnd && window._onNativeSrEnd()"); }
+                                      @Override public void onResults(Bundle results) {
+                                          ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                                          if (matches != null && !matches.isEmpty()) {
+                                              String phrase = matches.get(0).replace("\\", "\\\\").replace("'", "\\'").replace("\n", " ");
+                                              evalJs("window._onNativeSrResult && window._onNativeSrResult('" + phrase + "')");
+                                          }
+                                          evalJs("window._onNativeSrEnd && window._onNativeSrEnd()");
+                                      }
+                                      @Override public void onPartialResults(Bundle partialResults) {}
+                                      @Override public void onEvent(int eventType, Bundle params) {}
+                                  });
+                              }
+                              sr.startListening(srIntent);
+                          } catch (Exception e) {
+                              evalJs("window._onNativeSrEnd && window._onNativeSrEnd()");
+                          }
+                      });
+                  }
 
-  hablando = true;
-  let terminado = false;
-  let timer = null;
-  const cancelar = () => { terminado = true; clearTimeout(timer); };
-  const fin = () => {
-    if (terminado) return;
-    terminado = true;
-    clearTimeout(timer);
-    if (cancelarHablaPrevia === cancelar) cancelarHablaPrevia = null;
-    hablando = false;
-    ignorarVozHasta = Date.now() + 800;
-    if (callback) callback();
-  };
-  cancelarHablaPrevia = cancelar;
-  timer = setTimeout(fin, (texto.length * 100) + 2000); // red de seguridad
-  utterance.onend = fin;
-  utterance.onerror = fin;
-  window.speechSynthesis.speak(utterance);
-}
+                  @JavascriptInterface
+                  public void stopListening() {
+                      mainHandler.post(() -> {
+                          try {
+                              if (sr != null) {
+                                  sr.stopListening();
+                                  sr.cancel();
+                              }
+                          } catch (Exception e) {}
+                      });
+                  }
+              }
 
-// ---------- Servidor de palabras (Datamuse) ----------
-// Devuelve el array de resultados, o null si hay error de red/servidor.
-async function consultarDatamuse(params) {
-  for (let intento = 0; intento < 2; intento++) {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 6000);
-    try {
-      const res = await fetch(`https://api.datamuse.com/words?${params}&v=es`, { signal: ctrl.signal });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return await res.json();
-    } catch (error) {
-      // reintenta una vez
-    } finally {
-      clearTimeout(timer);
-    }
-  }
-  return null;
-}
-
-// true = existe, false = no existe, null = no se pudo comprobar
-async function verificarPalabraEnServidor(palabra) {
-  const data = await consultarDatamuse(`sp=${encodeURIComponent(palabra)}&max=20`);
-  if (data === null) return null;
-  return data.some(item => item.word.toLowerCase() === palabra.toLowerCase());
-}
-
-// Array de palabras, o null si hay error de red/servidor.
-async function obtenerPalabraDeServidor(prefijo) {
-  const data = await consultarDatamuse(`sp=${encodeURIComponent(prefijo)}*&max=100`);
-  if (data === null) return null;
-  return data.map(item => item.word.toLowerCase());
-}
-
-function filtrarCandidatas(lista, prefijoNormalizado) {
-  return lista.filter(p => {
-    if (historialPalabras.includes(p)) return false;
-    if (!SOLO_LETRAS.test(p)) return false;
-    const silabas = silabear(p);
-    return silabas.length > 0 && normalizarSílaba(silabas[0]) === prefijoNormalizado;
-  });
-}
-
-// ---------- Silabeo ----------
-function silabear(palabra) {
-  let p = palabra.toLowerCase().trim();
-  const vocalesFuertes = 'aeoáéóíú';
-  const inseparables = ['br','bl','cr','cl','dr','fr','fl','gr','gl','pr','pl','tr','ch','ll','rr'];
-  let silabas = [];
-  let silabaActual = "";
-  const isVocal = (c) => 'aeiouáéíóúü'.includes(c);
-  const isConsonante = (c) => c && !isVocal(c);
-
-  for (let i = 0; i < p.length; i++) {
-    let char = p[i];
-    silabaActual += char;
-    let next1 = p[i+1] || ''; let next2 = p[i+2] || ''; let next3 = p[i+3] || '';
-    if (isVocal(char)) {
-      if (isVocal(next1) && vocalesFuertes.includes(char) && vocalesFuertes.includes(next1)) {
-        silabas.push(silabaActual); silabaActual = ""; continue;
-      }
-      if (isConsonante(next1)) {
-        if (isVocal(next2)) {
-          silabas.push(silabaActual); silabaActual = "";
-        } else if (isConsonante(next2)) {
-          if (isVocal(next3)) {
-            let grupo = next1 + next2;
-            if (inseparables.includes(grupo)) {
-              silabas.push(silabaActual); silabaActual = "";
-            } else {
-              silabaActual += next1; silabas.push(silabaActual); silabaActual = ""; i++;
-            }
-          } else if (isConsonante(next3)) {
-            let grupo = next2 + next3;
-            if (inseparables.includes(grupo)) {
-              silabaActual += next1; silabas.push(silabaActual); silabaActual = ""; i++;
-            } else {
-              silabaActual += next1 + next2; silabas.push(silabaActual); silabaActual = ""; i += 2;
-            }
+              @Override
+              public void onDestroy() {
+                  if (tts != null) { tts.stop(); tts.shutdown(); }
+                  if (sr != null) { sr.destroy(); }
+                  super.onDestroy();
+              }
           }
-        }
-      }
-    }
-  }
-  if (silabaActual !== "") {
-    if (silabas.length > 0 && !/[aeiouáéíóúü]/.test(silabaActual)) {
-      silabas[silabas.length - 1] += silabaActual;
-    } else {
-      silabas.push(silabaActual);
-    }
-  }
-  const hardcoded = {
-    'palabra': ['pa','la','bra'], 'brasa': ['bra','sa'], 'sapo': ['sa','po'],
-    'pomo': ['po','mo'], 'mono': ['mo','no'], 'noto': ['no','to'],
-    'tope': ['to','pe'], 'perro': ['pe','rro'], 'roca': ['ro','ca'],
-    'carta': ['car','ta'], 'taco': ['ta','co'], 'camino': ['ca','mi','no'],
-    'verano': ['ve','ra','no'], 'planeta': ['pla','ne','ta'], 'tesoro': ['te','so','ro'],
-    'espejo': ['es','pe','jo'], 'castillo': ['cas','ti','llo'], 'naranja': ['na','ran','ja']
-  };
-  return hardcoded[p] || silabas;
-}
+          EOF
 
-// Quita tildes (á→a, ü→u) pero conserva la ñ: "caña" ya no equivale a "cana".
-function normalizarSílaba(silaba) {
-  return silaba
-    .toLowerCase()
-    .replace(/ñ/g, "\u0001")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\u0001/g, "ñ")
-    .replace(/rr/g, "r");
-}
+          sed -i "s/versionCode 1/versionCode ${{ github.run_number }}/g" android/app/build.gradle
+          sed -i 's/versionName "1.0"/versionName "1.0.${{ github.run_number }}"/g' android/app/build.gradle
+          npx cap sync android
 
-// ---------- UI ----------
-function mostrarAlerta(mensaje) {
-  clearTimeout(alertTimer);
-  alertBox.textContent = mensaje;
-  alertBox.classList.remove('hidden');
-  requestAnimationFrame(() => alertBox.classList.remove('opacity-0'));
-  alertTimer = setTimeout(() => {
-    alertBox.classList.add('opacity-0');
-    alertTimer = setTimeout(() => alertBox.classList.add('hidden'), 300);
-  }, 3500);
-}
+      - name: Preparar o Generar Llave Digital (Keystore)
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          PASS="${KEY_PASSWORD:-MiCuadrante2026!}"
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 --decode > android/app/release.keystore
+          else
+            keytool -genkeypair -v -keystore android/app/release.keystore -alias micuadrante -keyalg RSA -keysize 2048 -validity 10000 -storepass "$PASS" -keypass "$PASS" -dname "CN=K4NT3R0, OU=Apps, O=K4NT3R0, L=Cadiz, S=Andalucia, C=ES"
+            base64 -w 0 android/app/release.keystore > LLAVE_PARA_GITHUB_SECRETS.txt
+            cp android/app/release.keystore COPIA_SEGURIDAD_KEYSTORE.jks
+          fi
 
-function actualizarInterfazTurno(texto, colorBg) {
-  indicadorTurno.textContent = texto;
-  indicadorTurno.className = `mt-1 text-sm font-bold text-white rounded-full px-4 py-1 inline-block shadow-md transition-colors ${colorBg}`;
-}
+      - name: Compilar APK y Firmar AAB Oficial para Google Play
+        env:
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          PASS="${KEY_PASSWORD:-MiCuadrante2026!}"
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug bundleRelease \
+            -Pandroid.injected.signing.store.file=$PWD/app/release.keystore \
+            -Pandroid.injected.signing.store.password="$PASS" \
+            -Pandroid.injected.signing.key.alias=micuadrante \
+            -Pandroid.injected.signing.key.password="$PASS"
 
-function mostrarTurnoHumano() {
-  const color = jugadorActual === 0 ? "bg-blue-500" : "bg-orange-500";
-  actualizarInterfazTurno(`🗣️ Turno de ${nombres[jugadorActual]}`, color);
-}
+      - name: Subir APK listo para instalar en el movil
+        uses: actions/upload-artifact@v4
+        with:
+          name: Encadenadas-APK-Instalable
+          path: android/app/build/outputs/apk/debug/app-debug.apk
 
-// Bloquear NO toca el micrófono: antes lo apagaba y, tras un fallo, a veces no volvía a arrancar.
-function bloquearInputs(bloquear) {
-  textInput.disabled = bloquear;
-  sendBtn.disabled = bloquear;
-  micBtn.disabled = !recon;
-  if (bloquear) {
-    btnRendirse.classList.add('opacity-50', 'pointer-events-none');
-  } else {
-    btnRendirse.classList.remove('opacity-50', 'pointer-events-none');
-  }
-}
+      - name: Subir AAB FIRMADO para Google Play Store
+        uses: actions/upload-artifact@v4
+        with:
+          name: Encadenadas-GooglePlay-AAB-FIRMADO
+          path: android/app/build/outputs/bundle/release/app-release.aab
 
-function mostrarFinJuego() {
-  juegoTerminado = true;
-  controlsContainer.classList.add('hidden');
-  btnRendirse.classList.add('hidden');
-  btnReiniciar.classList.remove('hidden');
-  detenerMicrofono();
-  pararKeepAlive();
-}
-
-function recargarJuego() {
-  window.location.reload();
-}
-
-function agregarPalabraUI(palabra, silabas, esInicial = false, esSegundo = false, etiqueta = "") {
-  const wrapObj = document.createElement('div');
-  wrapObj.className = "flex flex-col items-center animate-[flotar_3s_ease-in-out_infinite] w-full relative my-2";
-
-  if (!esInicial) {
-    const link = document.createElement('div');
-    link.className = "h-8 w-4 border-l-4 border-r-4 border-slate-400 bg-slate-200 rounded-full my-1 absolute -top-6 z-0 shadow-sm";
-    wrapObj.appendChild(link);
-  }
-
-  const wordDiv = document.createElement('div');
-  const borderColor = esSegundo ? 'border-purple-500' : 'border-orange-500';
-  const textColor = esSegundo ? 'text-purple-700' : 'text-blue-600';
-  wordDiv.className = `flex items-center text-4xl font-extrabold uppercase z-10 px-6 py-3 rounded-full bg-white border-4 ${borderColor} shadow-xl relative ${textColor} transition-all`;
-
-  silabas.forEach((sil, index) => {
-    const span = document.createElement('span');
-    span.textContent = sil;
-    if (index === 0 && !esInicial) span.className = esSegundo ? "text-purple-500" : "text-orange-500";
-    else if (index === silabas.length - 1) span.className = "text-green-600";
-    wordDiv.appendChild(span);
-  });
-
-  if (diccionarioEmojis[palabra.toLowerCase()]) {
-    const emojiSpan = document.createElement('span');
-    emojiSpan.textContent = diccionarioEmojis[palabra.toLowerCase()];
-    emojiSpan.className = "absolute -top-6 -right-6 text-5xl animate-bounce drop-shadow-lg";
-    wordDiv.appendChild(emojiSpan);
-  }
-
-  wrapObj.appendChild(wordDiv);
-  if (etiqueta) {
-    const tag = document.createElement('div');
-    tag.textContent = etiqueta;
-    tag.className = "mt-1 z-10 text-xs font-extrabold text-white bg-purple-600 rounded-full px-3 py-0.5 shadow";
-    wrapObj.appendChild(tag);
-  }
-  gameBoard.appendChild(wrapObj);
-  gameBoard.scrollTop = gameBoard.scrollHeight;
-}
-
-// ---------- Flujo de la partida ----------
-function arranqueVinculado(modo) {
-  nombres[0] = inputNombre.value.trim() || "Humano";
-  nombres[1] = inputNombre2.value.trim() || "Humano 2";
-  guardarNombres();
-  modoActual = modo;
-  jugadorActual = 0;
-  juegoTerminado = false;
-  modalMenu.classList.add('hidden');
-
-  // Manos libres: dentro del toque del usuario se pide pantalla activa, audio de fondo y micrófono
-  pedirWakeLock();
-  prepararKeepAlive();
-  iniciarMicrofono();
-
-  const saludo = modo === 'pvp'
-    ? `¡Hola ${nombres[0]} y ${nombres[1]}! Vamos a jugar.`
-    : `¡Hola ${nombres[0]}! Vamos a jugar.`;
-  hablar(saludo, () => iniciarJuegoTablero());
-}
-
-function iniciarJuegoTablero() {
-  historialPalabras = [];
-  gameBoard.innerHTML = '';
-
-  const palabraInicial = palabrasArranque[Math.floor(Math.random() * palabrasArranque.length)];
-  const silabasIniciales = silabear(palabraInicial);
-
-  historialPalabras.push(palabraInicial);
-  silabaObjetivo = silabasIniciales[silabasIniciales.length - 1];
-  agregarPalabraUI(palabraInicial, silabasIniciales, true, false);
-
-  hablar(palabraInicial, () => {
-    esTurnoMaquina = false;
-    mostrarTurnoHumano();
-    bloquearInputs(false);
-    arrancarRecon();
-  });
-}
-
-function errorDeConexion() {
-  actualizarInterfazTurno("⚠️ Sin conexión con el servidor", "bg-gray-600");
-  hablar("No consigo conectar con el servidor de palabras. Dejamos la partida aquí, sin ganador.", () => {
-    mostrarFinJuego();
-  });
-}
-
-async function juegaMaquina() {
-  if (modoActual !== 'pve' || juegoTerminado) return;
-  actualizarInterfazTurno("🌐 Servidor buscando...", "bg-purple-500");
-
-  const prefijo = normalizarSílaba(silabaObjetivo);
-  const palabrasRed = await obtenerPalabraDeServidor(prefijo);
-
-  if (palabrasRed === null) { // error de red: no es una victoria del jugador
-    errorDeConexion();
-    return;
-  }
-
-  const candidatas = filtrarCandidatas(palabrasRed, prefijo);
-  if (candidatas.length > 0) {
-    const elegida = candidatas[Math.floor(Math.random() * candidatas.length)];
-    await procesarEntrada(elegida, true);
-  } else {
-    actualizarInterfazTurno(`¡Victoria de ${nombres[0]}!`, "bg-green-500");
-    hablar(`¡Me he quedado sin palabras! ¡Has ganado, ${nombres[0]}!`, () => {
-      mostrarFinJuego();
-    });
-  }
-}
-
-async function meRindo() {
-  if (esTurnoMaquina || textInput.disabled || juegoTerminado) return;
-  bloquearInputs(true);
-
-  const rindiente = nombres[jugadorActual];
-  const ganador = modoActual === 'pvp' ? nombres[1 - jugadorActual] : "la máquina";
-  actualizarInterfazTurno("Buscando una respuesta posible...", "bg-red-500");
-
-  hablar(`${rindiente} se rinde. Déjame mirar si había alguna...`, async () => {
-    const prefijo = normalizarSílaba(silabaObjetivo);
-    const palabrasRed = await obtenerPalabraDeServidor(prefijo);
-
-    if (palabrasRed === null) {
-      actualizarInterfazTurno("⚠️ Sin conexión con el servidor", "bg-gray-600");
-      hablar("No he podido comprobarlo porque no hay conexión. Partida terminada sin ganador.", mostrarFinJuego);
-      return;
-    }
-
-    const candidatas = filtrarCandidatas(palabrasRed, prefijo);
-    if (candidatas.length > 0) {
-      // La palabra que valía se añade al final de la cadena para que se vea en la lista
-      const elegida = candidatas[Math.floor(Math.random() * candidatas.length)];
-      const silabasElegida = silabear(elegida);
-      historialPalabras.push(elegida);
-      silabaObjetivo = silabasElegida[silabasElegida.length - 1];
-      agregarPalabraUI(elegida, silabasElegida, false, true, "💡 Esta valía");
-      actualizarInterfazTurno(`🏆 Gana ${ganador}`, "bg-green-500");
-      hablar(`Podrías haber dicho: ${elegida}. ¡Gana ${ganador}!`, mostrarFinJuego);
-    } else {
-      actualizarInterfazTurno("🤝 Empate técnico", "bg-gray-600");
-      hablar("Pues he mirado y no había ninguna. ¡Ha sido un empate técnico!", mostrarFinJuego);
-    }
-  });
-}
-
-async function procesarEntrada(texto, esMaquina = false) {
-  if (juegoTerminado) return;
-  // textInput.disabled evita dobles envíos mientras se valida (Enter + micro, doble toque...)
-  if (!esMaquina && (esTurnoMaquina || textInput.disabled)) return;
-
-  const palabra = texto.trim().toLowerCase().replace(/[.,!?;:¡¿"']/g, '');
-  if (!palabra) return;
-
-  if (!SOLO_LETRAS.test(palabra)) {
-    mostrarAlerta("Escribe una sola palabra, solo con letras.");
-    textInput.value = "";
-    return;
-  }
-  if (historialPalabras.includes(palabra)) {
-    mostrarAlerta(`La palabra '${palabra}' ya se ha usado.`);
-    textInput.value = "";
-    hablar(`La palabra ${palabra} ya se ha usado. Prueba con otra.`);
-    return;
-  }
-
-  bloquearInputs(true);
-  textInput.value = "";
-
-  const silabasWord = silabear(palabra);
-  const s1 = normalizarSílaba(silabasWord[0]);
-  const s2 = normalizarSílaba(silabaObjetivo);
-
-  let jugadaValida = false;
-  let vozError = "";
-  if (s1 !== s2) {
-    mostrarAlerta(`¡Error! '${palabra}' empieza por '${s1}'. Necesitas: '${s2}'`);
-    vozError = `${palabra} no empieza por ${s2}. Inténtalo otra vez.`;
-  } else if (esMaquina) {
-    jugadaValida = true; // ya salió del servidor y está filtrada: no se revalida
-  } else {
-    actualizarInterfazTurno("Consultando diccionario...", "bg-yellow-500");
-    const existe = await verificarPalabraEnServidor(palabra);
-    if (existe === true) {
-      jugadaValida = true;
-    } else if (existe === false) {
-      mostrarAlerta(`'${palabra}' no existe en el diccionario online.`);
-      vozError = `${palabra} no está en el diccionario. Inténtalo otra vez.`;
-    } else {
-      mostrarAlerta("Sin conexión: no puedo comprobar la palabra. Inténtalo de nuevo.");
-      vozError = "No puedo comprobar la palabra sin conexión. Repítela, por favor.";
-    }
-  }
-
-  if (!jugadaValida) {
-    if (esMaquina) { // no debería ocurrir; evita dejar la partida colgada
-      errorDeConexion();
-      return;
-    }
-    // Fallo del jugador: el micrófono sigue encendido y se avisa por voz (manos libres)
-    mostrarTurnoHumano();
-    bloquearInputs(false);
-    hablar(vozError, () => arrancarRecon());
-    return;
-  }
-
-  historialPalabras.push(palabra);
-  silabaObjetivo = silabasWord[silabasWord.length - 1];
-
-  const esSegundo = esMaquina || (modoActual === 'pvp' && jugadorActual === 1);
-  agregarPalabraUI(palabra, silabasWord, false, esSegundo);
-
-  if (modoActual === 'pve') {
-    if (esMaquina) {
-      hablar(palabra, () => {
-        esTurnoMaquina = false;
-        mostrarTurnoHumano();
-        bloquearInputs(false);
-        arrancarRecon();
-      });
-    } else {
-      esTurnoMaquina = true;
-      actualizarInterfazTurno("🤖 Máquina pensando...", "bg-purple-500");
-      const coletilla = coletillas[Math.floor(Math.random() * coletillas.length)];
-      hablar(`${palabra}. ${coletilla}`, () => {
-        setTimeout(juegaMaquina, 500);
-      });
-    }
-  } else {
-    jugadorActual = 1 - jugadorActual; // PvP: alterna el turno
-    hablar(palabra, () => {
-      mostrarTurnoHumano();
-      bloquearInputs(false);
-      arrancarRecon();
-    });
-  }
-}
-
-// ---------- Eventos ----------
-inputNombre.addEventListener('input', actualizarBotonesMenu);
-inputNombre2.addEventListener('input', actualizarBotonesMenu);
-btnPveMenu.addEventListener('click', () => arranqueVinculado('pve'));
-btnPvpMenu.addEventListener('click', () => arranqueVinculado('pvp'));
-btnRendirse.addEventListener('click', meRindo);
-btnReiniciar.addEventListener('click', recargarJuego);
-micBtn.addEventListener('click', alternarMicrofono);
-sendBtn.addEventListener('click', () => procesarEntrada(textInput.value));
-textInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') procesarEntrada(textInput.value);
-});
-
-// ---------- Reconocimiento de voz ----------
-// Diseño: "micDeseado" es la intención del jugador. Mientras sea true el micro se reengancha solo
-// (fin de reconocimiento, errores de red, pausas largas...). Solo se apaga a mano o al acabar la partida.
-function uiMic(encendido) {
-  micBtn.classList.toggle('bg-red-500', encendido);
-  micBtn.classList.toggle('bg-blue-500', !encendido);
-  micBtn.classList.toggle('animate-pulse', encendido);
-  micStatus.textContent = encendido ? "Escuchando..." : "Micrófono apagado";
-}
-
-if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  recon = new SpeechRecognition();
-  recon.lang = 'es-ES';
-  recon.continuous = true;
-  recon.interimResults = false;
-
-  recon.onstart = () => {
-    isListening = true;
-    uiMic(true);
-  };
-
-  recon.onresult = (event) => {
-    for (let i = event.resultIndex; i < event.results.length; i++) {
-      const result = event.results[i];
-      if (!result.isFinal) continue;
-      if (esTurnoMaquina || juegoTerminado || hablando || Date.now() < ignorarVozHasta) continue;
-      const frase = result[0].transcript.trim().toLowerCase();
-      if (!frase) continue;
-      if (/\b(me rindo|rindo|rendirse)\b/.test(frase)) { meRindo(); continue; }
-      procesarEntrada(frase.split(/\s+/)[0]);
-    }
-  };
-
-  recon.onerror = (event) => {
-    if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-      // Al bloquear el móvil el navegador puede devolver este error sin que sea un permiso denegado
-      if (document.visibilityState !== 'visible') return;
-      micDeseado = false;
-      uiMic(false);
-      micStatus.textContent = "Permiso de micrófono denegado";
-    }
-    // el resto (no-speech, aborted, network, audio-capture): onend reengancha el micro
-  };
-
-  recon.onend = () => {
-    isListening = false;
-    if (micDeseado && !juegoTerminado) {
-      micStatus.textContent = "Reconectando micrófono...";
-      setTimeout(arrancarRecon, 300);
-    } else {
-      uiMic(false);
-    }
-  };
-
-  // Red de seguridad: si el micro debería estar encendido y no lo está, se reengancha
-  setInterval(() => {
-    if (micDeseado && !isListening && !juegoTerminado && document.visibilityState === 'visible') arrancarRecon();
-  }, 2500);
-} else {
-  micStatus.textContent = "Voz no soportada";
-  micBtn.disabled = true;
-  micBtn.classList.replace('bg-blue-500', 'bg-gray-400');
-}
-
-function arrancarRecon(intentos = 0) {
-  if (!recon || !micDeseado || isListening || juegoTerminado) return;
-  try {
-    recon.start();
-  } catch (err) { // aún se está cerrando la sesión anterior: reintenta enseguida
-    if (intentos < 20) setTimeout(() => arrancarRecon(intentos + 1), 300);
-  }
-}
-
-function iniciarMicrofono() {
-  if (!recon || juegoTerminado) return;
-  micDeseado = true;
-  arrancarRecon();
-}
-
-function alternarMicrofono() {
-  if (micDeseado) detenerMicrofono();
-  else iniciarMicrofono();
-}
-
-function detenerMicrofono() {
-  micDeseado = false;
-  isListening = false;
-  try { if (recon) recon.stop(); } catch (e) {}
-  uiMic(false);
-}
-
-cargarNombres();
-pedirWakeLock();
-</script>
-
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .catch(err => console.warn('Error en Service Worker', err));
-  });
-}
-</script>
-</body>
-</html>
+      - name: Subir Llave Nueva (Solo si no esta en Secrets)
+        if: ${{ env.KEYSTORE_BASE64 == '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: GUARDA-ESTA-LLAVE-EN-SECRETS
+          path: |
+            LLAVE_PARA_GITHUB_SECRETS.txt
+            COPIA_SEGURIDAD_KEYSTORE.jks
