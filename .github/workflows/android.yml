@@ -1,0 +1,250 @@
+name: Fabricar App Encadenadas
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar codigo del repositorio
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar Java 21 para Android
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Preparar Icono (31341.png) y Pantalla Inicial (31336.png)
+        run: |
+          if [ -f "31341.png" ]; then cp "31341.png" icon.png; fi
+          if [ -f "31336.png" ]; then cp "31336.png" splash.png; fi
+          if [ ! -f "icon.png" ] && [ -f "icon-512.png" ]; then cp "icon-512.png" icon.png; fi
+          if [ ! -f "splash.png" ] && [ -f "icon.png" ]; then cp "icon.png" splash.png; fi
+          convert icon.png -resize 192x192 icon-192.png
+          convert icon.png -resize 512x512 icon-512.png
+          convert icon.png -resize 512x512 icon-maskable-512.png
+
+      - name: Preparar carpeta web y Capacitor con AdMob
+        run: |
+          mkdir -p www
+          cp index.html manifest.json sw.js icon-192.png icon-512.png icon-maskable-512.png splash.png www/
+          npm init -y
+          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6 @capacitor-community/admob@6 @capacitor/assets
+          npx cap init "Encadenadas" "com.k4nt3r0.encadenadas" --web-dir www
+          npx cap add android
+
+      - name: Generar Iconos Oficiales y Splash Nativos de Android
+        run: |
+          mkdir -p assets
+          convert icon.png -resize 1024x1024 assets/icon-only.png
+          convert splash.png -resize 2732x2732^ -gravity center -extent 2732x2732 assets/splash.png
+          cp assets/splash.png assets/splash-dark.png
+          npx capacitor-assets generate --android --iconBackgroundColor '#e6b981' --splashBackgroundColor '#ffedd5' --splashBackgroundColorDark '#8b5a2b'
+
+      - name: Activar Voz Nativa, Microfono y AdMob en Android
+        run: |
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          sed -i 's|</manifest>|<uses-permission android:name="android.permission.RECORD_AUDIO" /><queries><intent><action android:name="android.speech.RecognitionService" /></intent><intent><action android:name="android.intent.action.TTS_SERVICE" /></intent></queries></manifest>|g' "$MANIFEST"
+          sed -i 's|</application>|<meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6672720525194990~2961170754"/><meta-data android:name="com.google.android.gms.ads.DELAY_APP_MEASUREMENT_INIT" android:value="false"/></application>|g' "$MANIFEST"
+
+          cat << 'EOF' > android/app/src/main/java/com/k4nt3r0/encadenadas/MainActivity.java
+          package com.k4nt3r0.encadenadas;
+
+          import android.Manifest;
+          import android.content.Intent;
+          import android.content.pm.PackageManager;
+          import android.os.Bundle;
+          import android.os.Handler;
+          import android.os.Looper;
+          import android.speech.RecognitionListener;
+          import android.speech.RecognizerIntent;
+          import android.speech.SpeechRecognizer;
+          import android.speech.tts.TextToSpeech;
+          import android.speech.tts.UtteranceProgressListener;
+          import android.webkit.JavascriptInterface;
+          import androidx.core.app.ActivityCompat;
+          import androidx.core.content.ContextCompat;
+          import com.getcapacitor.BridgeActivity;
+          import java.util.ArrayList;
+          import java.util.Locale;
+
+          public class MainActivity extends BridgeActivity {
+              private TextToSpeech tts;
+              private SpeechRecognizer sr;
+              private Intent srIntent;
+              private final Handler mainHandler = new Handler(Looper.getMainLooper());
+
+              @Override
+              public void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+
+                  if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                      ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 101);
+                  }
+
+                  tts = new TextToSpeech(this, status -> {
+                      if (status == TextToSpeech.SUCCESS) {
+                          tts.setLanguage(new Locale("es", "ES"));
+                      }
+                  });
+                  tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+                      @Override public void onStart(String id) {}
+                      @Override public void onDone(String id) { evalJs("window._onNativeTtsDone && window._onNativeTtsDone()"); }
+                      @Override public void onError(String id) { evalJs("window._onNativeTtsDone && window._onNativeTtsDone()"); }
+                  });
+
+                  srIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                  srIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                  srIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "es-ES");
+                  srIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
+
+                  getBridge().getWebView().addJavascriptInterface(new NativeVoiceBridge(), "AndroidVoice");
+              }
+
+              private void evalJs(final String js) {
+                  mainHandler.post(() -> {
+                      if (getBridge() != null && getBridge().getWebView() != null) {
+                          getBridge().getWebView().evaluateJavascript(js, null);
+                      }
+                  });
+              }
+
+              public class NativeVoiceBridge {
+                  @JavascriptInterface
+                  public void speak(final String text) {
+                      mainHandler.post(() -> {
+                          if (tts != null) {
+                              Bundle params = new Bundle();
+                              tts.speak(text, TextToSpeech.QUEUE_FLUSH, params, "utt_" + System.currentTimeMillis());
+                          } else {
+                              evalJs("window._onNativeTtsDone && window._onNativeTtsDone()");
+                          }
+                      });
+                  }
+
+                  @JavascriptInterface
+                  public void stopSpeak() {
+                      mainHandler.post(() -> {
+                          if (tts != null) tts.stop();
+                      });
+                  }
+
+                  @JavascriptInterface
+                  public void startListening() {
+                      mainHandler.post(() -> {
+                          if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                              ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.RECORD_AUDIO}, 101);
+                              evalJs("window._onNativeSrError && window._onNativeSrError('not-allowed')");
+                              return;
+                          }
+                          try {
+                              if (sr == null) {
+                                  sr = SpeechRecognizer.createSpeechRecognizer(MainActivity.this);
+                                  sr.setRecognitionListener(new RecognitionListener() {
+                                      @Override public void onReadyForSpeech(Bundle params) { evalJs("window._onNativeSrStart && window._onNativeSrStart()"); }
+                                      @Override public void onBeginningOfSpeech() {}
+                                      @Override public void onRmsChanged(float rmsdB) {}
+                                      @Override public void onBufferReceived(byte[] buffer) {}
+                                      @Override public void onEndOfSpeech() {}
+                                      @Override public void onError(int error) { evalJs("window._onNativeSrEnd && window._onNativeSrEnd()"); }
+                                      @Override public void onResults(Bundle results) {
+                                          ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                                          if (matches != null && !matches.isEmpty()) {
+                                              String phrase = matches.get(0).replace("\\", "\\\\").replace("'", "\\'").replace("\n", " ");
+                                              evalJs("window._onNativeSrResult && window._onNativeSrResult('" + phrase + "')");
+                                          }
+                                          evalJs("window._onNativeSrEnd && window._onNativeSrEnd()");
+                                      }
+                                      @Override public void onPartialResults(Bundle partialResults) {}
+                                      @Override public void onEvent(int eventType, Bundle params) {}
+                                  });
+                              }
+                              sr.startListening(srIntent);
+                          } catch (Exception e) {
+                              evalJs("window._onNativeSrEnd && window._onNativeSrEnd()");
+                          }
+                      });
+                  }
+
+                  @JavascriptInterface
+                  public void stopListening() {
+                      mainHandler.post(() -> {
+                          try {
+                              if (sr != null) {
+                                  sr.stopListening();
+                                  sr.cancel();
+                              }
+                          } catch (Exception e) {}
+                      });
+                  }
+              }
+
+              @Override
+              public void onDestroy() {
+                  if (tts != null) { tts.stop(); tts.shutdown(); }
+                  if (sr != null) { sr.destroy(); }
+                  super.onDestroy();
+              }
+          }
+          EOF
+
+          sed -i "s/versionCode 1/versionCode ${{ github.run_number }}/g" android/app/build.gradle
+          sed -i 's/versionName "1.0"/versionName "1.0.${{ github.run_number }}"/g' android/app/build.gradle
+          npx cap sync android
+
+      - name: Preparar o Generar Llave Digital (Keystore)
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          PASS="${KEY_PASSWORD:-MiCuadrante2026!}"
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 --decode > android/app/release.keystore
+          else
+            keytool -genkeypair -v -keystore android/app/release.keystore -alias micuadrante -keyalg RSA -keysize 2048 -validity 10000 -storepass "$PASS" -keypass "$PASS" -dname "CN=K4NT3R0, OU=Apps, O=K4NT3R0, L=Cadiz, S=Andalucia, C=ES"
+            base64 -w 0 android/app/release.keystore > LLAVE_PARA_GITHUB_SECRETS.txt
+            cp android/app/release.keystore COPIA_SEGURIDAD_KEYSTORE.jks
+          fi
+
+      - name: Compilar APK y Firmar AAB Oficial para Google Play
+        env:
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          PASS="${KEY_PASSWORD:-MiCuadrante2026!}"
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug bundleRelease \
+            -Pandroid.injected.signing.store.file=$PWD/app/release.keystore \
+            -Pandroid.injected.signing.store.password="$PASS" \
+            -Pandroid.injected.signing.key.alias=micuadrante \
+            -Pandroid.injected.signing.key.password="$PASS"
+
+      - name: Subir APK listo para instalar en el movil
+        uses: actions/upload-artifact@v4
+        with:
+          name: Encadenadas-APK-Instalable
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Subir AAB FIRMADO para Google Play Store
+        uses: actions/upload-artifact@v4
+        with:
+          name: Encadenadas-GooglePlay-AAB-FIRMADO
+          path: android/app/build/outputs/bundle/release/app-release.aab
+
+      - name: Subir Llave Nueva (Solo si no esta en Secrets)
+        if: ${{ env.KEYSTORE_BASE64 == '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: GUARDA-ESTA-LLAVE-EN-SECRETS
+          path: |
+            LLAVE_PARA_GITHUB_SECRETS.txt
+            COPIA_SEGURIDAD_KEYSTORE.jks
