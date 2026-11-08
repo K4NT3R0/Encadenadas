@@ -23,36 +23,71 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Instalar herramientas y preparar imagenes (31541.png y 31336.png)
+      - name: Descargar Diccionario Castellano RAE y preparar imagenes
         run: |
           npm init -y
           npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6 @capacitor-community/admob@6 sharp
 
           cat << 'EOF' > prepare.js
           const fs = require('fs');
+          const https = require('https');
           const sharp = require('sharp');
 
+          function downloadText(url) {
+            return new Promise((resolve, reject) => {
+              https.get(url, (res) => {
+                if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+                  return resolve(downloadText(res.headers.location));
+                }
+                if (res.statusCode !== 200) return reject(new Error('HTTP ' + res.statusCode));
+                let data = '';
+                res.on('data', chunk => data += chunk);
+                res.on('end', () => resolve(data));
+              }).on('error', reject);
+            });
+          }
+
           async function run() {
-            // 1. Detectar exactamente 31541.png (o 31341.png) para el icono y 31336.png para la portada
+            // 1. Descargar listado limpio del Diccionario Castellano (RAE)
+            const urls = [
+              'https://raw.githubusercontent.com/JorgeDuenasLerin/diccionario-espanol-txt/master/0_palabras_todas.txt',
+              'https://raw.githubusercontent.com/javierarce/palabras/master/listado-general.txt'
+            ];
+            let rawText = '';
+            for (const u of urls) {
+              try {
+                rawText = await downloadText(u);
+                if (rawText && rawText.length > 50000) break;
+              } catch (e) {}
+            }
+
+            const extras = ['jota', 'palabra', 'brasa', 'sapo', 'pomo', 'mono', 'dócil', 'jocoso', 'soñando'];
+            const regex = /^[a-záéíóúüñ]{2,18}$/;
+            const wordsSet = new Set(extras);
+
+            if (rawText) {
+              for (const line of rawText.split(/\r?\n/)) {
+                const w = line.trim().toLowerCase();
+                if (regex.test(w)) wordsSet.add(w);
+              }
+            }
+
+            const wordArray = Array.from(wordsSet);
+            console.log("Palabras RAE empaquetadas:", wordArray.length);
+            fs.writeFileSync('diccionario.json', JSON.stringify(wordArray));
+
+            // 2. Preparar imagenes (31541.png y 31336.png)
             const iconSrc = ['31541.png', '31341.png', 'icon-512.png', 'icon-192.png'].find(f => fs.existsSync(f));
             const splashSrc = ['31336.png', 'splash.png'].find(f => fs.existsSync(f)) || iconSrc;
 
-            if (!iconSrc) {
-              throw new Error("No se encontro 31541.png en el repositorio");
-            }
-
-            console.log("Icono seleccionado:", iconSrc);
-            console.log("Splash seleccionado:", splashSrc);
-
-            // 2. Generar los iconos para la web y PWA
             await sharp(iconSrc).resize(192, 192).png().toFile('icon-192.png');
             await sharp(iconSrc).resize(512, 512).png().toFile('icon-512.png');
             await sharp(iconSrc).resize(512, 512).png().toFile('icon-maskable-512.png');
             await sharp(splashSrc).png().toFile('splash.png');
 
-            // 3. Copiar todo a la carpeta www de Capacitor
+            // 3. Copiar archivos a www/
             fs.mkdirSync('www', { recursive: true });
-            for (const f of ['index.html', 'manifest.json', 'sw.js', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'splash.png', '31541.png', '31336.png']) {
+            for (const f of ['index.html', 'manifest.json', 'sw.js', 'diccionario.json', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'splash.png', '31541.png', '31336.png']) {
               if (fs.existsSync(f)) fs.copyFileSync(f, 'www/' + f);
             }
           }
@@ -71,7 +106,6 @@ jobs:
           async function inject() {
             const resDir = 'android/app/src/main/res';
 
-            // 1. Borrar iconos vectoriales por defecto de Capacitor que tapan nuestro icono
             for (const dirName of ['drawable-anydpi-v24', 'mipmap-anydpi-v26']) {
               const p = path.join(resDir, dirName);
               if (fs.existsSync(p)) fs.rmSync(p, { recursive: true, force: true });
@@ -81,7 +115,6 @@ jobs:
               if (fs.existsSync(p)) fs.rmSync(p, { force: true });
             }
 
-            // 2. Recrear mipmap-anydpi-v26 apuntando a nuestros PNG y fondo madera
             const anyDpi = path.join(resDir, 'mipmap-anydpi-v26');
             fs.mkdirSync(anyDpi, { recursive: true });
             const adaptiveXml = '<?xml version="1.0" encoding="utf-8"?><adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android"><background android:drawable="@color/ic_launcher_background"/><foreground android:drawable="@mipmap/ic_launcher_foreground"/></adaptive-icon>';
@@ -94,7 +127,6 @@ jobs:
               '<?xml version="1.0" encoding="utf-8"?><resources><color name="ic_launcher_background">#E6B981</color></resources>'
             );
 
-            // 3. Generar todos los tamanos de icono en mipmap-*
             const mipmaps = [
               { folder: 'mipmap-mdpi', size: 48, fg: 108 },
               { folder: 'mipmap-hdpi', size: 72, fg: 162 },
@@ -121,7 +153,6 @@ jobs:
                 .toFile(path.join(dir, 'ic_launcher_foreground.png'));
             }
 
-            // 4. Inyectar splash.png en todas las carpetas drawable de Android
             const files = fs.readdirSync(resDir);
             for (const f of files) {
               if (f.startsWith('drawable')) {
@@ -193,7 +224,7 @@ jobs:
                   srIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
                   srIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
                   srIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "es-ES");
-                  srIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
+                  srIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5);
 
                   getBridge().getWebView().addJavascriptInterface(new NativeVoiceBridge(), "AndroidVoice");
               }
@@ -247,7 +278,12 @@ jobs:
                                       @Override public void onResults(Bundle results) {
                                           ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                                           if (matches != null && !matches.isEmpty()) {
-                                              String phrase = matches.get(0).replace("\\", "\\\\").replace("'", "\\'").replace("\n", " ");
+                                              StringBuilder sb = new StringBuilder();
+                                              for (int i = 0; i < matches.size(); i++) {
+                                                  if (i > 0) sb.append("|");
+                                                  sb.append(matches.get(i));
+                                              }
+                                              String phrase = sb.toString().replace("\\", "\\\\").replace("'", "\\'").replace("\n", " ");
                                               evalJs("window._onNativeSrResult && window._onNativeSrResult('" + phrase + "')");
                                           }
                                           evalJs("window._onNativeSrEnd && window._onNativeSrEnd()");
