@@ -23,73 +23,36 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Instalar herramientas y preparar imagenes y archivos web
+      - name: Instalar herramientas y preparar imagenes (31541.png y 31336.png)
         run: |
           npm init -y
-          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6 @capacitor-community/admob@6 @capacitor/assets sharp
+          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6 @capacitor-community/admob@6 sharp
 
           cat << 'EOF' > prepare.js
           const fs = require('fs');
           const sharp = require('sharp');
 
           async function run() {
-            // 1. Crear manifest.json si no existe
-            if (!fs.existsSync('manifest.json')) {
-              fs.writeFileSync('manifest.json', JSON.stringify({
-                id: "./index.html",
-                name: "Encadenadas Pro",
-                short_name: "Encadenadas",
-                description: "Juego de palabras encadenadas por sílabas",
-                lang: "es",
-                start_url: "./index.html",
-                scope: "./",
-                display: "standalone",
-                orientation: "portrait",
-                background_color: "#ffedd5",
-                theme_color: "#8b5a2b",
-                icons: [
-                  { src: "icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
-                  { src: "icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
-                  { src: "icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" }
-                ]
-              }, null, 2));
+            // 1. Detectar exactamente 31541.png (o 31341.png) para el icono y 31336.png para la portada
+            const iconSrc = ['31541.png', '31341.png', 'icon-512.png', 'icon-192.png'].find(f => fs.existsSync(f));
+            const splashSrc = ['31336.png', 'splash.png'].find(f => fs.existsSync(f)) || iconSrc;
+
+            if (!iconSrc) {
+              throw new Error("No se encontro 31541.png en el repositorio");
             }
 
-            // 2. Crear sw.js si no existe
-            if (!fs.existsSync('sw.js')) {
-              fs.writeFileSync('sw.js', `const C='encadenadas-v3';self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>self.clients.claim());self.addEventListener('fetch',e=>{});`);
-            }
+            console.log("Icono seleccionado:", iconSrc);
+            console.log("Splash seleccionado:", splashSrc);
 
-            // 3. Localizar icono y pantalla inicial (o generar respaldo si no se subieron)
-            const files = fs.readdirSync('.');
-            const findImg = (patterns) => {
-              for (const p of patterns) {
-                const found = files.find(f => f.toLowerCase().includes(p) && /\.(png|jpg|jpeg|webp)$/i.test(f));
-                if (found) return found;
-              }
-              return null;
-            };
+            // 2. Generar los iconos para la web y PWA
+            await sharp(iconSrc).resize(192, 192).png().toFile('icon-192.png');
+            await sharp(iconSrc).resize(512, 512).png().toFile('icon-512.png');
+            await sharp(iconSrc).resize(512, 512).png().toFile('icon-maskable-512.png');
+            await sharp(splashSrc).png().toFile('splash.png');
 
-            let iconSrc = findImg(['31341', 'icon-512', 'icon-192', 'icon', 'logo']);
-            let splashSrc = findImg(['31336', 'splash', 'portada', 'inicio']);
-
-            const fallbackSvg = Buffer.from(`<svg width="1024" height="1024" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" rx="180" fill="#e6b981" stroke="#8b5a2b" stroke-width="40"/><text x="50%" y="45%" font-family="sans-serif" font-weight="900" font-size="140" fill="#1e293b" text-anchor="middle">PALA-LAZO</text><text x="50%" y="68%" font-family="sans-serif" font-weight="900" font-size="110" fill="#ea580c" text-anchor="middle">ENCADENADAS</text></svg>`);
-
-            const iconInput = iconSrc || fallbackSvg;
-            const splashInput = splashSrc || iconInput;
-
-            await sharp(iconInput).resize(192, 192).png().toFile('icon-192.png');
-            await sharp(iconInput).resize(512, 512).png().toFile('icon-512.png');
-            await sharp(iconInput).resize(512, 512).png().toFile('icon-maskable-512.png');
-            await sharp(splashInput).png().toFile('splash.png');
-
-            fs.mkdirSync('assets', { recursive: true });
-            await sharp(iconInput).resize(1024, 1024).png().toFile('assets/icon-only.png');
-            await sharp(splashInput).resize(2732, 2732, { fit: 'cover' }).png().toFile('assets/splash.png');
-            await sharp(splashInput).resize(2732, 2732, { fit: 'cover' }).png().toFile('assets/splash-dark.png');
-
+            // 3. Copiar todo a la carpeta www de Capacitor
             fs.mkdirSync('www', { recursive: true });
-            for (const f of ['index.html', 'manifest.json', 'sw.js', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'splash.png']) {
+            for (const f of ['index.html', 'manifest.json', 'sw.js', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'splash.png', '31541.png', '31336.png']) {
               if (fs.existsSync(f)) fs.copyFileSync(f, 'www/' + f);
             }
           }
@@ -99,7 +62,80 @@ jobs:
           node prepare.js
           npx cap init "Encadenadas" "com.k4nt3r0.encadenadas" --web-dir www
           npx cap add android
-          npx capacitor-assets generate --android --iconBackgroundColor '#e6b981' --splashBackgroundColor '#ffedd5' --splashBackgroundColorDark '#8b5a2b'
+
+          cat << 'EOF' > inject-android-icons.js
+          const fs = require('fs');
+          const path = require('path');
+          const sharp = require('sharp');
+
+          async function inject() {
+            const resDir = 'android/app/src/main/res';
+
+            // 1. Borrar iconos vectoriales por defecto de Capacitor que tapan nuestro icono
+            for (const dirName of ['drawable-anydpi-v24', 'mipmap-anydpi-v26']) {
+              const p = path.join(resDir, dirName);
+              if (fs.existsSync(p)) fs.rmSync(p, { recursive: true, force: true });
+            }
+            for (const fileName of ['drawable/ic_launcher_foreground.xml', 'drawable/ic_launcher_background.xml']) {
+              const p = path.join(resDir, fileName);
+              if (fs.existsSync(p)) fs.rmSync(p, { force: true });
+            }
+
+            // 2. Recrear mipmap-anydpi-v26 apuntando a nuestros PNG y fondo madera
+            const anyDpi = path.join(resDir, 'mipmap-anydpi-v26');
+            fs.mkdirSync(anyDpi, { recursive: true });
+            const adaptiveXml = '<?xml version="1.0" encoding="utf-8"?><adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android"><background android:drawable="@color/ic_launcher_background"/><foreground android:drawable="@mipmap/ic_launcher_foreground"/></adaptive-icon>';
+            fs.writeFileSync(path.join(anyDpi, 'ic_launcher.xml'), adaptiveXml);
+            fs.writeFileSync(path.join(anyDpi, 'ic_launcher_round.xml'), adaptiveXml);
+
+            const valuesDir = path.join(resDir, 'values');
+            fs.mkdirSync(valuesDir, { recursive: true });
+            fs.writeFileSync(path.join(valuesDir, 'ic_launcher_background.xml'),
+              '<?xml version="1.0" encoding="utf-8"?><resources><color name="ic_launcher_background">#E6B981</color></resources>'
+            );
+
+            // 3. Generar todos los tamanos de icono en mipmap-*
+            const mipmaps = [
+              { folder: 'mipmap-mdpi', size: 48, fg: 108 },
+              { folder: 'mipmap-hdpi', size: 72, fg: 162 },
+              { folder: 'mipmap-xhdpi', size: 96, fg: 216 },
+              { folder: 'mipmap-xxhdpi', size: 144, fg: 324 },
+              { folder: 'mipmap-xxxhdpi', size: 192, fg: 432 }
+            ];
+
+            for (const m of mipmaps) {
+              const dir = path.join(resDir, m.folder);
+              fs.mkdirSync(dir, { recursive: true });
+
+              await sharp('icon-512.png').resize(m.size, m.size).png().toFile(path.join(dir, 'ic_launcher.png'));
+              await sharp('icon-512.png').resize(m.size, m.size).png().toFile(path.join(dir, 'ic_launcher_round.png'));
+
+              const innerSize = Math.round(m.fg * 0.70);
+              const innerBuf = await sharp('icon-512.png').resize(innerSize, innerSize).png().toBuffer();
+
+              await sharp({
+                create: { width: m.fg, height: m.fg, channels: 4, background: { r: 230, g: 185, b: 129, alpha: 1 } }
+              })
+                .composite([{ input: innerBuf, gravity: 'center' }])
+                .png()
+                .toFile(path.join(dir, 'ic_launcher_foreground.png'));
+            }
+
+            // 4. Inyectar splash.png en todas las carpetas drawable de Android
+            const files = fs.readdirSync(resDir);
+            for (const f of files) {
+              if (f.startsWith('drawable')) {
+                const splashTarget = path.join(resDir, f, 'splash.png');
+                if (fs.existsSync(splashTarget) || f === 'drawable') {
+                  await sharp('splash.png').resize(1080, 1920, { fit: 'cover' }).png().toFile(splashTarget);
+                }
+              }
+            }
+          }
+          inject().catch(err => { console.error(err); process.exit(1); });
+          EOF
+
+          node inject-android-icons.js
 
       - name: Activar Voz Nativa, Microfono y AdMob en Android
         run: |
