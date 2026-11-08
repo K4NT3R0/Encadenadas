@@ -9,6 +9,20 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script>
+// Cierre de portada independiente: funciona siempre aunque falle cualquier script posterior
+window.cerrarPortada = function() {
+  var p = document.getElementById('pantalla-portada');
+  if (p) {
+    p.style.opacity = '0';
+    p.style.pointerEvents = 'none';
+    setTimeout(function() { p.style.display = 'none'; }, 300);
+  }
+};
+window.addEventListener('DOMContentLoaded', function() {
+  setTimeout(window.cerrarPortada, 3000);
+});
+</script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap');
 html, body { height: 100%; }
@@ -44,12 +58,12 @@ input { -webkit-user-select: text; user-select: text; }
 
 <div class="absolute inset-0 z-0 pointer-events-none opacity-20 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PHBhdGggZD0iTTAgMGg0MHY0MEgweiIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik0wIDIwaDQwTTIwIDB2NDAiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLW9wYWNpdHk9Ii4xIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=')]"></div>
 
-<!-- PANTALLA INICIAL A PANTALLA COMPLETA -->
-<div id="pantalla-portada" onclick="cerrarPortada()" class="fixed inset-0 z-[60] bg-[#ffedd5] flex flex-col items-center justify-end cursor-pointer transition-opacity duration-500">
-  <img src="splash.png" onerror="this.onerror=null;this.src='31336.png'" alt="Palabras Encadenadas" class="absolute inset-0 w-full h-full object-cover">
-  <div class="relative z-10 mb-10 bg-[#8b5a2b]/95 border-4 border-[#ffedd5] text-white font-black text-xl px-8 py-3 rounded-full shadow-2xl animate-bounce">
+<!-- PANTALLA INICIAL A PANTALLA COMPLETA (Con cierre directo garantizado al tocar) -->
+<div id="pantalla-portada" onclick="this.style.display='none'" ontouchstart="this.style.display='none'" class="fixed inset-0 z-[60] bg-[#ffedd5] flex flex-col items-center justify-end cursor-pointer transition-opacity duration-300">
+  <img src="splash.png" onerror="this.onerror=null;this.src='31336.png'" alt="Palabras Encadenadas" class="absolute inset-0 w-full h-full object-cover pointer-events-none">
+  <button type="button" onclick="document.getElementById('pantalla-portada').style.display='none'" class="relative z-10 mb-10 bg-[#8b5a2b] border-4 border-[#ffedd5] text-white font-black text-xl px-8 py-3 rounded-full shadow-2xl animate-bounce">
     ▶ TOCA PARA EMPEZAR
-  </div>
+  </button>
 </div>
 
 <div id="modal-menu" role="dialog" aria-modal="true" aria-labelledby="titulo-menu" class="absolute inset-0 z-50 bg-black/60 flex flex-col items-center justify-center p-6 backdrop-blur-sm transition-opacity">
@@ -116,15 +130,6 @@ input { -webkit-user-select: text; user-select: text; }
 </footer>
 
 <script>
-// ---------- Control de Portada Inicial ----------
-function cerrarPortada() {
-  const p = document.getElementById('pantalla-portada');
-  if (!p || p.classList.contains('hidden')) return;
-  p.classList.add('opacity-0', 'pointer-events-none');
-  setTimeout(() => p.classList.add('hidden'), 500);
-}
-setTimeout(cerrarPortada, 3200);
-
 // ---------- Referencias al DOM ----------
 const gameBoard = document.getElementById('game-board');
 const micBtn = document.getElementById('mic-btn');
@@ -163,25 +168,29 @@ let silencio = null;
 // ---------- Diccionario Castellano Local (RAE) ----------
 let setDiccionarioRAE = null;
 let arrayDiccionarioRAE = null;
+let cargandoDiccionario = null;
 
 async function cargarDiccionarioRAE() {
   if (setDiccionarioRAE) return true;
-  try {
-    const res = await fetch('diccionario.json');
-    if (!res.ok) throw new Error('No local dict');
-    const lista = await res.json();
-    arrayDiccionarioRAE = lista.map(w => w.toLowerCase().trim());
-    setDiccionarioRAE = new Set(arrayDiccionarioRAE);
-    console.log("Diccionario RAE cargado:", setDiccionarioRAE.size, "palabras");
-    return true;
-  } catch (e) {
-    console.warn("Usando respaldo online:", e);
-    return false;
-  }
+  if (cargandoDiccionario) return cargandoDiccionario;
+  cargandoDiccionario = (async () => {
+    try {
+      const res = await fetch('diccionario.json');
+      if (!res.ok) throw new Error('No local dict');
+      const lista = await res.json();
+      arrayDiccionarioRAE = lista;
+      setDiccionarioRAE = new Set(lista);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  })();
+  return cargandoDiccionario;
 }
-cargarDiccionarioRAE();
+// Lo cargamos medio segundo después para no bloquear el inicio de la interfaz
+setTimeout(cargarDiccionarioRAE, 600);
 
-// ---------- Traductor Fonético de Voz (Letras y Números que el micro abrevia) ----------
+// ---------- Traductor Fonético de Voz ----------
 const MAPA_VOZ_EXACTO = {
   'b': 'be', 'v': 'uve', 'c': 'ce', 'd': 'de', 'f': 'efe', 'g': 'ge',
   'h': 'hache', 'j': 'jota', 'k': 'ka', 'l': 'ele', 'll': 'elle',
@@ -197,7 +206,6 @@ function normalizarTokenVoz(token, silabaObjNorm) {
   let limpio = (token || "").trim().toLowerCase().replace(/[.,!?;:¡¿"']/g, '');
   if (!limpio) return "";
   if (MAPA_VOZ_EXACTO[limpio]) {
-    // Caso especial para "c" (ce / se), "b" (be / ve) según la sílaba que toque
     if (limpio === 'c' && silabaObjNorm === 'se') return 'se';
     if ((limpio === 'b' || limpio === 'v') && silabaObjNorm === 've') return 've';
     if ((limpio === 'b' || limpio === 'v') && silabaObjNorm === 'be') return 'be';
@@ -290,7 +298,7 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') {
     pararKeepAlive();
     pedirWakeLock();
-    try { window.speechSynthesis?.resume(); } catch (e) {}
+    try { window.speechSynthesis && window.speechSynthesis.resume(); } catch (e) {}
     arrancarRecon();
   } else {
     empezarKeepAlive();
@@ -352,7 +360,7 @@ function hablar(texto, callback) {
   window.speechSynthesis.speak(utterance);
 }
 
-// ---------- Comprobación en Diccionario RAE (con variación de tildes) ----------
+// ---------- Comprobación en Diccionario RAE ----------
 function SinTildes(str) {
   return str.replace(/ñ/g, "\u0001").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\u0001/g, "ñ");
 }
@@ -362,12 +370,10 @@ async function verificarPalabraEnServidor(palabra) {
   const p = palabra.toLowerCase().trim();
   if (setDiccionarioRAE) {
     if (setDiccionarioRAE.has(p)) return p;
-    // Si el usuario escribió sin tilde (ej. "docil" o "rapido"), buscamos la forma acentuada en la RAE
     const pSin = SinTildes(p);
     const encontrada = arrayDiccionarioRAE.find(w => SinTildes(w) === pSin);
     return encontrada || false;
   }
-  // Respaldo por si aún no cargó el archivo local
   try {
     const res = await fetch(`https://api.datamuse.com/words?sp=${encodeURIComponent(p)}&max=10&v=es`);
     const data = await res.json();
@@ -434,4 +440,526 @@ function silabear(palabra) {
   }
   if (silabaActual !== "") {
     if (silabas.length > 0 && !/[aeiouáéíóúü]/.test(silabaActual)) {
-      silabas[silabas.length - 1] += silabaAc
+      silabas[silabas.length - 1] += silabaActual;
+    } else {
+      silabas.push(silabaActual);
+    }
+  }
+  const hardcoded = {
+    'palabra': ['pa','la','bra'], 'brasa': ['bra','sa'], 'sapo': ['sa','po'],
+    'pomo': ['po','mo'], 'mono': ['mo','no'], 'noto': ['no','to'],
+    'tope': ['to','pe'], 'perro': ['pe','rro'], 'roca': ['ro','ca'],
+    'carta': ['car','ta'], 'taco': ['ta','co'], 'camino': ['ca','mi','no'],
+    'verano': ['ve','ra','no'], 'planeta': ['pla','ne','ta'], 'tesoro': ['te','so','ro'],
+    'espejo': ['es','pe','jo'], 'castillo': ['cas','ti','llo'], 'naranja': ['na','ran','ja']
+  };
+  return hardcoded[p] || silabas;
+}
+
+function normalizarSílaba(silaba) {
+  return silaba
+    .toLowerCase()
+    .replace(/ñ/g, "\u0001")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\u0001/g, "ñ")
+    .replace(/rr/g, "r");
+}
+
+// ---------- UI ----------
+function mostrarAlerta(mensaje) {
+  clearTimeout(alertTimer);
+  alertBox.textContent = mensaje;
+  alertBox.classList.remove('hidden');
+  requestAnimationFrame(() => alertBox.classList.remove('opacity-0'));
+  alertTimer = setTimeout(() => {
+    alertBox.classList.add('opacity-0');
+    alertTimer = setTimeout(() => alertBox.classList.add('hidden'), 300);
+  }, 3500);
+}
+
+function actualizarInterfazTurno(texto, colorBg) {
+  indicadorTurno.textContent = texto;
+  indicadorTurno.className = `mt-1 text-sm font-bold text-white rounded-full px-4 py-1 inline-block shadow-md transition-colors ${colorBg}`;
+}
+
+function mostrarTurnoHumano() {
+  const color = jugadorActual === 0 ? "bg-blue-500" : "bg-orange-500";
+  actualizarInterfazTurno(`🗣️ Turno de ${nombres[jugadorActual]}`, color);
+}
+
+function bloquearInputs(bloquear) {
+  textInput.disabled = bloquear;
+  sendBtn.disabled = bloquear;
+  micBtn.disabled = !recon;
+  if (bloquear) {
+    btnRendirse.classList.add('opacity-50', 'pointer-events-none');
+  } else {
+    btnRendirse.classList.remove('opacity-50', 'pointer-events-none');
+  }
+}
+
+function mostrarFinJuego() {
+  juegoTerminado = true;
+  controlsContainer.classList.add('hidden');
+  btnRendirse.classList.add('hidden');
+  btnReiniciar.classList.remove('hidden');
+  detenerMicrofono();
+  pararKeepAlive();
+}
+
+function recargarJuego() {
+  window.location.reload();
+}
+
+function agregarPalabraUI(palabra, silabas, esInicial = false, esSegundo = false, etiqueta = "") {
+  const wrapObj = document.createElement('div');
+  wrapObj.className = "flex flex-col items-center animate-[flotar_3s_ease-in-out_infinite] w-full relative my-2";
+
+  if (!esInicial) {
+    const link = document.createElement('div');
+    link.className = "h-8 w-4 border-l-4 border-r-4 border-slate-400 bg-slate-200 rounded-full my-1 absolute -top-6 z-0 shadow-sm";
+    wrapObj.appendChild(link);
+  }
+
+  const wordDiv = document.createElement('div');
+  const borderColor = esSegundo ? 'border-purple-500' : 'border-orange-500';
+  const textColor = esSegundo ? 'text-purple-700' : 'text-blue-600';
+  wordDiv.className = `flex items-center text-4xl font-extrabold uppercase z-10 px-6 py-3 rounded-full bg-white border-4 ${borderColor} shadow-xl relative ${textColor} transition-all`;
+
+  silabas.forEach((sil, index) => {
+    const span = document.createElement('span');
+    span.textContent = sil;
+    if (index === 0 && !esInicial) span.className = esSegundo ? "text-purple-500" : "text-orange-500";
+    else if (index === silabas.length - 1) span.className = "text-green-600";
+    wordDiv.appendChild(span);
+  });
+
+  if (diccionarioEmojis[palabra.toLowerCase()]) {
+    const emojiSpan = document.createElement('span');
+    emojiSpan.textContent = diccionarioEmojis[palabra.toLowerCase()];
+    emojiSpan.className = "absolute -top-6 -right-6 text-5xl animate-bounce drop-shadow-lg";
+    wordDiv.appendChild(emojiSpan);
+  }
+
+  wrapObj.appendChild(wordDiv);
+  if (etiqueta) {
+    const tag = document.createElement('div');
+    tag.textContent = etiqueta;
+    tag.className = "mt-1 z-10 text-xs font-extrabold text-white bg-purple-600 rounded-full px-3 py-0.5 shadow";
+    wrapObj.appendChild(tag);
+  }
+  gameBoard.appendChild(wrapObj);
+  gameBoard.scrollTop = gameBoard.scrollHeight;
+}
+
+// ---------- Flujo de la partida ----------
+function arranqueVinculado(modo) {
+  window.cerrarPortada();
+  nombres[0] = inputNombre.value.trim() || "Humano";
+  nombres[1] = inputNombre2.value.trim() || "Humano 2";
+  guardarNombres();
+  modoActual = modo;
+  jugadorActual = 0;
+  juegoTerminado = false;
+  modalMenu.classList.add('hidden');
+  modalMenu.style.display = 'none';
+
+  pedirWakeLock();
+  prepararKeepAlive();
+  iniciarMicrofono();
+
+  const saludo = modo === 'pvp'
+    ? `¡Hola ${nombres[0]} y ${nombres[1]}! Vamos a jugar.`
+    : `¡Hola ${nombres[0]}! Vamos a jugar.`;
+  hablar(saludo, () => iniciarJuegoTablero());
+}
+
+function iniciarJuegoTablero() {
+  historialPalabras = [];
+  gameBoard.innerHTML = '';
+
+  const palabraInicial = palabrasArranque[Math.floor(Math.random() * palabrasArranque.length)];
+  const silabasIniciales = silabear(palabraInicial);
+
+  historialPalabras.push(palabraInicial);
+  silabaObjetivo = silabasIniciales[silabasIniciales.length - 1];
+  agregarPalabraUI(palabraInicial, silabasIniciales, true, false);
+
+  hablar(palabraInicial, () => {
+    esTurnoMaquina = false;
+    mostrarTurnoHumano();
+    bloquearInputs(false);
+    arrancarRecon();
+  });
+}
+
+async function juegaMaquina() {
+  if (modoActual !== 'pve' || juegoTerminado) return;
+  actualizarInterfazTurno("📚 Buscando en la RAE...", "bg-purple-500");
+
+  const prefijo = normalizarSílaba(silabaObjetivo);
+  const candidatas = await obtenerPalabrasCandidatasRAE(prefijo);
+
+  if (candidatas.length > 0) {
+    const elegida = candidatas[Math.floor(Math.random() * candidatas.length)];
+    await procesarEntrada(elegida, true);
+  } else {
+    actualizarInterfazTurno(`¡Victoria de ${nombres[0]}!`, "bg-green-500");
+    hablar(`¡No quedan palabras en el diccionario que empiecen por ${silabaObjetivo}! ¡Has ganado, ${nombres[0]}!`, () => {
+      mostrarFinJuego();
+    });
+  }
+}
+
+async function meRindo() {
+  if (esTurnoMaquina || textInput.disabled || juegoTerminado) return;
+  bloquearInputs(true);
+
+  const rindiente = nombres[jugadorActual];
+  const ganador = modoActual === 'pvp' ? nombres[1 - jugadorActual] : "la máquina";
+  actualizarInterfazTurno("Consultando RAE...", "bg-red-500");
+
+  hablar(`${rindiente} se rinde. Déjame mirar en el diccionario si había alguna...`, async () => {
+    const prefijo = normalizarSílaba(silabaObjetivo);
+    const candidatas = await obtenerPalabrasCandidatasRAE(prefijo);
+
+    if (candidatas.length > 0) {
+      const elegida = candidatas[Math.floor(Math.random() * candidatas.length)];
+      const silabasElegida = silabear(elegida);
+      historialPalabras.push(elegida);
+      silabaObjetivo = silabasElegida[silabasElegida.length - 1];
+      agregarPalabraUI(elegida, silabasElegida, false, true, "💡 Esta valía (RAE)");
+      actualizarInterfazTurno(`🏆 Gana ${ganador}`, "bg-green-500");
+      hablar(`Podrías haber dicho: ${elegida}. ¡Gana ${ganador}!`, mostrarFinJuego);
+    } else {
+      actualizarInterfazTurno("🤝 Empate técnico", "bg-gray-600");
+      hablar("Pues he mirado en la RAE y no existía ninguna con esa sílaba. ¡Empate técnico!", mostrarFinJuego);
+    }
+  });
+}
+
+async function procesarEntrada(texto, esMaquina = false) {
+  if (juegoTerminado) return;
+  if (!esMaquina && (esTurnoMaquina || textInput.disabled)) return;
+
+  const s2 = normalizarSílaba(silabaObjetivo);
+  let palabra = normalizarTokenVoz(texto, s2);
+  if (!palabra) return;
+
+  if (!SOLO_LETRAS.test(palabra)) {
+    mostrarAlerta("Escribe una sola palabra, solo con letras.");
+    textInput.value = "";
+    return;
+  }
+  if (historialPalabras.includes(palabra)) {
+    mostrarAlerta(`La palabra '${palabra}' ya se ha usado.`);
+    textInput.value = "";
+    hablar(`La palabra ${palabra} ya se ha usado. Prueba con otra.`);
+    return;
+  }
+
+  bloquearInputs(true);
+  textInput.value = "";
+
+  let silabasWord = silabear(palabra);
+  let s1 = normalizarSílaba(silabasWord[0]);
+
+  let jugadaValida = false;
+  let vozError = "";
+  if (s1 !== s2) {
+    mostrarAlerta(`¡Error! '${palabra}' empieza por '${s1}'. Necesitas: '${s2}'`);
+    vozError = `${palabra} no empieza por ${s2}. Inténtalo otra vez.`;
+  } else if (esMaquina) {
+    jugadaValida = true;
+  } else {
+    actualizarInterfazTurno("Consultando RAE...", "bg-yellow-500");
+    const formaRAE = await verificarPalabraEnServidor(palabra);
+    if (formaRAE && typeof formaRAE === 'string') {
+      palabra = formaRAE;
+      silabasWord = silabear(palabra);
+      jugadaValida = true;
+    } else {
+      mostrarAlerta(`'${palabra}' no está registrada en el diccionario RAE.`);
+      vozError = `${palabra} no viene en el diccionario. Inténtalo otra vez.`;
+    }
+  }
+
+  if (!jugadaValida) {
+    mostrarTurnoHumano();
+    bloquearInputs(false);
+    hablar(vozError, () => arrancarRecon());
+    return;
+  }
+
+  historialPalabras.push(palabra);
+  silabaObjetivo = silabasWord[silabasWord.length - 1];
+
+  const esSegundo = esMaquina || (modoActual === 'pvp' && jugadorActual === 1);
+  agregarPalabraUI(palabra, silabasWord, false, esSegundo);
+
+  if (modoActual === 'pve') {
+    if (esMaquina) {
+      hablar(palabra, () => {
+        esTurnoMaquina = false;
+        mostrarTurnoHumano();
+        bloquearInputs(false);
+        arrancarRecon();
+      });
+    } else {
+      esTurnoMaquina = true;
+      actualizarInterfazTurno("🤖 Máquina pensando...", "bg-purple-500");
+      const coletilla = coletillas[Math.floor(Math.random() * coletillas.length)];
+      hablar(`${palabra}. ${coletilla}`, () => {
+        setTimeout(juegaMaquina, 400);
+      });
+    }
+  } else {
+    jugadorActual = 1 - jugadorActual;
+    hablar(palabra, () => {
+      mostrarTurnoHumano();
+      bloquearInputs(false);
+      arrancarRecon();
+    });
+  }
+}
+
+// ---------- Eventos ----------
+inputNombre.addEventListener('input', actualizarBotonesMenu);
+inputNombre2.addEventListener('input', actualizarBotonesMenu);
+btnPveMenu.addEventListener('click', () => arranqueVinculado('pve'));
+btnPvpMenu.addEventListener('click', () => arranqueVinculado('pvp'));
+btnRendirse.addEventListener('click', meRindo);
+btnReiniciar.addEventListener('click', recargarJuego);
+micBtn.addEventListener('click', alternarMicrofono);
+sendBtn.addEventListener('click', () => procesarEntrada(textInput.value));
+textInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') procesarEntrada(textInput.value);
+});
+
+// ---------- Reconocimiento de Voz Inteligente ----------
+function uiMic(encendido) {
+  micBtn.classList.toggle('bg-red-500', encendido);
+  micBtn.classList.toggle('bg-blue-500', !encendido);
+  micBtn.classList.toggle('animate-pulse', encendido);
+  micStatus.textContent = encendido ? "Escuchando..." : "Micrófono apagado";
+}
+
+function procesarFraseVoz(rawInput) {
+  if (esTurnoMaquina || juegoTerminado || hablando || Date.now() < ignorarVozHasta) return;
+  const alternativas = (rawInput || "").split('|').map(s => s.trim().toLowerCase()).filter(Boolean);
+  if (alternativas.length === 0) return;
+
+  for (const alt of alternativas) {
+    if (/\b(me rindo|rindo|rendirse)\b/.test(alt)) {
+      meRindo();
+      return;
+    }
+  }
+
+  const sObj = normalizarSílaba(silabaObjetivo);
+  let mejorPalabra = null;
+  for (const alt of alternativas) {
+    const primera = normalizarTokenVoz(alt.split(/\s+/)[0], sObj);
+    if (primera && SOLO_LETRAS.test(primera)) {
+      const sils = silabear(primera);
+      if (sils.length > 0 && normalizarSílaba(sils[0]) === sObj) {
+        mejorPalabra = primera;
+        break;
+      }
+    }
+  }
+
+  if (!mejorPalabra) {
+    mejorPalabra = normalizarTokenVoz(alternativas[0].split(/\s+/)[0], sObj);
+  }
+
+  if (mejorPalabra) {
+    procesarEntrada(mejorPalabra);
+  }
+}
+
+if (window.AndroidVoice) {
+  recon = {
+    start() { window.AndroidVoice.startListening(); },
+    stop() { window.AndroidVoice.stopListening(); }
+  };
+  window._onNativeSrStart = () => { isListening = true; uiMic(true); };
+  window._onNativeSrResult = (frase) => { procesarFraseVoz(frase); };
+  window._onNativeSrError = (err) => {
+    isListening = false;
+    if (err === 'not-allowed') {
+      micDeseado = false;
+      uiMic(false);
+      micStatus.textContent = "Permiso de micrófono denegado";
+    }
+  };
+  window._onNativeSrEnd = () => {
+    isListening = false;
+    if (micDeseado && !juegoTerminado && !hablando) {
+      micStatus.textContent = "Escuchando...";
+      setTimeout(arrancarRecon, 350);
+    } else if (!micDeseado) {
+      uiMic(false);
+    }
+  };
+  setInterval(() => {
+    if (micDeseado && !isListening && !hablando && !juegoTerminado && document.visibilityState === 'visible') arrancarRecon();
+  }, 2500);
+} else if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recon = new SpeechRecognition();
+  recon.lang = 'es-ES';
+  recon.continuous = true;
+  recon.interimResults = false;
+  recon.maxAlternatives = 5;
+
+  recon.onstart = () => {
+    isListening = true;
+    uiMic(true);
+  };
+
+  recon.onresult = (event) => {
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const result = event.results[i];
+      if (!result.isFinal) continue;
+      const alts = [];
+      for (let j = 0; j < result.length; j++) alts.push(result[j].transcript);
+      procesarFraseVoz(alts.join('|'));
+    }
+  };
+
+  recon.onerror = (event) => {
+    if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+      if (document.visibilityState !== 'visible') return;
+      micDeseado = false;
+      uiMic(false);
+      micStatus.textContent = "Permiso de micrófono denegado";
+    }
+  };
+
+  recon.onend = () => {
+    isListening = false;
+    if (micDeseado && !juegoTerminado) {
+      micStatus.textContent = "Reconectando micrófono...";
+      setTimeout(arrancarRecon, 300);
+    } else {
+      uiMic(false);
+    }
+  };
+
+  setInterval(() => {
+    if (micDeseado && !isListening && !hablando && !juegoTerminado && document.visibilityState === 'visible') arrancarRecon();
+  }, 2500);
+} else {
+  micStatus.textContent = "Voz no soportada";
+  micBtn.disabled = true;
+  micBtn.classList.replace('bg-blue-500', 'bg-gray-400');
+}
+
+function arrancarRecon(intentos = 0) {
+  if (!recon || !micDeseado || isListening || hablando || juegoTerminado) return;
+  try {
+    recon.start();
+  } catch (err) {
+    if (intentos < 20) setTimeout(() => arrancarRecon(intentos + 1), 300);
+  }
+}
+
+function iniciarMicrofono() {
+  if (!recon || juegoTerminado) return;
+  micDeseado = true;
+  arrancarRecon();
+}
+
+function alternarMicrofono() {
+  if (micDeseado) detenerMicrofono();
+  else iniciarMicrofono();
+}
+
+function detenerMicrofono() {
+  micDeseado = false;
+  isListening = false;
+  try { if (recon) recon.stop(); } catch (e) {}
+  uiMic(false);
+}
+
+cargarNombres();
+pedirWakeLock();
+
+/* === CONEXIÓN BLINDADA GOOGLE ADMOB === */
+(function initAdMob() {
+  const cap = window.Capacitor;
+  if (!cap || !cap.isNativePlatform || !cap.isNativePlatform()) return;
+
+  const callAdMob = (method, options = {}) => {
+    if (cap.Plugins && cap.Plugins.AdMob && typeof cap.Plugins.AdMob[method] === 'function') {
+      return cap.Plugins.AdMob[method](options);
+    }
+    if (typeof cap.nativePromise === 'function') {
+      return cap.nativePromise('AdMob', method, options);
+    }
+    return Promise.reject('AdMob plugin no disponible');
+  };
+
+  document.body.style.paddingBottom = '64px';
+
+  const BANNER_ID = 'ca-app-pub-6672720525194990/4222281539';
+  const INTERSTITIAL_ID = 'ca-app-pub-6672720525194990/1155079157';
+  let interstitialReady = false;
+
+  async function preloadInterstitial() {
+    try {
+      await callAdMob('prepareInterstitial', { adId: INTERSTITIAL_ID, isTesting: false });
+      interstitialReady = true;
+    } catch (e) {
+      try {
+        await callAdMob('prepareInterstitial', { adId: INTERSTITIAL_ID, isTesting: true });
+        interstitialReady = true;
+      } catch (e2) { interstitialReady = false; }
+    }
+  }
+
+  async function showInterstitialThen(callback) {
+    try {
+      if (interstitialReady) {
+        await callAdMob('showInterstitial', {});
+        interstitialReady = false;
+        preloadInterstitial();
+      }
+    } catch (e) {}
+    if (callback) callback();
+  }
+
+  window.addEventListener('load', async () => {
+    try {
+      await callAdMob('initialize', { initializeForTesting: false });
+      try {
+        await callAdMob('showBanner', {
+          adId: BANNER_ID,
+          adSize: 'ADAPTIVE_BANNER',
+          position: 'BOTTOM_CENTER',
+          margin: 0,
+          isTesting: false
+        });
+      } catch (errReal) {
+        await callAdMob('showBanner', {
+          adId: BANNER_ID,
+          adSize: 'ADAPTIVE_BANNER',
+          position: 'BOTTOM_CENTER',
+          margin: 0,
+          isTesting: true
+        });
+      }
+      await preloadInterstitial();
+    } catch (e) {}
+  });
+
+  const origRecargar = window.recargarJuego;
+  window.recargarJuego = function() {
+    showInterstitialThen(() => origRecargar());
+  };
+})();
+</script>
+</body>
+</html>
