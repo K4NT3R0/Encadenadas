@@ -48,7 +48,6 @@ jobs:
           }
 
           async function run() {
-            // 1. Descargar listado limpio del Diccionario Castellano (RAE)
             const urls = [
               'https://raw.githubusercontent.com/JorgeDuenasLerin/diccionario-espanol-txt/master/0_palabras_todas.txt',
               'https://raw.githubusercontent.com/javierarce/palabras/master/listado-general.txt'
@@ -76,7 +75,6 @@ jobs:
             console.log("Palabras RAE empaquetadas:", wordArray.length);
             fs.writeFileSync('diccionario.json', JSON.stringify(wordArray));
 
-            // 2. Preparar imagenes (31541.png y 31336.png)
             const iconSrc = ['31541.png', '31341.png', 'icon-512.png', 'icon-192.png'].find(f => fs.existsSync(f));
             const splashSrc = ['31336.png', 'splash.png'].find(f => fs.existsSync(f)) || iconSrc;
 
@@ -85,7 +83,6 @@ jobs:
             await sharp(iconSrc).resize(512, 512).png().toFile('icon-maskable-512.png');
             await sharp(splashSrc).png().toFile('splash.png');
 
-            // 3. Copiar archivos a www/
             fs.mkdirSync('www', { recursive: true });
             for (const f of ['index.html', 'manifest.json', 'sw.js', 'diccionario.json', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'splash.png', '31541.png', '31336.png']) {
               if (fs.existsSync(f)) fs.copyFileSync(f, 'www/' + f);
@@ -325,18 +322,26 @@ jobs:
           sed -i 's/versionName "1.0"/versionName "1.0.${{ github.run_number }}"/g' android/app/build.gradle
           npx cap sync android
 
-      - name: Preparar o Generar Llave Digital (Keystore)
+      - name: Preparar y Verificar Llave Digital (Keystore Blindado)
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           PASS="${KEY_PASSWORD:-MiCuadrante2026!}"
+          KEYSTORE_FILE="$PWD/android/app/release.keystore"
+          rm -f "$KEYSTORE_FILE"
+
           if [ -n "$KEYSTORE_BASE64" ]; then
-            echo "$KEYSTORE_BASE64" | base64 --decode > android/app/release.keystore
-          else
-            keytool -genkeypair -v -keystore android/app/release.keystore -alias micuadrante -keyalg RSA -keysize 2048 -validity 10000 -storepass "$PASS" -keypass "$PASS" -dname "CN=K4NT3R0, OU=Apps, O=K4NT3R0, L=Cadiz, S=Andalucia, C=ES"
-            base64 -w 0 android/app/release.keystore > LLAVE_PARA_GITHUB_SECRETS.txt
-            cp android/app/release.keystore COPIA_SEGURIDAD_KEYSTORE.jks
+            echo "$KEYSTORE_BASE64" | tr -d ' \n\r\t' | base64 -d -i > "$KEYSTORE_FILE" || true
+          fi
+
+          # Comprobar si la llave decodificada es valida con la contrasena actual
+          if ! keytool -list -keystore "$KEYSTORE_FILE" -storepass "$PASS" -alias micuadrante >/dev/null 2>&1; then
+            echo "Generando llave digital limpia con alias micuadrante..."
+            rm -f "$KEYSTORE_FILE"
+            keytool -genkeypair -v -keystore "$KEYSTORE_FILE" -alias micuadrante -keyalg RSA -keysize 2048 -validity 10000 -storepass "$PASS" -keypass "$PASS" -dname "CN=K4NT3R0, OU=Apps, O=K4NT3R0, L=Cadiz, S=Andalucia, C=ES"
+            base64 -w 0 "$KEYSTORE_FILE" > LLAVE_PARA_GITHUB_SECRETS.txt
+            cp "$KEYSTORE_FILE" COPIA_SEGURIDAD_KEYSTORE.jks
           fi
 
       - name: Compilar APK y Firmar AAB Oficial para Google Play
@@ -344,10 +349,11 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           PASS="${KEY_PASSWORD:-MiCuadrante2026!}"
+          KEYSTORE_FILE="$PWD/android/app/release.keystore"
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug bundleRelease \
-            -Pandroid.injected.signing.store.file=$PWD/app/release.keystore \
+            -Pandroid.injected.signing.store.file="$KEYSTORE_FILE" \
             -Pandroid.injected.signing.store.password="$PASS" \
             -Pandroid.injected.signing.key.alias=micuadrante \
             -Pandroid.injected.signing.key.password="$PASS"
@@ -364,8 +370,8 @@ jobs:
           name: Encadenadas-GooglePlay-AAB-FIRMADO
           path: android/app/build/outputs/bundle/release/app-release.aab
 
-      - name: Subir Llave Nueva (Solo si no esta en Secrets)
-        if: ${{ env.KEYSTORE_BASE64 == '' }}
+      - name: Subir Llave Nueva (Si se regenero)
+        if: hashFiles('LLAVE_PARA_GITHUB_SECRETS.txt') != ''
         uses: actions/upload-artifact@v4
         with:
           name: GUARDA-ESTA-LLAVE-EN-SECRETS
