@@ -23,7 +23,7 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Descargar Diccionario Castellano RAE y preparar imagenes
+      - name: Descargar Diccionario Castellano RAE optimizado y preparar imagenes
         run: |
           npm init -y
           npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6 @capacitor-community/admob@6 sharp
@@ -49,8 +49,8 @@ jobs:
 
           async function run() {
             const urls = [
-              'https://raw.githubusercontent.com/JorgeDuenasLerin/diccionario-espanol-txt/master/0_palabras_todas.txt',
-              'https://raw.githubusercontent.com/javierarce/palabras/master/listado-general.txt'
+              'https://raw.githubusercontent.com/javierarce/palabras/master/listado-general.txt',
+              'https://raw.githubusercontent.com/JorgeDuenasLerin/diccionario-espanol-txt/master/0_palabras_todas.txt'
             ];
             let rawText = '';
             for (const u of urls) {
@@ -61,18 +61,18 @@ jobs:
             }
 
             const extras = ['jota', 'palabra', 'brasa', 'sapo', 'pomo', 'mono', 'dócil', 'jocoso', 'soñando'];
-            const regex = /^[a-záéíóúüñ]{2,18}$/;
+            const regex = /^[a-záéíóúüñ]{2,14}$/;
             const wordsSet = new Set(extras);
 
             if (rawText) {
               for (const line of rawText.split(/\r?\n/)) {
                 const w = line.trim().toLowerCase();
                 if (regex.test(w)) wordsSet.add(w);
+                if (wordsSet.size >= 95000) break;
               }
             }
 
             const wordArray = Array.from(wordsSet);
-            console.log("Palabras RAE empaquetadas:", wordArray.length);
             fs.writeFileSync('diccionario.json', JSON.stringify(wordArray));
 
             const iconSrc = ['31541.png', '31341.png', 'icon-512.png', 'icon-192.png'].find(f => fs.existsSync(f));
@@ -102,16 +102,10 @@ jobs:
 
           async function inject() {
             const resDir = 'android/app/src/main/res';
-
             for (const dirName of ['drawable-anydpi-v24', 'mipmap-anydpi-v26']) {
               const p = path.join(resDir, dirName);
               if (fs.existsSync(p)) fs.rmSync(p, { recursive: true, force: true });
             }
-            for (const fileName of ['drawable/ic_launcher_foreground.xml', 'drawable/ic_launcher_background.xml']) {
-              const p = path.join(resDir, fileName);
-              if (fs.existsSync(p)) fs.rmSync(p, { force: true });
-            }
-
             const anyDpi = path.join(resDir, 'mipmap-anydpi-v26');
             fs.mkdirSync(anyDpi, { recursive: true });
             const adaptiveXml = '<?xml version="1.0" encoding="utf-8"?><adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android"><background android:drawable="@color/ic_launcher_background"/><foreground android:drawable="@mipmap/ic_launcher_foreground"/></adaptive-icon>';
@@ -135,16 +129,11 @@ jobs:
             for (const m of mipmaps) {
               const dir = path.join(resDir, m.folder);
               fs.mkdirSync(dir, { recursive: true });
-
               await sharp('icon-512.png').resize(m.size, m.size).png().toFile(path.join(dir, 'ic_launcher.png'));
               await sharp('icon-512.png').resize(m.size, m.size).png().toFile(path.join(dir, 'ic_launcher_round.png'));
-
               const innerSize = Math.round(m.fg * 0.70);
               const innerBuf = await sharp('icon-512.png').resize(innerSize, innerSize).png().toBuffer();
-
-              await sharp({
-                create: { width: m.fg, height: m.fg, channels: 4, background: { r: 230, g: 185, b: 129, alpha: 1 } }
-              })
+              await sharp({ create: { width: m.fg, height: m.fg, channels: 4, background: { r: 230, g: 185, b: 129, alpha: 1 } } })
                 .composite([{ input: innerBuf, gravity: 'center' }])
                 .png()
                 .toFile(path.join(dir, 'ic_launcher_foreground.png'));
@@ -165,8 +154,16 @@ jobs:
 
           node inject-android-icons.js
 
-      - name: Activar Voz Nativa, Microfono y AdMob en Android
+      - name: Actualizar minSdkVersion a 24 y Configurar Manifest
         run: |
+          # Forzar minSdkVersion = 24 en variables globales de Android
+          GRADLE_FILE="android/build.gradle"
+          if grep -q "minSdkVersion" "$GRADLE_FILE"; then
+            sed -i 's/minSdkVersion = [0-9]*/minSdkVersion = 24/g' "$GRADLE_FILE"
+          else
+            sed -i '/ext {/a \ \ \ \ minSdkVersion = 24\n    compileSdkVersion = 34\n    targetSdkVersion = 34' "$GRADLE_FILE"
+          fi
+
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           sed -i 's|</manifest>|<uses-permission android:name="android.permission.RECORD_AUDIO" /><queries><intent><action android:name="android.speech.RecognitionService" /></intent><intent><action android:name="android.intent.action.TTS_SERVICE" /></intent></queries></manifest>|g' "$MANIFEST"
           sed -i 's|</application>|<meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6672720525194990~2961170754"/><meta-data android:name="com.google.android.gms.ads.DELAY_APP_MEASUREMENT_INIT" android:value="false"/></application>|g' "$MANIFEST"
@@ -322,38 +319,29 @@ jobs:
           sed -i 's/versionName "1.0"/versionName "1.0.${{ github.run_number }}"/g' android/app/build.gradle
           npx cap sync android
 
-      - name: Preparar y Verificar Llave Digital (Keystore Blindado)
+      - name: Preparar Llave Digital y Compilar APK + AAB
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           PASS="${KEY_PASSWORD:-MiCuadrante2026!}"
-          KEYSTORE_FILE="$PWD/android/app/release.keystore"
-          rm -f "$KEYSTORE_FILE"
+          KS_PATH="$PWD/android/app/release.keystore"
+          rm -f "$KS_PATH"
 
           if [ -n "$KEYSTORE_BASE64" ]; then
-            echo "$KEYSTORE_BASE64" | tr -d ' \n\r\t' | base64 -d -i > "$KEYSTORE_FILE" || true
+            echo "$KEYSTORE_BASE64" | tr -d ' \n\r\t' | base64 -d -i > "$KS_PATH" || true
           fi
 
-          # Comprobar si la llave decodificada es valida con la contrasena actual
-          if ! keytool -list -keystore "$KEYSTORE_FILE" -storepass "$PASS" -alias micuadrante >/dev/null 2>&1; then
-            echo "Generando llave digital limpia con alias micuadrante..."
-            rm -f "$KEYSTORE_FILE"
-            keytool -genkeypair -v -keystore "$KEYSTORE_FILE" -alias micuadrante -keyalg RSA -keysize 2048 -validity 10000 -storepass "$PASS" -keypass "$PASS" -dname "CN=K4NT3R0, OU=Apps, O=K4NT3R0, L=Cadiz, S=Andalucia, C=ES"
-            base64 -w 0 "$KEYSTORE_FILE" > LLAVE_PARA_GITHUB_SECRETS.txt
-            cp "$KEYSTORE_FILE" COPIA_SEGURIDAD_KEYSTORE.jks
+          if ! keytool -list -keystore "$KS_PATH" -storepass "$PASS" -alias micuadrante >/dev/null 2>&1; then
+            rm -f "$KS_PATH"
+            keytool -genkeypair -v -keystore "$KS_PATH" -alias micuadrante -keyalg RSA -keysize 2048 -validity 10000 -storepass "$PASS" -keypass "$PASS" -dname "CN=K4NT3R0, OU=Apps, O=K4NT3R0, L=Cadiz, S=Andalucia, C=ES"
           fi
 
-      - name: Compilar APK y Firmar AAB Oficial para Google Play
-        env:
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: |
-          PASS="${KEY_PASSWORD:-MiCuadrante2026!}"
-          KEYSTORE_FILE="$PWD/android/app/release.keystore"
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug bundleRelease \
-            -Pandroid.injected.signing.store.file="$KEYSTORE_FILE" \
+          ./gradlew assembleDebug
+          ./gradlew bundleRelease \
+            -Pandroid.injected.signing.store.file="$KS_PATH" \
             -Pandroid.injected.signing.store.password="$PASS" \
             -Pandroid.injected.signing.key.alias=micuadrante \
             -Pandroid.injected.signing.key.password="$PASS"
@@ -369,12 +357,3 @@ jobs:
         with:
           name: Encadenadas-GooglePlay-AAB-FIRMADO
           path: android/app/build/outputs/bundle/release/app-release.aab
-
-      - name: Subir Llave Nueva (Si se regenero)
-        if: hashFiles('LLAVE_PARA_GITHUB_SECRETS.txt') != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: GUARDA-ESTA-LLAVE-EN-SECRETS
-          path: |
-            LLAVE_PARA_GITHUB_SECRETS.txt
-            COPIA_SEGURIDAD_KEYSTORE.jks
