@@ -154,21 +154,33 @@ jobs:
 
           node inject-android-icons.js
 
-      - name: Configurar SDK 24, Permisos y MainActivity
+      - name: Configurar SDK 24 en variables.gradle y build.gradle
         run: |
-          # Modificar el gradle de la app de forma segura mediante Node.js tras el sync
           npx cap sync android
 
           cat << 'EOF' > fix-gradle.js
           const fs = require('fs');
-          const file = 'android/app/build.gradle';
-          if (fs.existsSync(file)) {
-            let content = fs.readFileSync(file, 'utf8');
-            content = content.replace(/minSdkVersion\s+[0-9]+/, 'minSdkVersion 24');
-            content = content.replace(/targetSdkVersion\s+[0-9]+/, 'targetSdkVersion 34');
-            content = content.replace(/compileSdkVersion\s+[0-9]+/, 'compileSdkVersion 34');
-            fs.writeFileSync(file, content, 'utf8');
-            console.log("build.gradle actualizado correctamente con minSdk 24");
+
+          // 1. Modificar android/variables.gradle (donde Capacitor 6 guarda minSdkVersion = 22)
+          const varsFile = 'android/variables.gradle';
+          if (fs.existsSync(varsFile)) {
+            let v = fs.readFileSync(varsFile, 'utf8');
+            v = v.replace(/minSdkVersion\s*=\s*[0-9]+/g, 'minSdkVersion = 24');
+            v = v.replace(/compileSdkVersion\s*=\s*[0-9]+/g, 'compileSdkVersion = 34');
+            v = v.replace(/targetSdkVersion\s*=\s*[0-9]+/g, 'targetSdkVersion = 34');
+            fs.writeFileSync(varsFile, v, 'utf8');
+            console.log("variables.gradle actualizado:", v);
+          }
+
+          // 2. Modificar android/app/build.gradle (sustituyendo tanto rootProject.ext.minSdkVersion como numeros)
+          const appFile = 'android/app/build.gradle';
+          if (fs.existsSync(appFile)) {
+            let c = fs.readFileSync(appFile, 'utf8');
+            c = c.replace(/minSdkVersion\s+[^\r\n]+/g, 'minSdkVersion 24');
+            c = c.replace(/targetSdkVersion\s+[^\r\n]+/g, 'targetSdkVersion 34');
+            c = c.replace(/compileSdkVersion\s+[^\r\n]+/g, 'compileSdkVersion 34');
+            fs.writeFileSync(appFile, c, 'utf8');
+            console.log("app/build.gradle actualizado con minSdkVersion 24");
           }
           EOF
           node fix-gradle.js
