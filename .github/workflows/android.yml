@@ -154,13 +154,13 @@ jobs:
 
           node inject-android-icons.js
 
-      - name: Configurar SDK 24 en variables.gradle y Permisos
+      - name: Configurar SDK 24 y API 36 en variables.gradle y Permisos
         run: |
           npx cap sync android
 
-          # Cambiar unicamente variables.gradle (sin tocar las llaves de app/build.gradle)
           sed -i 's/minSdkVersion = [0-9]*/minSdkVersion = 24/g' android/variables.gradle
-          cat android/variables.gradle
+          sed -i 's/compileSdkVersion = [0-9]*/compileSdkVersion = 36/g' android/variables.gradle
+          sed -i 's/targetSdkVersion = [0-9]*/targetSdkVersion = 36/g' android/variables.gradle
 
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           sed -i 's|</manifest>|<uses-permission android:name="android.permission.RECORD_AUDIO" /><queries><intent><action android:name="android.speech.RecognitionService" /></intent><intent><action android:name="android.intent.action.TTS_SERVICE" /></intent></queries></manifest>|g' "$MANIFEST"
