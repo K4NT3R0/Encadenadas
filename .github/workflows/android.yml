@@ -154,15 +154,13 @@ jobs:
 
           node inject-android-icons.js
 
-      - name: Actualizar minSdkVersion a 24 y Configurar Manifest
+      - name: Forzar MinSdk 24 en build.gradle y Configurar Permisos
         run: |
-          # Forzar minSdkVersion = 24 en variables globales de Android
-          GRADLE_FILE="android/build.gradle"
-          if grep -q "minSdkVersion" "$GRADLE_FILE"; then
-            sed -i 's/minSdkVersion = [0-9]*/minSdkVersion = 24/g' "$GRADLE_FILE"
-          else
-            sed -i '/ext {/a \ \ \ \ minSdkVersion = 24\n    compileSdkVersion = 34\n    targetSdkVersion = 34' "$GRADLE_FILE"
-          fi
+          # Modificar directamente android/app/build.gradle para asegurar minSdkVersion = 24
+          APP_GRADLE="android/app/build.gradle"
+          sed -i 's/minSdkVersion [0-9]*/minSdkVersion 24/g' "$APP_GRADLE"
+          sed -i 's/targetSdkVersion [0-9]*/targetSdkVersion 34/g' "$APP_GRADLE"
+          sed -i 's/compileSdkVersion [0-9]*/compileSdkVersion 34/g' "$APP_GRADLE"
 
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           sed -i 's|</manifest>|<uses-permission android:name="android.permission.RECORD_AUDIO" /><queries><intent><action android:name="android.speech.RecognitionService" /></intent><intent><action android:name="android.intent.action.TTS_SERVICE" /></intent></queries></manifest>|g' "$MANIFEST"
