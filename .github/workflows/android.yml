@@ -154,13 +154,24 @@ jobs:
 
           node inject-android-icons.js
 
-      - name: Forzar MinSdk 24 en build.gradle y Configurar Permisos
+      - name: Configurar SDK 24, Permisos y MainActivity
         run: |
-          # Modificar directamente android/app/build.gradle para asegurar minSdkVersion = 24
-          APP_GRADLE="android/app/build.gradle"
-          sed -i 's/minSdkVersion [0-9]*/minSdkVersion 24/g' "$APP_GRADLE"
-          sed -i 's/targetSdkVersion [0-9]*/targetSdkVersion 34/g' "$APP_GRADLE"
-          sed -i 's/compileSdkVersion [0-9]*/compileSdkVersion 34/g' "$APP_GRADLE"
+          # Modificar el gradle de la app de forma segura mediante Node.js tras el sync
+          npx cap sync android
+
+          cat << 'EOF' > fix-gradle.js
+          const fs = require('fs');
+          const file = 'android/app/build.gradle';
+          if (fs.existsSync(file)) {
+            let content = fs.readFileSync(file, 'utf8');
+            content = content.replace(/minSdkVersion\s+[0-9]+/, 'minSdkVersion 24');
+            content = content.replace(/targetSdkVersion\s+[0-9]+/, 'targetSdkVersion 34');
+            content = content.replace(/compileSdkVersion\s+[0-9]+/, 'compileSdkVersion 34');
+            fs.writeFileSync(file, content, 'utf8');
+            console.log("build.gradle actualizado correctamente con minSdk 24");
+          }
+          EOF
+          node fix-gradle.js
 
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           sed -i 's|</manifest>|<uses-permission android:name="android.permission.RECORD_AUDIO" /><queries><intent><action android:name="android.speech.RecognitionService" /></intent><intent><action android:name="android.intent.action.TTS_SERVICE" /></intent></queries></manifest>|g' "$MANIFEST"
@@ -315,7 +326,6 @@ jobs:
 
           sed -i "s/versionCode 1/versionCode ${{ github.run_number }}/g" android/app/build.gradle
           sed -i 's/versionName "1.0"/versionName "1.0.${{ github.run_number }}"/g' android/app/build.gradle
-          npx cap sync android
 
       - name: Preparar Llave Digital y Compilar APK + AAB
         env:
