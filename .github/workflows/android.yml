@@ -154,36 +154,13 @@ jobs:
 
           node inject-android-icons.js
 
-      - name: Configurar SDK 24 en variables.gradle y build.gradle
+      - name: Configurar SDK 24 en variables.gradle y Permisos
         run: |
           npx cap sync android
 
-          cat << 'EOF' > fix-gradle.js
-          const fs = require('fs');
-
-          // 1. Modificar android/variables.gradle (donde Capacitor 6 guarda minSdkVersion = 22)
-          const varsFile = 'android/variables.gradle';
-          if (fs.existsSync(varsFile)) {
-            let v = fs.readFileSync(varsFile, 'utf8');
-            v = v.replace(/minSdkVersion\s*=\s*[0-9]+/g, 'minSdkVersion = 24');
-            v = v.replace(/compileSdkVersion\s*=\s*[0-9]+/g, 'compileSdkVersion = 34');
-            v = v.replace(/targetSdkVersion\s*=\s*[0-9]+/g, 'targetSdkVersion = 34');
-            fs.writeFileSync(varsFile, v, 'utf8');
-            console.log("variables.gradle actualizado:", v);
-          }
-
-          // 2. Modificar android/app/build.gradle (sustituyendo tanto rootProject.ext.minSdkVersion como numeros)
-          const appFile = 'android/app/build.gradle';
-          if (fs.existsSync(appFile)) {
-            let c = fs.readFileSync(appFile, 'utf8');
-            c = c.replace(/minSdkVersion\s+[^\r\n]+/g, 'minSdkVersion 24');
-            c = c.replace(/targetSdkVersion\s+[^\r\n]+/g, 'targetSdkVersion 34');
-            c = c.replace(/compileSdkVersion\s+[^\r\n]+/g, 'compileSdkVersion 34');
-            fs.writeFileSync(appFile, c, 'utf8');
-            console.log("app/build.gradle actualizado con minSdkVersion 24");
-          }
-          EOF
-          node fix-gradle.js
+          # Cambiar unicamente variables.gradle (sin tocar las llaves de app/build.gradle)
+          sed -i 's/minSdkVersion = [0-9]*/minSdkVersion = 24/g' android/variables.gradle
+          cat android/variables.gradle
 
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           sed -i 's|</manifest>|<uses-permission android:name="android.permission.RECORD_AUDIO" /><queries><intent><action android:name="android.speech.RecognitionService" /></intent><intent><action android:name="android.intent.action.TTS_SERVICE" /></intent></queries></manifest>|g' "$MANIFEST"
