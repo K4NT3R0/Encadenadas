@@ -10,7 +10,6 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script>
-// Cierre de portada independiente: funciona siempre aunque falle cualquier script posterior
 window.cerrarPortada = function() {
   var p = document.getElementById('pantalla-portada');
   if (p) {
@@ -20,7 +19,7 @@ window.cerrarPortada = function() {
   }
 };
 window.addEventListener('DOMContentLoaded', function() {
-  setTimeout(window.cerrarPortada, 3000);
+  setTimeout(window.cerrarPortada, 2500);
 });
 </script>
 <style>
@@ -40,16 +39,9 @@ input { -webkit-user-select: text; user-select: text; }
   border: 4px solid #a67c52;
   box-shadow: inset 0 0 10px rgba(139,90,43,0.5), 0 8px 15px rgba(0,0,0,0.2);
 }
-.cadena-eslabon {
-  background: repeating-linear-gradient(90deg, #94a3b8, #cbd5e1 50%, #94a3b8);
-  border: 2px solid #64748b;
-}
 @keyframes flotar {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-4px); }
-}
-@media (prefers-reduced-motion: reduce) {
-  * { animation: none !important; transition: none !important; }
 }
 ::-webkit-scrollbar { display: none; }
 </style>
@@ -58,7 +50,7 @@ input { -webkit-user-select: text; user-select: text; }
 
 <div class="absolute inset-0 z-0 pointer-events-none opacity-20 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PHBhdGggZD0iTTAgMGg0MHY0MEgweiIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik0wIDIwaDQwTTIwIDB2NDAiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLW9wYWNpdHk9Ii4xIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=')]"></div>
 
-<!-- PANTALLA INICIAL A PANTALLA COMPLETA -->
+<!-- PORTADA -->
 <div id="pantalla-portada" onclick="this.style.display='none'" ontouchstart="this.style.display='none'" class="fixed inset-0 z-[60] bg-[#ffedd5] flex flex-col items-center justify-end cursor-pointer transition-opacity duration-300">
   <img src="splash.png" onerror="this.onerror=null;this.src='31336.png'" alt="Palabras Encadenadas" class="absolute inset-0 w-full h-full object-cover pointer-events-none">
   <button type="button" onclick="document.getElementById('pantalla-portada').style.display='none'" class="relative z-10 mb-10 bg-[#8b5a2b] border-4 border-[#ffedd5] text-white font-black text-xl px-8 py-3 rounded-full shadow-2xl animate-bounce">
@@ -66,43 +58,40 @@ input { -webkit-user-select: text; user-select: text; }
   </button>
 </div>
 
-<!-- MENÚ PRINCIPAL -->
-<div id="modal-menu" role="dialog" aria-modal="true" aria-labelledby="titulo-menu" class="absolute inset-0 z-50 bg-black/60 flex flex-col items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-  <div class="madera-textura w-full max-w-sm max-h-[92dvh] overflow-y-auto rounded-3xl p-5 flex flex-col items-center shadow-2xl transform transition-transform scale-100">
+<!-- MENÚ PRINCIPAL (Con onclick y oninput directos garantizados) -->
+<div id="modal-menu" role="dialog" aria-modal="true" class="fixed inset-0 z-50 bg-black/60 flex flex-col items-center justify-center p-4 backdrop-blur-sm">
+  <div class="madera-textura w-full max-w-sm max-h-[92dvh] overflow-y-auto rounded-3xl p-5 flex flex-col items-center shadow-2xl">
     <img src="icon-192.png" onerror="this.onerror=null;this.src='31541.png'" alt="Icono Encadenadas" class="w-16 h-16 rounded-2xl shadow-lg mb-1 border-2 border-[#a67c52]">
-    <h1 id="titulo-menu" class="text-2xl font-black text-slate-800 drop-shadow-md tracking-wide">PALABRAS</h1>
+    <h1 class="text-2xl font-black text-slate-800 drop-shadow-md tracking-wide">PALABRAS</h1>
     <h2 class="text-xl font-black text-orange-600 drop-shadow-md mb-2 tracking-wide">ENCADENADAS</h2>
 
-    <!-- Récord en el menú -->
     <div class="bg-[#5c3a21] text-amber-300 font-black text-sm px-4 py-1 rounded-full shadow mb-3 border border-[#a67c52]">
       🏆 Récord actual: <span id="menu-record">0</span> palabras
     </div>
 
-    <!-- Selector de número de jugadores (2 a 6) -->
     <label class="text-xs font-extrabold text-[#5c3a21] mb-1 text-center uppercase tracking-wider">Número de jugadores (Multijugador):</label>
     <div id="selector-num-jugadores" class="grid grid-cols-5 gap-1.5 w-full mb-3">
-      <button type="button" data-num="2" class="num-jug-btn bg-orange-600 text-white font-black py-1.5 rounded-xl border-2 border-[#5c3a21] shadow">2</button>
-      <button type="button" data-num="3" class="num-jug-btn bg-white text-slate-700 font-black py-1.5 rounded-xl border-2 border-orange-300 shadow">3</button>
-      <button type="button" data-num="4" class="num-jug-btn bg-white text-slate-700 font-black py-1.5 rounded-xl border-2 border-orange-300 shadow">4</button>
-      <button type="button" data-num="5" class="num-jug-btn bg-white text-slate-700 font-black py-1.5 rounded-xl border-2 border-orange-300 shadow">5</button>
-      <button type="button" data-num="6" class="num-jug-btn bg-white text-slate-700 font-black py-1.5 rounded-xl border-2 border-orange-300 shadow">6</button>
+      <button type="button" id="btn-num-2" onclick="window.elegirJugadores(2)" class="bg-orange-600 text-white font-black py-2 rounded-xl border-2 border-[#5c3a21] shadow active:scale-95">2</button>
+      <button type="button" id="btn-num-3" onclick="window.elegirJugadores(3)" class="bg-white text-slate-700 font-black py-2 rounded-xl border-2 border-orange-300 shadow active:scale-95">3</button>
+      <button type="button" id="btn-num-4" onclick="window.elegirJugadores(4)" class="bg-white text-slate-700 font-black py-2 rounded-xl border-2 border-orange-300 shadow active:scale-95">4</button>
+      <button type="button" id="btn-num-5" onclick="window.elegirJugadores(5)" class="bg-white text-slate-700 font-black py-2 rounded-xl border-2 border-orange-300 shadow active:scale-95">5</button>
+      <button type="button" id="btn-num-6" onclick="window.elegirJugadores(6)" class="bg-white text-slate-700 font-black py-2 rounded-xl border-2 border-orange-300 shadow active:scale-95">6</button>
     </div>
 
-    <!-- Contenedor dinámico de inputs de Jugador 1 a 6 -->
     <div id="contenedor-inputs-jugadores" class="w-full space-y-2 mb-4 max-h-44 overflow-y-auto pr-1">
-      <input type="text" id="input-nombre-1" maxlength="20" placeholder="Jugador 1 (Humano)" autocomplete="off" class="w-full py-1.5 px-3 rounded-xl text-center font-bold text-base text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
-      <input type="text" id="input-nombre-2" maxlength="20" placeholder="Jugador 2" autocomplete="off" class="w-full py-1.5 px-3 rounded-xl text-center font-bold text-base text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
-      <input type="text" id="input-nombre-3" maxlength="20" placeholder="Jugador 3" autocomplete="off" class="hidden w-full py-1.5 px-3 rounded-xl text-center font-bold text-base text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
-      <input type="text" id="input-nombre-4" maxlength="20" placeholder="Jugador 4" autocomplete="off" class="hidden w-full py-1.5 px-3 rounded-xl text-center font-bold text-base text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
-      <input type="text" id="input-nombre-5" maxlength="20" placeholder="Jugador 5" autocomplete="off" class="hidden w-full py-1.5 px-3 rounded-xl text-center font-bold text-base text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
-      <input type="text" id="input-nombre-6" maxlength="20" placeholder="Jugador 6" autocomplete="off" class="hidden w-full py-1.5 px-3 rounded-xl text-center font-bold text-base text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
+      <input type="text" id="input-nombre-1" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 1 (Humano)" autocomplete="off" class="w-full py-1.5 px-3 rounded-xl text-center font-bold text-base text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
+      <input type="text" id="input-nombre-2" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 2" autocomplete="off" class="w-full py-1.5 px-3 rounded-xl text-center font-bold text-base text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
+      <input type="text" id="input-nombre-3" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 3" autocomplete="off" class="hidden w-full py-1.5 px-3 rounded-xl text-center font-bold text-base text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
+      <input type="text" id="input-nombre-4" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 4" autocomplete="off" class="hidden w-full py-1.5 px-3 rounded-xl text-center font-bold text-base text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
+      <input type="text" id="input-nombre-5" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 5" autocomplete="off" class="hidden w-full py-1.5 px-3 rounded-xl text-center font-bold text-base text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
+      <input type="text" id="input-nombre-6" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 6" autocomplete="off" class="hidden w-full py-1.5 px-3 rounded-xl text-center font-bold text-base text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
     </div>
 
-    <button id="btn-pve-menu" class="w-full bg-white border-4 border-orange-500 rounded-xl py-2.5 px-4 mb-2.5 text-lg font-extrabold text-blue-600 shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
-      <span>👤 Humano vs 🤖 Máquina (RAE)</span>
+    <button type="button" id="btn-pve-menu" onclick="window.arranqueVinculado('pve')" class="w-full bg-white border-4 border-orange-500 rounded-xl py-2.5 px-4 mb-2.5 text-lg font-extrabold text-blue-600 shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
+      <span id="txt-pve">👤 Jugador 1 vs 🤖 Máquina (RAE)</span>
     </button>
-    <button id="btn-pvp-menu" class="w-full bg-white border-4 border-blue-500 rounded-xl py-2.5 px-4 text-lg font-extrabold text-orange-600 shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
-      <span>👥 Humano vs Humano (2)</span>
+    <button type="button" id="btn-pvp-menu" onclick="window.arranqueVinculado('pvp')" class="w-full bg-white border-4 border-blue-500 rounded-xl py-2.5 px-4 text-lg font-extrabold text-orange-600 shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
+      <span id="txt-pvp">👥 Jugador 1 vs Jugador 2</span>
     </button>
     <p class="mt-3 text-xs font-bold text-[#5c3a21] text-center">
       Manos libres: di tu palabra, «¿qué significa?», «me rindo» o «otra vez» al terminar.
@@ -110,17 +99,15 @@ input { -webkit-user-select: text; user-select: text; }
   </div>
 </div>
 
-<!-- CABECERA DEL JUEGO CON BOTÓN HOME 🏠 Y CONTADOR DE RÉCORD -->
+<!-- CABECERA CON BOTÓN HOME 🏠 Y CONTADOR DE RÉCORD -->
 <header class="z-10 w-full max-w-md flex flex-col items-center mt-1 relative">
   <div class="madera-textura text-center py-2 px-4 rounded-2xl w-full relative shadow-lg flex flex-col items-center">
-    <!-- Botón Home 🏠 -->
-    <button id="btn-home" type="button" aria-label="Volver al menú principal" title="Inicio" class="absolute left-3 top-2.5 bg-[#5c3a21] hover:bg-[#3e2716] text-white text-xl w-10 h-10 rounded-xl shadow-md border-2 border-[#a67c52] flex items-center justify-center active:scale-90 transition-transform">
+    <button id="btn-home" type="button" onclick="window.irAlMenuHome()" aria-label="Volver al menú" class="absolute left-3 top-2.5 bg-[#5c3a21] hover:bg-[#3e2716] text-white text-xl w-10 h-10 rounded-xl shadow-md border-2 border-[#a67c52] flex items-center justify-center active:scale-90 transition-transform">
       🏠
     </button>
 
     <h1 class="text-xl font-black text-slate-800 drop-shadow-md tracking-wide">ENCADENADAS</h1>
 
-    <!-- Marcadores de Palabras y Récord -->
     <div class="flex items-center justify-center gap-2 mt-1">
       <div class="bg-white/90 text-slate-800 text-xs font-black px-3 py-0.5 rounded-full border border-[#a67c52] shadow-sm">
         🔗 Palabras: <span id="contador-palabras" class="text-blue-600">0</span>
@@ -143,35 +130,96 @@ input { -webkit-user-select: text; user-select: text; }
   <div class="absolute -top-6 right-4 text-3xl transform rotate-12 pointer-events-none" aria-hidden="true">✏️</div>
   <div class="absolute -top-4 left-6 text-2xl transform -rotate-12 pointer-events-none" aria-hidden="true">🧽</div>
 
-  <button id="btn-rendirse" class="absolute -top-14 right-4 bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-full shadow-lg border-2 border-red-800 flex items-center gap-1 active:scale-95 transition-transform z-30">
+  <button id="btn-rendirse" type="button" onclick="window.meRindo()" class="absolute -top-14 right-4 bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-full shadow-lg border-2 border-red-800 flex items-center gap-1 active:scale-95 transition-transform z-30">
     <span aria-hidden="true">🏳️</span> Me rindo
   </button>
 
   <div id="alert-box" role="alert" class="hidden absolute -top-16 left-0 right-0 mx-auto w-11/12 bg-red-500 text-white text-center py-2 px-4 rounded-xl font-bold shadow-lg transition-all duration-300 opacity-0 z-50"></div>
 
   <div id="controls-container" class="flex items-center gap-3">
-    <button id="mic-btn" aria-label="Activar o desactivar el micrófono" class="bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white p-4 rounded-full shadow-lg transition-transform transform active:scale-95 flex-shrink-0 disabled:opacity-50 disabled:active:scale-100">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+    <button id="mic-btn" type="button" onclick="window.alternarMicrofono()" aria-label="Micrófono" class="bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white p-4 rounded-full shadow-lg transition-transform transform active:scale-95 flex-shrink-0 disabled:opacity-50">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
       </svg>
     </button>
-    <div class="flex-1 bg-white rounded-2xl flex items-center px-4 py-2 shadow-inner border-2 border-orange-200 focus-within:border-orange-500 transition-colors">
-      <input type="text" id="text-input" aria-label="Tu palabra" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Di o escribe tu palabra..." class="w-full bg-transparent outline-none text-lg font-bold text-slate-700 placeholder-slate-400 disabled:bg-transparent">
-      <button id="send-btn" aria-label="Enviar palabra" class="ml-2 text-orange-500 font-black text-xl disabled:opacity-50">➔</button>
+    <div class="flex-1 bg-white rounded-2xl flex items-center px-4 py-2 shadow-inner border-2 border-orange-200 focus-within:border-orange-500">
+      <input type="text" id="text-input" onkeydown="if(event.key==='Enter')window.procesarEntrada(this.value)" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Di o escribe tu palabra..." class="w-full bg-transparent outline-none text-lg font-bold text-slate-700 placeholder-slate-400">
+      <button id="send-btn" type="button" onclick="window.procesarEntrada(document.getElementById('text-input').value)" class="ml-2 text-orange-500 font-black text-xl">➔</button>
     </div>
   </div>
 
   <div id="fin-juego-botones" class="hidden flex gap-2">
-    <button id="btn-otra-vez" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-black text-lg py-3.5 rounded-2xl shadow-lg border-4 border-green-700 active:scale-95 transition-transform uppercase tracking-wide">
+    <button id="btn-otra-vez" type="button" onclick="window.reiniciarMismaPartida()" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-black text-lg py-3.5 rounded-2xl shadow-lg border-4 border-green-700 active:scale-95 transition-transform uppercase tracking-wide">
       🔄 Otra vez (o di «otra vez»)
     </button>
   </div>
 
-  <div class="text-center mt-2 text-orange-200 text-sm font-semibold" id="mic-status" aria-live="polite">Micrófono apagado</div>
+  <div class="text-center mt-2 text-orange-200 text-sm font-semibold" id="mic-status">Micrófono apagado</div>
 </footer>
 
+<!-- SCRIPT 1: CONTROL INMEDIATO DEL MENÚ Y JUGADORES (2 A 6) -->
 <script>
-// ---------- Referencias al DOM ----------
+window.numJugadores = 2;
+
+window.elegirJugadores = function(n) {
+  window.numJugadores = n;
+  try { localStorage.setItem('encadenadas_num_jug', String(n)); } catch (e) {}
+  for (var i = 2; i <= 6; i++) {
+    var btn = document.getElementById('btn-num-' + i);
+    if (btn) {
+      btn.className = (i === n)
+        ? "bg-orange-600 text-white font-black py-2 rounded-xl border-2 border-[#5c3a21] shadow active:scale-95"
+        : "bg-white text-slate-700 font-black py-2 rounded-xl border-2 border-orange-300 shadow active:scale-95";
+    }
+  }
+  for (var j = 1; j <= 6; j++) {
+    var inp = document.getElementById('input-nombre-' + j);
+    if (inp) {
+      if (j <= n) inp.classList.remove('hidden');
+      else inp.classList.add('hidden');
+    }
+  }
+  window.actualizarTextoBotones();
+};
+
+window.actualizarTextoBotones = function() {
+  var inp1 = document.getElementById('input-nombre-1');
+  var inp2 = document.getElementById('input-nombre-2');
+  var n1 = (inp1 && inp1.value.trim()) ? inp1.value.trim() : "Jugador 1";
+  var n2 = (inp2 && inp2.value.trim()) ? inp2.value.trim() : "Jugador 2";
+  var tPve = document.getElementById('txt-pve');
+  var tPvp = document.getElementById('txt-pvp');
+  if (tPve) tPve.textContent = "👤 " + n1 + " vs 🤖 Máquina (RAE)";
+  if (tPvp) {
+    if (window.numJugadores === 2) {
+      tPvp.textContent = "👤 " + n1 + " vs 👤 " + n2;
+    } else {
+      tPvp.textContent = "👥 Jugar " + window.numJugadores + " Jugadores";
+    }
+  }
+};
+
+window.cargarDatosMenu = function() {
+  try {
+    var rec = parseInt(localStorage.getItem('encadenadas_record') || '0', 10) || 0;
+    document.getElementById('menu-record').textContent = rec;
+    document.getElementById('record-palabras').textContent = rec;
+    var guardados = parseInt(localStorage.getItem('encadenadas_num_jug') || '2', 10);
+    if (guardados >= 2 && guardados <= 6) window.numJugadores = guardados;
+    for (var i = 1; i <= 6; i++) {
+      var clave = (i === 1) ? 'encadenadas_n1' : (i === 2) ? 'encadenadas_n2' : ('encadenadas_n' + i);
+      var val = localStorage.getItem(clave) || "";
+      var el = document.getElementById('input-nombre-' + i);
+      if (el) el.value = val;
+    }
+  } catch (e) {}
+  window.elegirJugadores(window.numJugadores);
+};
+window.cargarDatosMenu();
+</script>
+
+<!-- SCRIPT 2: MOTOR PRINCIPAL DEL JUEGO Y VOZ -->
+<script>
 const gameBoard = document.getElementById('game-board');
 const micBtn = document.getElementById('mic-btn');
 const micStatus = document.getElementById('mic-status');
@@ -182,35 +230,20 @@ const modalMenu = document.getElementById('modal-menu');
 const indicadorTurno = document.getElementById('indicador-turno');
 const btnRendirse = document.getElementById('btn-rendirse');
 const finJuegoBotones = document.getElementById('fin-juego-botones');
-const btnOtraVez = document.getElementById('btn-otra-vez');
-const btnHome = document.getElementById('btn-home');
-const btnPveMenu = document.getElementById('btn-pve-menu');
-const btnPvpMenu = document.getElementById('btn-pvp-menu');
 const controlsContainer = document.getElementById('controls-container');
 const spanContadorPalabras = document.getElementById('contador-palabras');
 const spanRecordPalabras = document.getElementById('record-palabras');
 const spanMenuRecord = document.getElementById('menu-record');
-const botonesNumJugadores = document.querySelectorAll('.num-jug-btn');
-const inputsJugadores = [
-  document.getElementById('input-nombre-1'),
-  document.getElementById('input-nombre-2'),
-  document.getElementById('input-nombre-3'),
-  document.getElementById('input-nombre-4'),
-  document.getElementById('input-nombre-5'),
-  document.getElementById('input-nombre-6')
-];
 
-// ---------- Estado ----------
 let historialPalabras = [];
 let silabaObjetivo = "";
-let modoActual = ""; // "" ( en menú ) | "pve" | "pvp"
+let modoActual = "";
 let esTurnoMaquina = false;
-let numJugadores = 2;
 let nombres = ["Jugador 1", "Jugador 2"];
 let jugadorActual = 0;
 let juegoTerminado = false;
 let contadorPalabras = 0;
-let recordPalabras = 0;
+let recordPalabras = parseInt(localStorage.getItem('encadenadas_record') || '0', 10) || 0;
 let recordSuperadoEnPartida = false;
 
 let recon = null;
@@ -220,8 +253,6 @@ let hablando = false;
 let ignorarVozHasta = 0;
 let alertTimer = null;
 let cancelarHablaPrevia = null;
-let wakeLock = null;
-let silencio = null;
 
 const COLORES_JUGADORES = [
   { bg: "bg-blue-600", border: "border-orange-500", text: "text-blue-600", sil: "text-orange-500" },
@@ -231,16 +262,6 @@ const COLORES_JUGADORES = [
   { bg: "bg-indigo-600", border: "border-indigo-500", text: "text-indigo-700", sil: "text-indigo-500" },
   { bg: "bg-teal-600", border: "border-teal-500", text: "text-teal-700", sil: "text-teal-500" }
 ];
-
-// ---------- Récord y Contador ----------
-function cargarRecord() {
-  try {
-    recordPalabras = parseInt(localStorage.getItem('encadenadas_record') || '0', 10) || 0;
-  } catch (e) {
-    recordPalabras = 0;
-  }
-  actualizarMarcadoresUI();
-}
 
 function actualizarMarcadoresUI() {
   spanContadorPalabras.textContent = contadorPalabras;
@@ -258,7 +279,7 @@ function incrementarContadorPalabras() {
   actualizarMarcadoresUI();
 }
 
-// ---------- Diccionario Castellano Local (RAE) ----------
+// Diccionario RAE
 let setDiccionarioRAE = null;
 let arrayDiccionarioRAE = null;
 let cargandoDiccionario = null;
@@ -269,7 +290,7 @@ async function cargarDiccionarioRAE() {
   cargandoDiccionario = (async () => {
     try {
       const res = await fetch('diccionario.json');
-      if (!res.ok) throw new Error('No local dict');
+      if (!res.ok) throw new Error('No dict');
       const lista = await res.json();
       arrayDiccionarioRAE = lista;
       setDiccionarioRAE = new Set(lista);
@@ -280,79 +301,850 @@ async function cargarDiccionarioRAE() {
   })();
   return cargandoDiccionario;
 }
-setTimeout(cargarDiccionarioRAE, 600);
+setTimeout(cargarDiccionarioRAE, 500);
 
-// ---------- Diccionario de Significados (Local + Wikcionario / Wikipedia) ----------
+// Definiciones locales y online
 const DEFINICIONES_LOCALES = {
-  'palabra': 'Unidad lingüística con significado propio que empleamos para hablar o escribir.',
-  'camino': 'Vía o tierra transitada para ir de un lugar a otro.',
-  'verano': 'Estación más calurosa del año, situada entre la primavera y el otoño.',
+  'palabra': 'Unidad lingüística con significado propio que usamos para hablar o escribir.',
+  'camino': 'Tierra o vía por donde se transita habitualmente de un lugar a otro.',
+  'verano': 'Estación más calurosa del año, entre la primavera y el otoño.',
   'planeta': 'Cuerpo celeste sin luz propia que gira alrededor de una estrella.',
-  'tesoro': 'Conjunto de dinero, joyas u objetos de gran valor guardados o ocultos.',
-  'espejo': 'Superficie de cristal pulido que refleja la imagen de los objetos situados delante.',
-  'castillo': 'Edificio fortificado con murallas y torres para la defensa.',
-  'naranja': 'Fruto del naranjo, de forma redonda, cáscara rugosa y pulpa jugosa.',
-  'pelota': 'Bola elástica que se utiliza en numerosos deportes y juegos.',
+  'tesoro': 'Conjunto de dinero, joyas u objetos de valor guardados o escondidos.',
+  'espejo': 'Superficie de cristal que refleja la imagen de los objetos situados delante.',
+  'castillo': 'Edificio fortificado con murallas y torres defensivas.',
+  'naranja': 'Fruto redondo del naranjo, de corteza anaranjada y pulpa jugosa.',
+  'pelota': 'Bola elástica utilizada en numerosos juegos y deportes.',
   'regalo': 'Obsequio que se entrega a otra persona como muestra de afecto.',
-  'melón': 'Fruto grande de corteza surcada y pulpa dulce y muy jugosa.',
-  'loco': 'Que ha perdido la razón o actúa de manera imprudente y disparatada.',
-  'casa': 'Edificación construida para ser habitada por personas.',
-  'perro': 'Mamífero doméstico de la familia de los cánidos, famoso por su lealtad.',
-  'roca': 'Material mineral sólido y duro que forma parte de la corteza terrestre.',
-  'sapo': 'Anfibio sin cola, de cuerpo robusto y piel rugosa.'
+  'melón': 'Fruto grande de corteza surcada y pulpa dulce y jugosa.',
+  'loco': 'Que ha perdido la razón o actúa de forma imprudente.',
+  'casa': 'Edificación construida para ser habitada.',
+  'perro': 'Mamífero doméstico de la familia de los cánidos.',
+  'roca': 'Material mineral sólido y duro de la corteza terrestre.',
+  'sapo': 'Anfibio sin cola, de cuerpo grueso y piel rugosa.'
 };
 
 function limpiarDefinicionTexto(texto) {
   if (!texto) return "";
-  let limpio = texto
-    .replace(/\[.*?\]/g, '')
-    .replace(/\(.*?\)/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-  const primeraFrase = limpio.split(/\.\s+/)[0];
-  if (primeraFrase && primeraFrase.length > 8) {
-    return primeraFrase.endsWith('.') ? primeraFrase : primeraFrase + '.';
+  let limpio = texto.replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').replace(/\s+/g, ' ').trim();
+  const primera = limpio.split(/\.\s+/)[0];
+  if (primera && primera.length > 8) {
+    return primera.endsWith('.') ? primera : (primera + '.');
   }
-  return limpio.slice(0, 180);
+  return limpio.slice(0, 170);
 }
 
 async function obtenerSignificadoPalabra(palabra) {
   const p = (palabra || "").toLowerCase().trim();
-  if (!p) return "No hay ninguna palabra activa todavía.";
+  if (!p) return "Aún no hay palabra en el tablero.";
   if (DEFINICIONES_LOCALES[p]) return DEFINICIONES_LOCALES[p];
 
-  // 1. Consultar Wikcionario en español (definiciones de diccionario RAE/castellano)
   try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 3200);
-    const urlWik = `https://es.wiktionary.org/w/api.php?action=query&prop=extracts&explaintext=1&titles=${encodeURIComponent(p)}&format=json&origin=*`;
-    const res = await fetch(urlWik, { signal: controller.signal });
-    clearTimeout(timer);
+    const urlWik = 'https://es.wiktionary.org/w/api.php?action=query&prop=extracts&explaintext=1&titles=' + encodeURIComponent(p) + '&format=json&origin=*';
+    const res = await fetch(urlWik);
     if (res.ok) {
       const data = await res.json();
-      const pages = data?.query?.pages || {};
-      const page = Object.values(pages)[0];
-      if (page && page.extract) {
-        const lineas = page.extract.split('\n').map(l => l.trim()).filter(Boolean);
-        // Buscar la primera acepción numerada (ej. "1 En...", ";1:", "1.")
-        for (const linea of lineas) {
-          if (/^;?\d+[\s.:]/.test(linea)) {
-            const acepcion = limpiarDefinicionTexto(linea.replace(/^;?\d+[\s.:]+/, ''));
-            if (acepcion.length > 10) return acepcion;
+      const pages = (data && data.query && data.query.pages) ? data.query.pages : {};
+      const keys = Object.keys(pages);
+      if (keys.length > 0 && pages[keys[0]].extract) {
+        const lineas = pages[keys[0]].extract.split('\n').map(l => l.trim()).filter(Boolean);
+        for (let i = 0; i < lineas.length; i++) {
+          if (/^;?\d+[\s.:]/.test(lineas[i])) {
+            const acep = limpiarDefinicionTexto(lineas[i].replace(/^;?\d+[\s.:]+/, ''));
+            if (acep.length > 10) return acep;
           }
         }
-        // O primera línea descriptiva que no sea un encabezado "== ... =="
-        const descriptiva = lineas.find(l => !l.startsWith('=') && l.length > 20 && !l.toLowerCase().includes('etimología'));
-        if (descriptiva) {
-          const def = limpiarDefinicionTexto(descriptiva);
-          if (def.length > 10) return def;
+        const desc = lineas.find(l => !l.startsWith('=') && l.length > 20 && !l.toLowerCase().includes('etimología'));
+        if (desc) {
+          const d = limpiarDefinicionTexto(desc);
+          if (d.length > 10) return d;
         }
       }
     }
   } catch (e) {}
 
-  // 2. Respaldo en Wikipedia en español
   try {
-    const controller2 = new AbortController();
-    const timer2 = setTimeout(() => controller2.abort(), 2800);
-    const urlWiki = `https://es.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(p)}
+    const urlWiki = 'https://es.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(p);
+    const res2 = await fetch(urlWiki);
+    if (res2.ok) {
+      const data2 = await res2.json();
+      if (data2 && data2.extract) return limpiarDefinicionTexto(data2.extract);
+    }
+  } catch (e) {}
+
+  const sils = silabear(p);
+  return 'Palabra válida del diccionario castellano formada por las sílabas ' + sils.join('-') + '.';
+}
+
+const MAPA_VOZ_EXACTO = {
+  'b': 'be', 'v': 'uve', 'c': 'ce', 'd': 'de', 'f': 'efe', 'g': 'ge',
+  'h': 'hache', 'j': 'jota', 'k': 'ka', 'l': 'ele', 'll': 'elle',
+  'm': 'eme', 'n': 'ene', 'ñ': 'eñe', 'p': 'pe', 'q': 'cu', 'r': 'erre',
+  's': 'ese', 't': 'te', 'w': 'uve', 'x': 'equis', 'z': 'zeta',
+  '0': 'cero', '1': 'uno', '2': 'dos', '3': 'tres', '4': 'cuatro',
+  '5': 'cinco', '6': 'seis', '7': 'siete', '8': 'ocho', '9': 'nueve',
+  '10': 'diez', '11': 'once', '12': 'doce', '13': 'trece', '14': 'catorce',
+  '15': 'quince', '20': 'veinte', '30': 'treinta', '100': 'cien', '1000': 'mil'
+};
+
+function normalizarTokenVoz(token, silabaObjNorm) {
+  let limpio = (token || "").trim().toLowerCase().replace(/[.,!?;:¡¿"']/g, '');
+  if (!limpio) return "";
+  if (MAPA_VOZ_EXACTO[limpio]) {
+    if (limpio === 'c' && silabaObjNorm === 'se') return 'se';
+    if ((limpio === 'b' || limpio === 'v') && silabaObjNorm === 've') return 've';
+    if ((limpio === 'b' || limpio === 'v') && silabaObjNorm === 'be') return 'be';
+    if (limpio === 'z' && silabaObjNorm === 'ce') return 'ce';
+    return MAPA_VOZ_EXACTO[limpio];
+  }
+  return limpio;
+}
+
+const SOLO_LETRAS = /^[a-záéíóúüñ]+$/;
+const diccionarioEmojis = {
+  'brasa': '🔥', 'sapo': '🐸', 'pomo': '🚪', 'mono': '🐵',
+  'camino': '🛤️', 'planeta': '🌍', 'tesoro': '💎', 'castillo': '🏰',
+  'pelota': '⚽', 'casa': '🏠', 'coche': '🚗', 'pato': '🦆', 'taza': '☕',
+  'lupa': '🔍', 'vaca': '🐄', 'zorro': '🦊', 'perro': '🐶', 'llave': '🔑',
+  'roca': '🪨', 'rápido': '⚡', 'jota': '💃'
+};
+const palabrasArranque = ['palabra', 'camino', 'verano', 'planeta', 'tesoro', 'espejo', 'castillo', 'naranja', 'pelota', 'regalo'];
+const coletillas = [
+  "Mmm...", "A ver, a ver...", "Déjame pensar...",
+  "Esta es difícil...", "Voy a buscar en el diccionario...",
+  "A ver qué se me ocurre...", "Interesante..."
+];
+
+function hablar(texto, callback) {
+  if (cancelarHablaPrevia) { cancelarHablaPrevia(); cancelarHablaPrevia = null; }
+  hablando = true;
+
+  if (window.AndroidVoice && isListening) {
+    try { window.AndroidVoice.stopListening(); } catch (e) {}
+    isListening = false;
+  }
+
+  let terminado = false;
+  let timer = null;
+  const cancelar = () => {
+    terminado = true;
+    clearTimeout(timer);
+    if (window.AndroidVoice) { try { window.AndroidVoice.stopSpeak(); } catch (e) {} }
+    else if ('speechSynthesis' in window) { try { window.speechSynthesis.cancel(); } catch (e) {} }
+  };
+  const fin = () => {
+    if (terminado) return;
+    terminado = true;
+    clearTimeout(timer);
+    if (cancelarHablaPrevia === cancelar) cancelarHablaPrevia = null;
+    hablando = false;
+    ignorarVozHasta = Date.now() + 600;
+    if (callback) callback();
+    if (micDeseado && modoActual !== "" && !esTurnoMaquina) {
+      setTimeout(arrancarRecon, 250);
+    }
+  };
+  cancelarHablaPrevia = cancelar;
+  timer = setTimeout(fin, (texto.length * 100) + 2200);
+
+  if (window.AndroidVoice) {
+    window._onNativeTtsDone = fin;
+    try {
+      window.AndroidVoice.speak(texto);
+      return;
+    } catch (e) {}
+  }
+
+  if (!('speechSynthesis' in window)) {
+    fin();
+    return;
+  }
+  try {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(texto);
+    utterance.lang = 'es-ES';
+    utterance.rate = 1.0;
+    utterance.pitch = 1.05;
+    utterance.onend = fin;
+    utterance.onerror = fin;
+    window.speechSynthesis.speak(utterance);
+  } catch (e) {
+    fin();
+  }
+}
+
+function SinTildes(str) {
+  return str.replace(/ñ/g, "\u0001").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\u0001/g, "ñ");
+}
+
+async function verificarPalabraEnServidor(palabra) {
+  await cargarDiccionarioRAE();
+  const p = palabra.toLowerCase().trim();
+  if (setDiccionarioRAE) {
+    if (setDiccionarioRAE.has(p)) return p;
+    const pSin = SinTildes(p);
+    const encontrada = arrayDiccionarioRAE.find(w => SinTildes(w) === pSin);
+    return encontrada || false;
+  }
+  try {
+    const res = await fetch('https://api.datamuse.com/words?sp=' + encodeURIComponent(p) + '&max=10&v=es');
+    const data = await res.json();
+    const ok = data.some(item => item.word.toLowerCase() === p);
+    return ok ? p : false;
+  } catch (e) {
+    return p;
+  }
+}
+
+async function obtenerPalabrasCandidatasRAE(prefijoNormalizado) {
+  await cargarDiccionarioRAE();
+  if (arrayDiccionarioRAE) {
+    return arrayDiccionarioRAE.filter(p => {
+      if (p.length < 3 || historialPalabras.includes(p)) return false;
+      if (!SOLO_LETRAS.test(p)) return false;
+      const silabas = silabear(p);
+      return silabas.length >= 2 && normalizarSilaba(silabas[0]) === prefijoNormalizado;
+    });
+  }
+  return [];
+}
+
+function silabear(palabra) {
+  let p = palabra.toLowerCase().trim();
+  const vocalesFuertes = 'aeoáéóíú';
+  const inseparables = ['br','bl','cr','cl','dr','fr','fl','gr','gl','pr','pl','tr','ch','ll','rr'];
+  let silabas = [];
+  let silabaActual = "";
+  const isVocal = (c) => 'aeiouáéíóúü'.includes(c);
+  const isConsonante = (c) => c && !isVocal(c);
+
+  for (let i = 0; i < p.length; i++) {
+    let char = p[i];
+    silabaActual += char;
+    let next1 = p[i+1] || ''; let next2 = p[i+2] || ''; let next3 = p[i+3] || '';
+    if (isVocal(char)) {
+      if (isVocal(next1) && vocalesFuertes.includes(char) && vocalesFuertes.includes(next1)) {
+        silabas.push(silabaActual); silabaActual = ""; continue;
+      }
+      if (isConsonante(next1)) {
+        if (isVocal(next2)) {
+          silabas.push(silabaActual); silabaActual = "";
+        } else if (isConsonante(next2)) {
+          if (isVocal(next3)) {
+            let grupo = next1 + next2;
+            if (inseparables.includes(grupo)) {
+              silabas.push(silabaActual); silabaActual = "";
+            } else {
+              silabaActual += next1; silabas.push(silabaActual); silabaActual = ""; i++;
+            }
+          } else if (isConsonante(next3)) {
+            let grupo = next2 + next3;
+            if (inseparables.includes(grupo)) {
+              silabaActual += next1; silabas.push(silabaActual); silabaActual = ""; i++;
+            } else {
+              silabaActual += next1 + next2; silabas.push(silabaActual); silabaActual = ""; i += 2;
+            }
+          }
+        }
+      }
+    }
+  }
+  if (silabaActual !== "") {
+    if (silabas.length > 0 && !/[aeiouáéíóúü]/.test(silabaActual)) {
+      silabas[silabas.length - 1] += silabaActual;
+    } else {
+      silabas.push(silabaActual);
+    }
+  }
+  const hardcoded = {
+    'palabra': ['pa','la','bra'], 'brasa': ['bra','sa'], 'sapo': ['sa','po'],
+    'pomo': ['po','mo'], 'mono': ['mo','no'], 'noto': ['no','to'],
+    'tope': ['to','pe'], 'perro': ['pe','rro'], 'roca': ['ro','ca'],
+    'carta': ['car','ta'], 'taco': ['ta','co'], 'camino': ['ca','mi','no'],
+    'verano': ['ve','ra','no'], 'planeta': ['pla','ne','ta'], 'tesoro': ['te','so','ro'],
+    'espejo': ['es','pe','jo'], 'castillo': ['cas','ti','llo'], 'naranja': ['na','ran','ja']
+  };
+  return hardcoded[p] || silabas;
+}
+
+function normalizarSilaba(silaba) {
+  return (silaba || "")
+    .toLowerCase()
+    .replace(/ñ/g, "\u0001")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\u0001/g, "ñ")
+    .replace(/rr/g, "r");
+}
+
+function mostrarAlerta(mensaje, duracion = 3800) {
+  clearTimeout(alertTimer);
+  alertBox.textContent = mensaje;
+  alertBox.classList.remove('hidden');
+  requestAnimationFrame(() => alertBox.classList.remove('opacity-0'));
+  alertTimer = setTimeout(() => {
+    alertBox.classList.add('opacity-0');
+    alertTimer = setTimeout(() => alertBox.classList.add('hidden'), 300);
+  }, duracion);
+}
+
+function actualizarInterfazTurno(texto, colorBg) {
+  indicadorTurno.textContent = texto;
+  indicadorTurno.className = "mt-1.5 text-sm font-bold text-white rounded-full px-4 py-0.5 inline-block shadow-md transition-colors " + colorBg;
+}
+
+function mostrarTurnoHumano() {
+  const estilo = COLORES_JUGADORES[jugadorActual % COLORES_JUGADORES.length];
+  actualizarInterfazTurno("🗣️ Turno de " + nombres[jugadorActual] + " (" + silabaObjetivo.toUpperCase() + ")", estilo.bg);
+}
+
+function bloquearInputs(bloquear) {
+  textInput.disabled = bloquear;
+  sendBtn.disabled = bloquear;
+  if (bloquear) {
+    btnRendirse.classList.add('opacity-50', 'pointer-events-none');
+  } else {
+    btnRendirse.classList.remove('opacity-50', 'pointer-events-none');
+  }
+}
+
+function mostrarFinJuego() {
+  juegoTerminado = true;
+  esTurnoMaquina = false;
+  controlsContainer.classList.add('hidden');
+  btnRendirse.classList.add('hidden');
+  finJuegoBotones.classList.remove('hidden');
+  if (micDeseado) {
+    micStatus.textContent = "Di «otra vez» para reiniciar la partida";
+    setTimeout(arrancarRecon, 300);
+  }
+}
+
+window.irAlMenuHome = function() {
+  if (cancelarHablaPrevia) { cancelarHablaPrevia(); cancelarHablaPrevia = null; }
+  hablando = false;
+  modoActual = "";
+  juegoTerminado = false;
+  esTurnoMaquina = false;
+  detenerMicrofono();
+  controlsContainer.classList.remove('hidden');
+  btnRendirse.classList.remove('hidden');
+  finJuegoBotones.classList.add('hidden');
+  actualizarMarcadoresUI();
+  modalMenu.style.display = 'flex';
+  modalMenu.classList.remove('hidden');
+};
+
+window.reiniciarMismaPartida = function() {
+  if (!modoActual) {
+    window.irAlMenuHome();
+    return;
+  }
+  controlsContainer.classList.remove('hidden');
+  btnRendirse.classList.remove('hidden');
+  finJuegoBotones.classList.add('hidden');
+  jugadorActual = 0;
+  juegoTerminado = false;
+  esTurnoMaquina = false;
+  contadorPalabras = 0;
+  recordSuperadoEnPartida = false;
+  actualizarMarcadoresUI();
+  if (micDeseado) iniciarMicrofono();
+  hablar("¡Vamos otra vez!", () => iniciarJuegoTablero());
+};
+
+function agregarPalabraUI(palabra, silabas, esInicial = false, indiceColor = 0, etiqueta = "", definicion = "") {
+  const wrapObj = document.createElement('div');
+  wrapObj.className = "flex flex-col items-center animate-[flotar_3s_ease-in-out_infinite] w-full relative my-2";
+
+  if (!esInicial) {
+    const link = document.createElement('div');
+    link.className = "h-8 w-4 border-l-4 border-r-4 border-slate-400 bg-slate-200 rounded-full my-1 absolute -top-6 z-0 shadow-sm";
+    wrapObj.appendChild(link);
+  }
+
+  const estilo = COLORES_JUGADORES[indiceColor % COLORES_JUGADORES.length];
+  const wordDiv = document.createElement('div');
+  wordDiv.className = "flex items-center text-3xl sm:text-4xl font-extrabold uppercase z-10 px-6 py-2.5 rounded-full bg-white border-4 " + estilo.border + " shadow-xl relative " + estilo.text + " transition-all";
+
+  silabas.forEach((sil, index) => {
+    const span = document.createElement('span');
+    span.textContent = sil;
+    if (index === 0 && !esInicial) span.className = estilo.sil;
+    else if (index === silabas.length - 1) span.className = "text-green-600";
+    wordDiv.appendChild(span);
+  });
+
+  if (diccionarioEmojis[palabra.toLowerCase()]) {
+    const emojiSpan = document.createElement('span');
+    emojiSpan.textContent = diccionarioEmojis[palabra.toLowerCase()];
+    emojiSpan.className = "absolute -top-6 -right-6 text-5xl animate-bounce drop-shadow-lg";
+    wordDiv.appendChild(emojiSpan);
+  }
+
+  wrapObj.appendChild(wordDiv);
+
+  if (etiqueta) {
+    const tag = document.createElement('div');
+    tag.textContent = etiqueta;
+    tag.className = "mt-1 z-10 text-xs font-extrabold text-white bg-purple-600 rounded-full px-3 py-0.5 shadow";
+    wrapObj.appendChild(tag);
+  }
+
+  const defContainer = document.createElement('div');
+  defContainer.className = "definicion-palabra-slot w-11/12 max-w-xs";
+  if (definicion) {
+    defContainer.innerHTML = '<div class="mt-1.5 bg-amber-50 border-2 border-[#a67c52] text-[#5c3a21] text-xs font-bold rounded-xl px-3 py-2 shadow text-center">📖 <strong>' + palabra.toUpperCase() + ':</strong> ' + definicion + '</div>';
+  }
+  wrapObj.appendChild(defContainer);
+
+  gameBoard.appendChild(wrapObj);
+  gameBoard.scrollTop = gameBoard.scrollHeight;
+}
+
+function mostrarDefinicionEnUltimaPalabraUI(palabra, definicion) {
+  const slots = gameBoard.querySelectorAll('.definicion-palabra-slot');
+  if (slots.length > 0) {
+    const ultimoSlot = slots[slots.length - 1];
+    ultimoSlot.innerHTML = '<div class="mt-1.5 bg-amber-50 border-2 border-[#a67c52] text-[#5c3a21] text-xs font-bold rounded-xl px-3 py-2 shadow text-center">📖 <strong>' + palabra.toUpperCase() + ':</strong> ' + definicion + '</div>';
+    gameBoard.scrollTop = gameBoard.scrollHeight;
+  }
+}
+
+async function explicarUltimaPalabra() {
+  if (historialPalabras.length === 0 || juegoTerminado) return;
+  const ultima = historialPalabras[historialPalabras.length - 1];
+  bloquearInputs(true);
+  actualizarInterfazTurno('📖 Buscando significado de "' + ultima + '"...', "bg-amber-600");
+
+  const significado = await obtenerSignificadoPalabra(ultima);
+  mostrarDefinicionEnUltimaPalabraUI(ultima, significado);
+
+  hablar(ultima + ": " + significado + " Sigue el turno de " + nombres[jugadorActual] + ", empieza por " + silabaObjetivo + ".", () => {
+    mostrarTurnoHumano();
+    bloquearInputs(false);
+    arrancarRecon();
+  });
+}
+
+window.arranqueVinculado = function(modo) {
+  window.cerrarPortada();
+  try {
+    for (let i = 1; i <= 6; i++) {
+      const clave = (i === 1) ? 'encadenadas_n1' : (i === 2) ? 'encadenadas_n2' : ('encadenadas_n' + i);
+      const el = document.getElementById('input-nombre-' + i);
+      if (el) localStorage.setItem(clave, el.value.trim());
+    }
+  } catch (e) {}
+
+  if (modo === 'pve') {
+    const el1 = document.getElementById('input-nombre-1');
+    nombres = [(el1 && el1.value.trim()) ? el1.value.trim() : "Jugador 1"];
+  } else {
+    nombres = [];
+    for (let i = 1; i <= window.numJugadores; i++) {
+      const el = document.getElementById('input-nombre-' + i);
+      nombres.push((el && el.value.trim()) ? el.value.trim() : ("Jugador " + i));
+    }
+  }
+
+  modoActual = modo;
+  jugadorActual = 0;
+  juegoTerminado = false;
+  esTurnoMaquina = false;
+  contadorPalabras = 0;
+  recordSuperadoEnPartida = false;
+  actualizarMarcadoresUI();
+
+  controlsContainer.classList.remove('hidden');
+  btnRendirse.classList.remove('hidden');
+  finJuegoBotones.classList.add('hidden');
+
+  modalMenu.classList.add('hidden');
+  modalMenu.style.display = 'none';
+
+  iniciarMicrofono();
+  iniciarJuegoTablero();
+};
+
+function iniciarJuegoTablero() {
+  historialPalabras = [];
+  gameBoard.innerHTML = '';
+
+  const palabraInicial = palabrasArranque[Math.floor(Math.random() * palabrasArranque.length)];
+  const silabasIniciales = silabear(palabraInicial);
+
+  historialPalabras.push(palabraInicial);
+  silabaObjetivo = silabasIniciales[silabasIniciales.length - 1];
+  agregarPalabraUI(palabraInicial, silabasIniciales, true, 0);
+
+  esTurnoMaquina = false;
+  mostrarTurnoHumano();
+  bloquearInputs(false);
+
+  const listaSaludo = nombres.length > 1
+    ? (nombres.slice(0, -1).join(', ') + ' y ' + nombres[nombres.length - 1])
+    : nombres[0];
+
+  hablar("¡Hola " + listaSaludo + "! Primera palabra: " + palabraInicial + ".", () => {
+    arrancarRecon();
+  });
+}
+
+async function juegaMaquina() {
+  if (modoActual !== 'pve' || juegoTerminado) return;
+  actualizarInterfazTurno("📚 Buscando en la RAE...", "bg-purple-500");
+
+  const prefijo = normalizarSilaba(silabaObjetivo);
+  const candidatas = await obtenerPalabrasCandidatasRAE(prefijo);
+
+  if (candidatas.length > 0) {
+    const elegida = candidatas[Math.floor(Math.random() * candidatas.length)];
+    await window.procesarEntrada(elegida, true);
+  } else {
+    actualizarInterfazTurno("¡Victoria de " + nombres[0] + "!", "bg-green-500");
+    hablar("¡No quedan palabras en el diccionario que empiecen por " + silabaObjetivo + "! ¡Has ganado, " + nombres[0] + "! Di otra vez para jugar de nuevo.", () => {
+      mostrarFinJuego();
+    });
+  }
+}
+
+window.meRindo = async function() {
+  if (esTurnoMaquina || textInput.disabled || juegoTerminado) return;
+  bloquearInputs(true);
+
+  const rindiente = nombres[jugadorActual];
+  let textoGanador = (modoActual === 'pve')
+    ? "¡Gana la máquina!"
+    : (nombres.length === 2 ? ("¡Gana " + nombres[1 - jugadorActual] + "!") : ("¡Fin de la partida por rendición de " + rindiente + "!"));
+
+  actualizarInterfazTurno("Consultando RAE y significado...", "bg-red-500");
+
+  hablar(rindiente + " se rinde. Voy a buscar una palabra válida y su significado...", async () => {
+    const prefijo = normalizarSilaba(silabaObjetivo);
+    const candidatas = await obtenerPalabrasCandidatasRAE(prefijo);
+
+    if (candidatas.length > 0) {
+      const elegida = candidatas[Math.floor(Math.random() * candidatas.length)];
+      const silabasElegida = silabear(elegida);
+      const significado = await obtenerSignificadoPalabra(elegida);
+
+      historialPalabras.push(elegida);
+      silabaObjetivo = silabasElegida[silabasElegida.length - 1];
+      agregarPalabraUI(elegida, silabasElegida, false, 1, "💡 Esta valía (RAE)", significado);
+      actualizarInterfazTurno("🏆 " + textoGanador, "bg-green-600");
+
+      hablar("Podrías haber dicho: " + elegida + ". Significado: " + significado + " " + textoGanador + " Di otra vez para reiniciar.", mostrarFinJuego);
+    } else {
+      actualizarInterfazTurno("🤝 Empate técnico", "bg-gray-600");
+      hablar("No existía ninguna palabra en la RAE con esa sílaba. ¡Empate técnico! Di otra vez para reiniciar.", mostrarFinJuego);
+    }
+  });
+};
+
+function esPreguntaDeSignificado(texto) {
+  const limpio = SinTildes((texto || "").toLowerCase().trim());
+  return /(que significa|eso que es|que es eso|cual es su significado|cual es el significado|que quiere decir|significado)/.test(limpio);
+}
+
+window.procesarEntrada = async function(texto, esMaquina = false) {
+  if (juegoTerminado) return;
+  if (!esMaquina && (esTurnoMaquina || textInput.disabled)) return;
+
+  const textoBruto = (texto || "").trim();
+  if (!textoBruto) return;
+
+  if (!esMaquina && esPreguntaDeSignificado(textoBruto)) {
+    textInput.value = "";
+    await explicarUltimaPalabra();
+    return;
+  }
+
+  if (!esMaquina && /^otra vez$/i.test(textoBruto)) {
+    textInput.value = "";
+    mostrarAlerta("La orden «otra vez» solo funciona cuando acaba la partida.");
+    hablar("La partida aún no ha terminado. Debe empezar por " + silabaObjetivo + ".");
+    return;
+  }
+
+  const s2 = normalizarSilaba(silabaObjetivo);
+  let palabra = normalizarTokenVoz(textoBruto, s2);
+  if (!palabra) return;
+
+  if (!SOLO_LETRAS.test(palabra)) {
+    mostrarAlerta("Escribe una sola palabra, solo con letras.");
+    textInput.value = "";
+    return;
+  }
+  if (historialPalabras.includes(palabra)) {
+    mostrarAlerta("La palabra '" + palabra + "' ya se ha usado.");
+    textInput.value = "";
+    hablar("La palabra " + palabra + " ya se ha usado. Prueba con otra.");
+    return;
+  }
+
+  bloquearInputs(true);
+  textInput.value = "";
+
+  let silabasWord = silabear(palabra);
+  let s1 = normalizarSilaba(silabasWord[0]);
+
+  let jugadaValida = false;
+  let vozError = "";
+  if (s1 !== s2) {
+    mostrarAlerta("¡Error! Debe empezar por '" + silabaObjetivo.toUpperCase() + "', no por '" + silabasWord[0] + "'.");
+    vozError = palabra + ", no. Debe empezar por " + silabaObjetivo.toUpperCase() + ", no por " + silabasWord[0] + ". Inténtalo otra vez.";
+  } else if (esMaquina) {
+    jugadaValida = true;
+  } else {
+    actualizarInterfazTurno("Consultando RAE...", "bg-yellow-500");
+    const formaRAE = await verificarPalabraEnServidor(palabra);
+    if (formaRAE && typeof formaRAE === 'string') {
+      palabra = formaRAE;
+      silabasWord = silabear(palabra);
+      jugadaValida = true;
+    } else {
+      mostrarAlerta("'" + palabra + "' no está en el diccionario RAE.");
+      vozError = palabra + " no viene en el diccionario. Inténtalo otra vez.";
+    }
+  }
+
+  if (!jugadaValida) {
+    mostrarTurnoHumano();
+    bloquearInputs(false);
+    hablar(vozError, () => arrancarRecon());
+    return;
+  }
+
+  const previoRecord = recordPalabras;
+  incrementarContadorPalabras();
+  const etiquetaRecord = (contadorPalabras > previoRecord && previoRecord > 0) ? "🔥 ¡Nuevo Récord!" : "";
+
+  historialPalabras.push(palabra);
+  silabaObjetivo = silabasWord[silabasWord.length - 1];
+
+  const indiceColor = esMaquina ? 1 : jugadorActual;
+  agregarPalabraUI(palabra, silabasWord, false, indiceColor, etiquetaRecord);
+
+  if (modoActual === 'pve') {
+    if (esMaquina) {
+      hablar(palabra, () => {
+        esTurnoMaquina = false;
+        mostrarTurnoHumano();
+        bloquearInputs(false);
+        arrancarRecon();
+      });
+    } else {
+      esTurnoMaquina = true;
+      actualizarInterfazTurno("🤖 Máquina pensando...", "bg-purple-500");
+      const coletilla = coletillas[Math.floor(Math.random() * coletillas.length)];
+      hablar(palabra + ". " + coletilla, () => {
+        setTimeout(juegaMaquina, 400);
+      });
+    }
+  } else {
+    jugadorActual = (jugadorActual + 1) % nombres.length;
+    hablar(palabra, () => {
+      mostrarTurnoHumano();
+      bloquearInputs(false);
+      arrancarRecon();
+    });
+  }
+};
+
+// Reconocimiento de Voz
+function uiMic(encendido) {
+  micBtn.classList.toggle('bg-red-500', encendido);
+  micBtn.classList.toggle('bg-blue-500', !encendido);
+  micBtn.classList.toggle('animate-pulse', encendido);
+  if (!encendido) micStatus.textContent = "Micrófono apagado";
+  else if (juegoTerminado) micStatus.textContent = "Escuchando... (di «otra vez» para reiniciar)";
+  else micStatus.textContent = "Escuchando...";
+}
+
+function procesarFraseVoz(rawInput) {
+  if (modoActual === "" || hablando || Date.now() < ignorarVozHasta) return;
+  const alternativas = (rawInput || "").split('|').map(s => s.trim().toLowerCase()).filter(Boolean);
+  if (alternativas.length === 0) return;
+
+  if (juegoTerminado) {
+    for (const alt of alternativas) {
+      if (/\b(otra vez|jugar otra vez|otra partida)\b/.test(alt)) {
+        window.reiniciarMismaPartida();
+        return;
+      }
+    }
+    return;
+  }
+
+  if (esTurnoMaquina) return;
+
+  for (const alt of alternativas) {
+    if (/^(otra vez|jugar otra vez)$/.test(alt)) {
+      mostrarAlerta("«Otra vez» solo funciona cuando acaba la partida.");
+      hablar("La orden otra vez solo funciona cuando haya acabado la partida. Te toca con " + silabaObjetivo + ".");
+      return;
+    }
+  }
+
+  for (const alt of alternativas) {
+    if (esPreguntaDeSignificado(alt)) {
+      explicarUltimaPalabra();
+      return;
+    }
+  }
+
+  for (const alt of alternativas) {
+    if (/\b(me rindo|rindo|rendirse)\b/.test(alt)) {
+      window.meRindo();
+      return;
+    }
+  }
+
+  const sObj = normalizarSilaba(silabaObjetivo);
+  let mejorPalabra = null;
+  for (const alt of alternativas) {
+    const primera = normalizarTokenVoz(alt.split(/\s+/)[0], sObj);
+    if (primera && SOLO_LETRAS.test(primera)) {
+      const sils = silabear(primera);
+      if (sils.length > 0 && normalizarSilaba(sils[0]) === sObj) {
+        mejorPalabra = primera;
+        break;
+      }
+    }
+  }
+
+  if (!mejorPalabra) {
+    mejorPalabra = normalizarTokenVoz(alternativas[0].split(/\s+/)[0], sObj);
+  }
+  if (mejorPalabra) {
+    window.procesarEntrada(mejorPalabra);
+  }
+}
+
+try {
+  if (window.AndroidVoice) {
+    recon = {
+      start() { window.AndroidVoice.startListening(); },
+      stop() { window.AndroidVoice.stopListening(); }
+    };
+    window._onNativeSrStart = () => { isListening = true; uiMic(true); };
+    window._onNativeSrResult = (frase) => { procesarFraseVoz(frase); };
+    window._onNativeSrError = (err) => {
+      isListening = false;
+      if (err === 'not-allowed') {
+        micDeseado = false;
+        uiMic(false);
+        micStatus.textContent = "Permiso de micrófono denegado";
+      }
+    };
+    window._onNativeSrEnd = () => {
+      isListening = false;
+      if (micDeseado && modoActual !== "" && !hablando) setTimeout(arrancarRecon, 350);
+      else if (!micDeseado) uiMic(false);
+    };
+  } else if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recon = new SpeechRecognition();
+    recon.lang = 'es-ES';
+    recon.continuous = true;
+    recon.interimResults = false;
+    recon.maxAlternatives = 5;
+    recon.onstart = () => { isListening = true; uiMic(true); };
+    recon.onresult = (event) => {
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const result = event.results[i];
+        if (!result.isFinal) continue;
+        const alts = [];
+        for (let j = 0; j < result.length; j++) alts.push(result[j].transcript);
+        procesarFraseVoz(alts.join('|'));
+      }
+    };
+    recon.onend = () => {
+      isListening = false;
+      if (micDeseado && modoActual !== "") setTimeout(arrancarRecon, 300);
+      else uiMic(false);
+    };
+  }
+} catch (e) {}
+
+setInterval(() => {
+  if (micDeseado && !isListening && !hablando && modoActual !== "" && document.visibilityState === 'visible') {
+    arrancarRecon();
+  }
+}, 2500);
+
+function arrancarRecon(intentos = 0) {
+  if (!recon || !micDeseado || isListening || hablando || modoActual === "") return;
+  try {
+    recon.start();
+  } catch (err) {
+    if (intentos < 15) setTimeout(() => arrancarRecon(intentos + 1), 300);
+  }
+}
+
+function iniciarMicrofono() {
+  if (!recon || modoActual === "") return;
+  micDeseado = true;
+  arrancarRecon();
+}
+
+window.alternarMicrofono = function() {
+  if (micDeseado) detenerMicrofono();
+  else iniciarMicrofono();
+};
+
+function detenerMicrofono() {
+  micDeseado = false;
+  isListening = false;
+  try { if (recon) recon.stop(); } catch (e) {}
+  uiMic(false);
+}
+</script>
+
+<!-- SCRIPT 3: GOOGLE ADMOB INDEPENDIENTE -->
+<script>
+(function initAdMob() {
+  try {
+    const cap = window.Capacitor;
+    if (!cap || !cap.isNativePlatform || !cap.isNativePlatform()) return;
+
+    const callAdMob = (method, options = {}) => {
+      if (cap.Plugins && cap.Plugins.AdMob && typeof cap.Plugins.AdMob[method] === 'function') {
+        return cap.Plugins.AdMob[method](options);
+      }
+      if (typeof cap.nativePromise === 'function') {
+        return cap.nativePromise('AdMob', method, options);
+      }
+      return Promise.reject('No AdMob');
+    };
+
+    document.body.style.paddingBottom = '64px';
+    const BANNER_ID = 'ca-app-pub-6672720525194990/4222281539';
+    const INTERSTITIAL_ID = 'ca-app-pub-6672720525194990/1155079157';
+    let interstitialReady = false;
+
+    async function preloadInterstitial() {
+      try {
+        await callAdMob('prepareInterstitial', { adId: INTERSTITIAL_ID, isTesting: false });
+        interstitialReady = true;
+      } catch (e) { interstitialReady = false; }
+    }
+
+    window.addEventListener('load', async () => {
+      try {
+        await callAdMob('initialize', { initializeForTesting: false });
+        await callAdMob('showBanner', {
+          adId: BANNER_ID,
+          adSize: 'ADAPTIVE_BANNER',
+          position: 'BOTTOM_CENTER',
+          margin: 0,
+          isTesting: false
+        });
+        await preloadInterstitial();
+      } catch (e) {}
+    });
+  } catch (e) {}
+})();
+</script>
+</body>
+</html>
