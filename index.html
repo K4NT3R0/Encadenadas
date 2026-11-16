@@ -58,7 +58,7 @@ input { -webkit-user-select: text; user-select: text; }
   </button>
 </div>
 
-<!-- MENÚ PRINCIPAL (Máximo 4 jugadores) -->
+<!-- MENÚ PRINCIPAL (MÁXIMO 4 JUGADORES) -->
 <div id="modal-menu" role="dialog" aria-modal="true" class="fixed inset-0 z-50 bg-black/60 flex flex-col items-center justify-center p-4 backdrop-blur-sm">
   <div class="madera-textura w-full max-w-sm max-h-[92dvh] overflow-y-auto rounded-3xl p-5 flex flex-col items-center shadow-2xl">
     <img src="icon-192.png" onerror="this.onerror=null;this.src='31541.png'" alt="Icono Encadenadas" class="w-16 h-16 rounded-2xl shadow-lg mb-1 border-2 border-[#a67c52]">
@@ -69,14 +69,14 @@ input { -webkit-user-select: text; user-select: text; }
       🏆 Récord actual: <span id="menu-record">0</span> palabras
     </div>
 
-    <label class="text-xs font-extrabold text-[#5c3a21] mb-1 text-center uppercase tracking-wider">Número de jugadores (2 a 4):</label>
+    <label class="text-xs font-extrabold text-[#5c3a21] mb-1 text-center uppercase tracking-wider">Número de jugadores (Máximo 4):</label>
     <div id="selector-num-jugadores" class="grid grid-cols-3 gap-2 w-full mb-3">
-      <button type="button" id="btn-num-2" onclick="window.elegirJugadores(2)" class="bg-orange-600 text-white font-black py-2 rounded-xl border-2 border-[#5c3a21] shadow active:scale-95">2</button>
-      <button type="button" id="btn-num-3" onclick="window.elegirJugadores(3)" class="bg-white text-slate-700 font-black py-2 rounded-xl border-2 border-orange-300 shadow active:scale-95">3</button>
-      <button type="button" id="btn-num-4" onclick="window.elegirJugadores(4)" class="bg-white text-slate-700 font-black py-2 rounded-xl border-2 border-orange-300 shadow active:scale-95">4</button>
+      <button type="button" id="btn-num-2" onclick="window.elegirJugadores(2)" class="bg-orange-600 text-white font-black py-2 rounded-xl border-2 border-[#5c3a21] shadow active:scale-95">2 Jugadores</button>
+      <button type="button" id="btn-num-3" onclick="window.elegirJugadores(3)" class="bg-white text-slate-700 font-black py-2 rounded-xl border-2 border-orange-300 shadow active:scale-95">3 Jugadores</button>
+      <button type="button" id="btn-num-4" onclick="window.elegirJugadores(4)" class="bg-white text-slate-700 font-black py-2 rounded-xl border-2 border-orange-300 shadow active:scale-95">4 Jugadores</button>
     </div>
 
-    <div id="contenedor-inputs-jugadores" class="w-full space-y-2 mb-4 max-h-44 overflow-y-auto pr-1">
+    <div id="contenedor-inputs-jugadores" class="w-full space-y-2 mb-4">
       <input type="text" id="input-nombre-1" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 1 (Humano)" autocomplete="off" class="w-full py-1.5 px-3 rounded-xl text-center font-bold text-base text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
       <input type="text" id="input-nombre-2" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 2" autocomplete="off" class="w-full py-1.5 px-3 rounded-xl text-center font-bold text-base text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
       <input type="text" id="input-nombre-3" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 3" autocomplete="off" class="hidden w-full py-1.5 px-3 rounded-xl text-center font-bold text-base text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
@@ -87,7 +87,7 @@ input { -webkit-user-select: text; user-select: text; }
       <span id="txt-pve">👤 Jugador 1 vs 🤖 Máquina (RAE)</span>
     </button>
     <button type="button" id="btn-pvp-menu" onclick="window.arranqueVinculado('pvp')" class="w-full bg-white border-4 border-blue-500 rounded-xl py-2.5 px-4 text-lg font-extrabold text-orange-600 shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
-      <span id="txt-pvp">👥 Jugador 1 vs Jugador 2</span>
+      <span id="txt-pvp">👥 Multijugador (Hasta 4)</span>
     </button>
     <p class="mt-3 text-xs font-bold text-[#5c3a21] text-center">
       Manos libres: di tu palabra, «¿qué significa?», «me rindo» o «otra vez» al terminar.
@@ -95,7 +95,7 @@ input { -webkit-user-select: text; user-select: text; }
   </div>
 </div>
 
-<!-- CABECERA CON BOTÓN HOME 🏠 Y CONTADOR DE RÉCORD -->
+<!-- CABECERA CON BOTÓN HOME 🏠 Y CONTADOR -->
 <header class="z-10 w-full max-w-md flex flex-col items-center mt-1 relative">
   <div class="madera-textura text-center py-2 px-4 rounded-2xl w-full relative shadow-lg flex flex-col items-center">
     <button id="btn-home" type="button" onclick="window.irAlMenuHome()" aria-label="Volver al menú" class="absolute left-3 top-2.5 bg-[#5c3a21] hover:bg-[#3e2716] text-white text-xl w-10 h-10 rounded-xl shadow-md border-2 border-[#a67c52] flex items-center justify-center active:scale-90 transition-transform">
@@ -123,9 +123,6 @@ input { -webkit-user-select: text; user-select: text; }
 </main>
 
 <footer class="z-20 w-full max-w-md bg-[#8b5a2b] border-t-8 border-[#5c3a21] rounded-t-3xl p-4 shadow-2xl relative">
-  <div class="absolute -top-6 right-4 text-3xl transform rotate-12 pointer-events-none" aria-hidden="true">✏️</div>
-  <div class="absolute -top-4 left-6 text-2xl transform -rotate-12 pointer-events-none" aria-hidden="true">🧽</div>
-
   <button id="btn-rendirse" type="button" onclick="window.meRindo()" class="absolute -top-14 right-4 bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-full shadow-lg border-2 border-red-800 flex items-center gap-1 active:scale-95 transition-transform z-30">
     <span aria-hidden="true">🏳️</span> Me rindo
   </button>
@@ -153,13 +150,11 @@ input { -webkit-user-select: text; user-select: text; }
   <div class="text-center mt-2 text-orange-200 text-sm font-semibold" id="mic-status">Micrófono apagado</div>
 </footer>
 
-<!-- SCRIPT 1: CONTROL INMEDIATO DEL MENÚ Y JUGADORES (2 A 4 MÁXIMO) -->
+<!-- SCRIPT 1: MENÚ Y JUGADORES (HASTA 4) -->
 <script>
 window.numJugadores = 2;
 
 window.elegirJugadores = function(n) {
-  if (n < 2) n = 2;
-  if (n > 4) n = 4;
   window.numJugadores = n;
   try { localStorage.setItem('encadenadas_num_jug', String(n)); } catch (e) {}
   for (var i = 2; i <= 4; i++) {
@@ -192,7 +187,7 @@ window.actualizarTextoBotones = function() {
     if (window.numJugadores === 2) {
       tPvp.textContent = "👤 " + n1 + " vs 👤 " + n2;
     } else {
-      tPvp.textContent = "👥 Jugar " + window.numJugadores + " Jugadores";
+      tPvp.textContent = "👥 Multijugador (" + window.numJugadores + " Jugadores)";
     }
   }
 };
@@ -204,7 +199,6 @@ window.cargarDatosMenu = function() {
     document.getElementById('record-palabras').textContent = rec;
     var guardados = parseInt(localStorage.getItem('encadenadas_num_jug') || '2', 10);
     if (guardados >= 2 && guardados <= 4) window.numJugadores = guardados;
-    else window.numJugadores = 2;
     for (var i = 1; i <= 4; i++) {
       var clave = (i === 1) ? 'encadenadas_n1' : (i === 2) ? 'encadenadas_n2' : ('encadenadas_n' + i);
       var val = localStorage.getItem(clave) || "";
@@ -217,7 +211,7 @@ window.cargarDatosMenu = function() {
 window.cargarDatosMenu();
 </script>
 
-<!-- SCRIPT 2: MOTOR PRINCIPAL DEL JUEGO Y VOZ -->
+<!-- SCRIPT 2: MOTOR DE JUEGO, VOZ Y SIGNIFICADOS -->
 <script>
 const gameBoard = document.getElementById('game-board');
 const micBtn = document.getElementById('mic-btn');
@@ -276,49 +270,6 @@ function incrementarContadorPalabras() {
   actualizarMarcadoresUI();
 }
 
-// ---------- PRONUNCIACIÓN NATURAL DE SÍLABAS EN ESPAÑOL ----------
-// Evita que el TTS deletree ("b-r-a") al no usar mayúsculas y fuerza vocal castellana ("tó" en vez de inglés "to" -> "tu")
-const FONETICA_SILABAS = {
-  'to': 'tó', 'tu': 'tú', 'ta': 'tá', 'te': 'té', 'ti': 'tí',
-  'do': 'dó', 'go': 'gó', 'so': 'só', 'no': 'nó', 'lo': 'ló',
-  'po': 'pó', 'mo': 'mó', 'ro': 'ró', 'co': 'có', 'bo': 'bó',
-  'fo': 'fó', 'jo': 'jó', 'zo': 'zó', 'yo': 'yó', 'cho': 'chó', 'llo': 'lló',
-  'bra': 'brá', 'bre': 'bré', 'bri': 'brí', 'bro': 'bró', 'bru': 'brú',
-  'bla': 'blá', 'ble': 'blé', 'bli': 'blí', 'blo': 'bló', 'blu': 'blú',
-  'pla': 'plá', 'ple': 'plé', 'pli': 'plí', 'plo': 'pló', 'plu': 'plú',
-  'pra': 'prá', 'pre': 'pré', 'pri': 'prí', 'pro': 'pró', 'pru': 'prú',
-  'tra': 'trá', 'tre': 'tré', 'tri': 'trí', 'tro': 'tró', 'tru': 'trú',
-  'cla': 'clá', 'cle': 'clé', 'cli': 'clí', 'clo': 'cló', 'clu': 'clú',
-  'cra': 'crá', 'cre': 'cré', 'cri': 'crí', 'cro': 'cró', 'cru': 'crú',
-  'fla': 'flá', 'fle': 'flé', 'fli': 'flí', 'flo': 'fló', 'flu': 'flú',
-  'fra': 'frá', 'fre': 'fré', 'fri': 'frí', 'fro': 'fró', 'fru': 'frú',
-  'gla': 'glá', 'gle': 'glé', 'gli': 'glí', 'glo': 'gló', 'glu': 'glú',
-  'gra': 'grá', 'gre': 'gré', 'gri': 'grí', 'gro': 'gró', 'gru': 'grú',
-  'dra': 'drá', 'dre': 'dré', 'dri': 'drí', 'dro': 'dró', 'dru': 'drú'
-};
-
-function silabaParaVoz(sil) {
-  let s = (sil || "").toLowerCase().trim();
-  if (!s) return "";
-  if (FONETICA_SILABAS[s]) return FONETICA_SILABAS[s];
-  // Si ya lleva tilde, se deja tal cual en minúsculas
-  if (/[áéíóú]/.test(s)) return s;
-  // Poner tilde en la última vocal de la sílaba para que Android TTS la lea como sílaba tónica española y nunca la deletree
-  const mapaTilde = { 'a': 'á', 'e': 'é', 'i': 'í', 'o': 'ó', 'u': 'ú' };
-  for (let i = s.length - 1; i >= 0; i--) {
-    const ch = s[i];
-    if (mapaTilde[ch]) {
-      // No tildar la 'u' muda de que/qui/gue/gui
-      if (ch === 'u' && i > 0 && (s[i - 1] === 'q' || s[i - 1] === 'g') && (s[i + 1] === 'e' || s[i + 1] === 'i')) {
-        continue;
-      }
-      return s.slice(0, i) + mapaTilde[ch] + s.slice(i + 1);
-    }
-  }
-  return s;
-}
-
-// Diccionario RAE
 let setDiccionarioRAE = null;
 let arrayDiccionarioRAE = null;
 let cargandoDiccionario = null;
@@ -342,65 +293,40 @@ async function cargarDiccionarioRAE() {
 }
 setTimeout(cargarDiccionarioRAE, 500);
 
-// ---------- SIGNIFICADOS CORTOS, CONCISOS Y SINÓNIMOS ----------
-const DEFINICIONES_CORTAS = {
-  'palabra': 'Término, vocablo o expresión hablada.',
-  'camino': 'Senda, vía o ruta de paso.',
-  'verano': 'Estación más calurosa del año.',
-  'planeta': 'Astro que gira alrededor de una estrella.',
-  'tesoro': 'Riqueza, joyas o fortuna oculta.',
-  'espejo': 'Cristal que refleja las imágenes.',
-  'castillo': 'Fortaleza amurallada con torres.',
-  'naranja': 'Fruto cítrico dulce y jugoso.',
-  'pelota': 'Balón o esfera elástica para jugar.',
-  'regalo': 'Obsequio, presente o detalle.',
-  'melón': 'Fruto dulce y jugoso de verano.',
-  'loco': 'Demente, insensato o imprudente.',
-  'casa': 'Vivienda, hogar o domicilio.',
-  'perro': 'Can, mascota fiel del ser humano.',
-  'roca': 'Piedra grande y muy dura.',
-  'sapo': 'Anfibio parecido a la rana.',
-  'brasa': 'Carbón o leña encendida al rojo.',
-  'pomo': 'Tirador o manilla de una puerta.',
-  'mono': 'Primate o simio de gran agilidad.',
-  'coche': 'Automóvil o vehículo de cuatro ruedas.',
-  'pato': 'Ave acuática de pico aplanado.',
-  'taza': 'Vasija pequeña con asa para beber.',
-  'lupa': 'Lente de aumento con mango.',
-  'vaca': 'Hembra del toro que da leche.',
-  'zorro': 'Mamífero astuto de cola peluda.',
-  'llave': 'Pieza metálica para abrir cerraduras.',
-  'carta': 'Mensaje escrito o naipe de baraja.',
-  'taco': 'Pieza corta de madera o bocado mexicano.',
-  'noto': 'Del verbo notar: percibir o sentir.',
-  'tope': 'Límite o extremo al que llega algo.'
+const DEFINICIONES_LOCALES = {
+  'palabra': 'Término o unidad lingüística con significado propio.',
+  'camino': 'Vía o senda para transitar de un lugar a otro.',
+  'verano': 'Estación más cálida del año.',
+  'planeta': 'Cuerpo celeste que gira alrededor de una estrella.',
+  'tesoro': 'Conjunto de objetos de gran valor guardados.',
+  'espejo': 'Superficie que refleja la imagen.',
+  'castillo': 'Edificio fortificado con murallas y torres.',
+  'naranja': 'Fruto redondo y jugoso del naranjo.',
+  'pelota': 'Bola elástica usada en juegos y deportes.',
+  'regalo': 'Obsequio o presente entregado a alguien.',
+  'melón': 'Fruto grande, dulce y jugoso.',
+  'loco': 'Que ha perdido la razón o actúa sin juicio.',
+  'casa': 'Vivienda o edificación para habitar.',
+  'perro': 'Mamífero doméstico fiel de cuatro patas.',
+  'roca': 'Material mineral duro y sólido.',
+  'sapo': 'Anfibio robusto de piel rugosa.'
 };
 
-function recortarAConciso(texto) {
+function limpiarDefinicionSinonima(texto) {
   if (!texto) return "";
-  let limpio = texto
-    .replace(/\[.*?\]/g, '')
-    .replace(/\(.*?\)/g, '')
-    .replace(/^(Dícese de|Se dice de|En [a-záéíóúñ]+,|Coloquialmente,|Figuradamente,)\s*/i, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-  // Quedarnos solo con el primer tramo breve (antes de punto, punto y coma o dos puntos)
-  let breve = limpio.split(/[.;:]/)[0].trim();
-  const palabras = breve.split(/\s+/);
-  if (palabras.length > 10) {
-    breve = palabras.slice(0, 10).join(' ');
+  let limpio = texto.replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').replace(/\s+/g, ' ').trim();
+  const partes = limpio.split(/[.;:]/)[0];
+  if (partes && partes.length > 5 && partes.length < 90) {
+    return partes.endsWith('.') ? partes : (partes + '.');
   }
-  if (!breve) return "";
-  breve = breve.charAt(0).toUpperCase() + breve.slice(1);
-  return breve.endsWith('.') ? breve : (breve + '.');
+  return limpio.slice(0, 90) + '.';
 }
 
 async function obtenerSignificadoPalabra(palabra) {
   const p = (palabra || "").toLowerCase().trim();
   if (!p) return "Sin palabra activa.";
-  if (DEFINICIONES_CORTAS[p]) return DEFINICIONES_CORTAS[p];
+  if (DEFINICIONES_LOCALES[p]) return DEFINICIONES_LOCALES[p];
 
-  // 1. Buscar acepción corta o sinónimo en Wikcionario
   try {
     const urlWik = 'https://es.wiktionary.org/w/api.php?action=query&prop=extracts&explaintext=1&titles=' + encodeURIComponent(p) + '&format=json&origin=*';
     const res = await fetch(urlWik);
@@ -410,16 +336,9 @@ async function obtenerSignificadoPalabra(palabra) {
       const keys = Object.keys(pages);
       if (keys.length > 0 && pages[keys[0]].extract) {
         const lineas = pages[keys[0]].extract.split('\n').map(l => l.trim()).filter(Boolean);
-        // Priorizar línea de sinónimos si existe
-        const lineaSin = lineas.find(l => /^sin[óo]nimos?:/i.test(l));
-        if (lineaSin) {
-          const sinLimpio = recortarAConciso('Sinónimo de ' + lineaSin.replace(/^sin[óo]nimos?:\s*/i, ''));
-          if (sinLimpio.length > 6) return sinLimpio;
-        }
-        // Primera acepción numerada recortada de forma concisa
         for (let i = 0; i < lineas.length; i++) {
           if (/^;?\d+[\s.:]/.test(lineas[i])) {
-            const acep = recortarAConciso(lineas[i].replace(/^;?\d+[\s.:]+/, ''));
+            const acep = limpiarDefinicionSinonima(lineas[i].replace(/^;?\d+[\s.:]+/, ''));
             if (acep.length > 5) return acep;
           }
         }
@@ -427,34 +346,34 @@ async function obtenerSignificadoPalabra(palabra) {
     }
   } catch (e) {}
 
-  // 2. Respaldo conciso en Wikipedia
   try {
     const urlWiki = 'https://es.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(p);
     const res2 = await fetch(urlWiki);
     if (res2.ok) {
       const data2 = await res2.json();
-      if (data2 && data2.description) return recortarAConciso(data2.description);
-      if (data2 && data2.extract) return recortarAConciso(data2.extract);
+      if (data2 && data2.extract) return limpiarDefinicionSinonima(data2.extract);
     }
   } catch (e) {}
 
-  return 'Voz castellana válida en la RAE.';
+  const sils = silabear(p);
+  return 'Palabra válida con sílabas ' + sils.join('-') + '.';
 }
 
 const MAPA_VOZ_EXACTO = {
   'b': 'be', 'v': 'uve', 'c': 'ce', 'd': 'de', 'f': 'efe', 'g': 'ge',
   'h': 'hache', 'j': 'jota', 'k': 'ka', 'l': 'ele', 'll': 'elle',
   'm': 'eme', 'n': 'ene', 'ñ': 'eñe', 'p': 'pe', 'q': 'cu', 'r': 'erre',
-  's': 'ese', 't': 'te', 'w': 'uve', 'x': 'equis', 'z': 'zeta',
-  '0': 'cero', '1': 'uno', '2': 'dos', '3': 'tres', '4': 'cuatro',
-  '5': 'cinco', '6': 'seis', '7': 'siete', '8': 'ocho', '9': 'nueve',
-  '10': 'diez', '11': 'once', '12': 'doce', '13': 'trece', '14': 'catorce',
-  '15': 'quince', '20': 'veinte', '30': 'treinta', '100': 'cien', '1000': 'mil'
+  's': 'ese', 't': 'te', 'w': 'uve', 'x': 'equis', 'z': 'zeta'
 };
 
 function normalizarTokenVoz(token, silabaObjNorm) {
   let limpio = (token || "").trim().toLowerCase().replace(/[.,!?;:¡¿"']/g, '');
   if (!limpio) return "";
+  
+  // Forzar pronunciación correcta de TO y otras sílabas en español
+  if (limpio === 'to' || silabaObjNorm === 'to') return 'to';
+  if (limpio === 'tu' && silabaObjNorm === 'to') return 'to';
+
   if (MAPA_VOZ_EXACTO[limpio]) {
     if (limpio === 'c' && silabaObjNorm === 'se') return 'se';
     if ((limpio === 'b' || limpio === 'v') && silabaObjNorm === 've') return 've';
@@ -474,10 +393,7 @@ const diccionarioEmojis = {
   'roca': '🪨', 'rápido': '⚡', 'jota': '💃'
 };
 const palabrasArranque = ['palabra', 'camino', 'verano', 'planeta', 'tesoro', 'espejo', 'castillo', 'naranja', 'pelota', 'regalo'];
-const coletillas = [
-  "Mmm...", "A ver...", "Déjame pensar...",
-  "Voy a buscar...", "Interesante..."
-];
+const coletillas = ["Mmm...", "A ver...", "Déjame pensar...", "Estudiando la RAE..."];
 
 function hablar(texto, callback) {
   if (cancelarHablaPrevia) { cancelarHablaPrevia(); cancelarHablaPrevia = null; }
@@ -502,14 +418,14 @@ function hablar(texto, callback) {
     clearTimeout(timer);
     if (cancelarHablaPrevia === cancelar) cancelarHablaPrevia = null;
     hablando = false;
-    ignorarVozHasta = Date.now() + 600;
+    ignorarVozHasta = Date.now() + 500;
     if (callback) callback();
     if (micDeseado && modoActual !== "" && !esTurnoMaquina) {
       setTimeout(arrancarRecon, 250);
     }
   };
   cancelarHablaPrevia = cancelar;
-  timer = setTimeout(fin, (texto.length * 100) + 2200);
+  timer = setTimeout(fin, (texto.length * 95) + 2000);
 
   if (window.AndroidVoice) {
     window._onNativeTtsDone = fin;
@@ -550,14 +466,7 @@ async function verificarPalabraEnServidor(palabra) {
     const encontrada = arrayDiccionarioRAE.find(w => SinTildes(w) === pSin);
     return encontrada || false;
   }
-  try {
-    const res = await fetch('https://api.datamuse.com/words?sp=' + encodeURIComponent(p) + '&max=10&v=es');
-    const data = await res.json();
-    const ok = data.some(item => item.word.toLowerCase() === p);
-    return ok ? p : false;
-  } catch (e) {
-    return p;
-  }
+  return p;
 }
 
 async function obtenerPalabrasCandidatasRAE(prefijoNormalizado) {
@@ -622,11 +531,10 @@ function silabear(palabra) {
   }
   const hardcoded = {
     'palabra': ['pa','la','bra'], 'brasa': ['bra','sa'], 'sapo': ['sa','po'],
-    'pomo': ['po','mo'], 'mono': ['mo','no'], 'noto': ['no','to'],
-    'tope': ['to','pe'], 'perro': ['pe','rro'], 'roca': ['ro','ca'],
-    'carta': ['car','ta'], 'taco': ['ta','co'], 'camino': ['ca','mi','no'],
+    'pomo': ['po','mo'], 'mono': ['mo','no'], 'camino': ['ca','mi','no'],
     'verano': ['ve','ra','no'], 'planeta': ['pla','ne','ta'], 'tesoro': ['te','so','ro'],
-    'espejo': ['es','pe','jo'], 'castillo': ['cas','ti','llo'], 'naranja': ['na','ran','ja']
+    'espejo': ['es','pe','jo'], 'castillo': ['cas','ti','llo'], 'naranja': ['na','ran','ja'],
+    'motor': ['mo','tor'], 'toro': ['to','ro'], 'toma': ['to','ma'], 'tono': ['to','no']
   };
   return hardcoded[p] || silabas;
 }
@@ -641,7 +549,7 @@ function normalizarSilaba(silaba) {
     .replace(/rr/g, "r");
 }
 
-function mostrarAlerta(mensaje, duracion = 3800) {
+function mostrarAlerta(mensaje, duracion = 3500) {
   clearTimeout(alertTimer);
   alertBox.textContent = mensaje;
   alertBox.classList.remove('hidden');
@@ -679,7 +587,7 @@ function mostrarFinJuego() {
   btnRendirse.classList.add('hidden');
   finJuegoBotones.classList.remove('hidden');
   if (micDeseado) {
-    micStatus.textContent = "Di «otra vez» para reiniciar la partida";
+    micStatus.textContent = "Di «otra vez» para reiniciar";
     setTimeout(arrancarRecon, 300);
   }
 }
@@ -784,7 +692,7 @@ async function explicarUltimaPalabra() {
   const significado = await obtenerSignificadoPalabra(ultima);
   mostrarDefinicionEnUltimaPalabraUI(ultima, significado);
 
-  hablar(ultima + ": " + significado + " Te toca, " + nombres[jugadorActual] + ", empieza por " + silabaParaVoz(silabaObjetivo) + ".", () => {
+  hablar(ultima + ": " + significado + " Turno de " + nombres[jugadorActual] + ", con " + silabaObjetivo + ".", () => {
     mostrarTurnoHumano();
     bloquearInputs(false);
     arrancarRecon();
@@ -846,18 +754,14 @@ function iniciarJuegoTablero() {
   mostrarTurnoHumano();
   bloquearInputs(false);
 
-  const listaSaludo = nombres.length > 1
-    ? (nombres.slice(0, -1).join(', ') + ' y ' + nombres[nombres.length - 1])
-    : nombres[0];
-
-  hablar("¡Hola " + listaSaludo + "! Primera palabra: " + palabraInicial + ". Empieza por " + silabaParaVoz(silabaObjetivo) + ".", () => {
+  hablar("Primera palabra: " + palabraInicial + ".", () => {
     arrancarRecon();
   });
 }
 
 async function juegaMaquina() {
   if (modoActual !== 'pve' || juegoTerminado) return;
-  actualizarInterfazTurno("📚 Buscando en la RAE...", "bg-purple-500");
+  actualizarInterfazTurno("📚 La máquina busca...", "bg-purple-500");
 
   const prefijo = normalizarSilaba(silabaObjetivo);
   const candidatas = await obtenerPalabrasCandidatasRAE(prefijo);
@@ -866,8 +770,8 @@ async function juegaMaquina() {
     const elegida = candidatas[Math.floor(Math.random() * candidatas.length)];
     await window.procesarEntrada(elegida, true);
   } else {
-    actualizarInterfazTurno("¡Victoria de " + nombres[0] + "!", "bg-green-500");
-    hablar("¡No quedan palabras con " + silabaParaVoz(silabaObjetivo) + "! ¡Has ganado, " + nombres[0] + "! Di otra vez para jugar de nuevo.", () => {
+    actualizarInterfazTurno("¡Gana " + nombres[0] + "!", "bg-green-500");
+    hablar("¡No quedan palabras con " + silabaObjetivo + "! ¡Has ganado, " + nombres[0] + "!", () => {
       mostrarFinJuego();
     });
   }
@@ -878,13 +782,11 @@ window.meRindo = async function() {
   bloquearInputs(true);
 
   const rindiente = nombres[jugadorActual];
-  let textoGanador = (modoActual === 'pve')
-    ? "¡Gana la máquina!"
-    : (nombres.length === 2 ? ("¡Gana " + nombres[1 - jugadorActual] + "!") : ("¡Fin para " + rindiente + "!"));
+  let textoGanador = (modoActual === 'pve') ? "¡Gana la máquina!" : "¡Fin de partida!";
 
-  actualizarInterfazTurno("Consultando RAE...", "bg-red-500");
+  actualizarInterfazTurno("Buscando solución...", "bg-red-500");
 
-  hablar(rindiente + " se rinde.", async () => {
+  hablar(rindiente + " se rinde. Buscando alternativa...", async () => {
     const prefijo = normalizarSilaba(silabaObjetivo);
     const candidatas = await obtenerPalabrasCandidatasRAE(prefijo);
 
@@ -895,20 +797,20 @@ window.meRindo = async function() {
 
       historialPalabras.push(elegida);
       silabaObjetivo = silabasElegida[silabasElegida.length - 1];
-      agregarPalabraUI(elegida, silabasElegida, false, 1, "💡 Esta valía (RAE)", significado);
+      agregarPalabraUI(elegida, silabasElegida, false, 1, "💡 Alternativa", significado);
       actualizarInterfazTurno("🏆 " + textoGanador, "bg-green-600");
 
-      hablar("Valía " + elegida + ": " + significado + " " + textoGanador + " Di otra vez para reiniciar.", mostrarFinJuego);
+      hablar("Podías haber dicho: " + elegida + ". Significado: " + significado + " " + textoGanador, mostrarFinJuego);
     } else {
-      actualizarInterfazTurno("🤝 Empate técnico", "bg-gray-600");
-      hablar("No había ninguna con " + silabaParaVoz(silabaObjetivo) + ". ¡Empate! Di otra vez para reiniciar.", mostrarFinJuego);
+      actualizarInterfazTurno("🤝 Empate", "bg-gray-600");
+      hablar("No existían más palabras. ¡Empate técnico!", mostrarFinJuego);
     }
   });
 };
 
 function esPreguntaDeSignificado(texto) {
   const limpio = SinTildes((texto || "").toLowerCase().trim());
-  return /(que significa|eso que es|que es eso|cual es su significado|cual es el significado|que quiere decir|significado)/.test(limpio);
+  return /(que significa|eso que es|que es eso|cual es su significado|que quiere decir|significado)/.test(limpio);
 }
 
 window.procesarEntrada = async function(texto, esMaquina = false) {
@@ -926,8 +828,8 @@ window.procesarEntrada = async function(texto, esMaquina = false) {
 
   if (!esMaquina && /^otra vez$/i.test(textoBruto)) {
     textInput.value = "";
-    mostrarAlerta("La orden «otra vez» solo funciona cuando acaba la partida.");
-    hablar("La partida sigue en juego. Debe empezar por " + silabaParaVoz(silabaObjetivo) + ".");
+    mostrarAlerta("«Otra vez» solo funciona al acabar la partida.");
+    hablar("La partida sigue en curso. Debe empezar por " + silabaObjetivo + ".");
     return;
   }
 
@@ -941,9 +843,9 @@ window.procesarEntrada = async function(texto, esMaquina = false) {
     return;
   }
   if (historialPalabras.includes(palabra)) {
-    mostrarAlerta("La palabra '" + palabra + "' ya se ha usado.");
+    mostrarAlerta("La palabra '" + palabra + "' ya se usó.");
     textInput.value = "";
-    hablar("La palabra " + palabra + " ya se ha usado. Prueba con otra.");
+    hablar("La palabra " + palabra + " ya se usó.");
     return;
   }
 
@@ -956,21 +858,21 @@ window.procesarEntrada = async function(texto, esMaquina = false) {
   let jugadaValida = false;
   let vozError = "";
   if (s1 !== s2) {
-    mostrarAlerta("¡Error! Debe empezar por '" + silabaObjetivo.toUpperCase() + "', no por '" + silabasWord[0] + "'.");
-    // Pronuncia las sílabas de corrido en español (ej: "brá", "lón", "tó") sin deletrear
-    vozError = palabra + ", no. Debe empezar por " + silabaParaVoz(silabaObjetivo) + ", no por " + silabaParaVoz(silabasWord[0]) + ".";
+    // CORRECCIÓN: Pronuncia fonéticamente la sílaba correcta en voz sin deletrear
+    mostrarAlerta("¡Debe empezar por '" + silabaObjetivo.toUpperCase() + "'!");
+    vozError = palabra + ", no. Empieza por " + silabaObjetivo + ", no por " + silabasWord[0] + ".";
   } else if (esMaquina) {
     jugadaValida = true;
   } else {
-    actualizarInterfazTurno("Consultando RAE...", "bg-yellow-500");
+    actualizarInterfazTurno("Validando RAE...", "bg-yellow-500");
     const formaRAE = await verificarPalabraEnServidor(palabra);
     if (formaRAE && typeof formaRAE === 'string') {
       palabra = formaRAE;
       silabasWord = silabear(palabra);
       jugadaValida = true;
     } else {
-      mostrarAlerta("'" + palabra + "' no está en el diccionario RAE.");
-      vozError = palabra + " no viene en el diccionario. Inténtalo otra vez.";
+      mostrarAlerta("'" + palabra + "' no está en la RAE.");
+      vozError = palabra + " no está en el diccionario.";
     }
   }
 
@@ -993,7 +895,7 @@ window.procesarEntrada = async function(texto, esMaquina = false) {
 
   if (modoActual === 'pve') {
     if (esMaquina) {
-      hablar(palabra + ". Sigue con " + silabaParaVoz(silabaObjetivo) + ".", () => {
+      hablar(palabra, () => {
         esTurnoMaquina = false;
         mostrarTurnoHumano();
         bloquearInputs(false);
@@ -1009,7 +911,7 @@ window.procesarEntrada = async function(texto, esMaquina = false) {
     }
   } else {
     jugadorActual = (jugadorActual + 1) % nombres.length;
-    hablar(palabra + ". Turno de " + nombres[jugadorActual] + ", con " + silabaParaVoz(silabaObjetivo) + ".", () => {
+    hablar(palabra, () => {
       mostrarTurnoHumano();
       bloquearInputs(false);
       arrancarRecon();
@@ -1017,13 +919,12 @@ window.procesarEntrada = async function(texto, esMaquina = false) {
   }
 };
 
-// Reconocimiento de Voz
 function uiMic(encendido) {
   micBtn.classList.toggle('bg-red-500', encendido);
   micBtn.classList.toggle('bg-blue-500', !encendido);
   micBtn.classList.toggle('animate-pulse', encendido);
   if (!encendido) micStatus.textContent = "Micrófono apagado";
-  else if (juegoTerminado) micStatus.textContent = "Escuchando... (di «otra vez» para reiniciar)";
+  else if (juegoTerminado) micStatus.textContent = "Di «otra vez» para reiniciar";
   else micStatus.textContent = "Escuchando...";
 }
 
@@ -1046,8 +947,8 @@ function procesarFraseVoz(rawInput) {
 
   for (const alt of alternativas) {
     if (/^(otra vez|jugar otra vez)$/.test(alt)) {
-      mostrarAlerta("«Otra vez» solo funciona cuando acaba la partida.");
-      hablar("La partida aún no ha acabado. Te toca con " + silabaParaVoz(silabaObjetivo) + ".");
+      mostrarAlerta("La partida sigue en curso.");
+      hablar("La partida no ha terminado. Te toca con " + silabaObjetivo + ".");
       return;
     }
   }
@@ -1095,14 +996,7 @@ try {
     };
     window._onNativeSrStart = () => { isListening = true; uiMic(true); };
     window._onNativeSrResult = (frase) => { procesarFraseVoz(frase); };
-    window._onNativeSrError = (err) => {
-      isListening = false;
-      if (err === 'not-allowed') {
-        micDeseado = false;
-        uiMic(false);
-        micStatus.textContent = "Permiso de micrófono denegado";
-      }
-    };
+    window._onNativeSrError = () => { isListening = false; };
     window._onNativeSrEnd = () => {
       isListening = false;
       if (micDeseado && modoActual !== "" && !hablando) setTimeout(arrancarRecon, 350);
@@ -1167,7 +1061,7 @@ function detenerMicrofono() {
 }
 </script>
 
-<!-- SCRIPT 3: GOOGLE ADMOB INDEPENDIENTE -->
+<!-- SCRIPT 3: GOOGLE ADMOB -->
 <script>
 (function initAdMob() {
   try {
@@ -1187,14 +1081,6 @@ function detenerMicrofono() {
     document.body.style.paddingBottom = '64px';
     const BANNER_ID = 'ca-app-pub-6672720525194990/4222281539';
     const INTERSTITIAL_ID = 'ca-app-pub-6672720525194990/1155079157';
-    let interstitialReady = false;
-
-    async function preloadInterstitial() {
-      try {
-        await callAdMob('prepareInterstitial', { adId: INTERSTITIAL_ID, isTesting: false });
-        interstitialReady = true;
-      } catch (e) { interstitialReady = false; }
-    }
 
     window.addEventListener('load', async () => {
       try {
@@ -1206,7 +1092,6 @@ function detenerMicrofono() {
           margin: 0,
           isTesting: false
         });
-        await preloadInterstitial();
       } catch (e) {}
     });
   } catch (e) {}
