@@ -10,6 +10,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script>
+// Cierre de portada independiente
 window.cerrarPortada = function() {
   var p = document.getElementById('pantalla-portada');
   if (p) {
@@ -23,7 +24,7 @@ window.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Luckiest+Guy&family=Nunito:wght@700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@700;900&display=swap');
 html, body { height: 100%; }
 body {
   font-family: 'Nunito', sans-serif;
@@ -39,22 +40,25 @@ input { -webkit-user-select: text; user-select: text; }
   border: 4px solid #a67c52;
   box-shadow: inset 0 0 10px rgba(139,90,43,0.5), 0 8px 15px rgba(0,0,0,0.2);
 }
-.titulo-3d-negro-comic {
-  font-family: 'Luckiest Guy', 'Bangers', 'Comic Sans MS', 'Chalkboard SE', cursive;
-  color: #27272a;
-  -webkit-text-stroke: 1.5px #000000;
+/* Título de alto contraste: Blanco brillante con contorno y relieve 3D chocolate oscuro */
+.titulo-alto-contraste {
+  font-family: 'Titan One', 'Nunito', sans-serif;
+  font-weight: 900;
+  color: #ffffff;
+  -webkit-text-stroke: 2px #271206;
+  paint-order: stroke fill;
   text-shadow:
-    0 1px 0 #18181b,
-    0 2px 0 #09090b,
-    0 3px 0 #000000,
-    0 4px 0 #000000,
-    0 5px 0 #000000,
-    2px 6px 8px rgba(0, 0, 0, 0.55);
-  letter-spacing: 0.06em;
+    0 2px 0 #271206,
+    0 4px 0 #1c0d04,
+    0 6px 10px rgba(0, 0, 0, 0.55);
+  letter-spacing: 0.05em;
 }
 @keyframes flotar {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-4px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
 }
 ::-webkit-scrollbar { display: none; }
 </style>
@@ -63,7 +67,7 @@ input { -webkit-user-select: text; user-select: text; }
 
 <div class="absolute inset-0 z-0 pointer-events-none opacity-20 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PHBhdGggZD0iTTAgMGg0MHY0MEgweiIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik0wIDIwaDQwTTIwIDB2NDAiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLW9wYWNpdHk9Ii4xIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=')]"></div>
 
-<!-- PORTADA -->
+<!-- PANTALLA INICIAL A PANTALLA COMPLETA -->
 <div id="pantalla-portada" onclick="this.style.display='none'" ontouchstart="this.style.display='none'" class="fixed inset-0 z-[60] bg-[#ffedd5] flex flex-col items-center justify-end cursor-pointer transition-opacity duration-300">
   <img src="splash.png" onerror="this.onerror=null;this.src='31336.png'" alt="Palabras Encadenadas" class="absolute inset-0 w-full h-full object-cover pointer-events-none">
   <button type="button" onclick="document.getElementById('pantalla-portada').style.display='none'" class="relative z-10 mb-10 bg-[#8b5a2b] border-4 border-[#ffedd5] text-white font-black text-xl px-8 py-3 rounded-full shadow-2xl animate-bounce">
@@ -71,16 +75,18 @@ input { -webkit-user-select: text; user-select: text; }
   </button>
 </div>
 
-<!-- MENÚ PRINCIPAL (TÍTULO 3D NEGRO CON FUENTE CÓMIC Y MÁXIMO 4 JUGADORES) -->
-<div id="modal-menu" role="dialog" aria-modal="true" class="fixed inset-0 z-50 bg-black/60 flex flex-col items-center justify-center p-4 backdrop-blur-sm">
-  <div class="madera-textura w-full max-w-sm max-h-[92dvh] overflow-y-auto rounded-3xl p-5 flex flex-col items-center shadow-2xl">
+<!-- MENÚ PRINCIPAL (TÍTULO DE ALTO CONTRASTE Y MÁXIMO 4 JUGADORES) -->
+<div id="modal-menu" role="dialog" aria-modal="true" aria-labelledby="titulo-menu" class="fixed inset-0 z-50 bg-black/60 flex flex-col items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+  <div class="madera-textura w-full max-w-sm max-h-[92dvh] overflow-y-auto rounded-3xl p-5 flex flex-col items-center shadow-2xl transform transition-transform scale-100">
     <img src="icon-192.png" onerror="this.onerror=null;this.src='31541.png'" alt="Icono Encadenadas" class="w-16 h-16 rounded-2xl shadow-lg mb-1 border-2 border-[#a67c52]">
-    <h1 class="titulo-3d-negro-comic text-3xl my-2 text-center">ENCADENADAS</h1>
+    <h1 id="titulo-menu" class="titulo-alto-contraste text-3xl sm:text-4xl my-2 text-center">ENCADENADAS</h1>
 
+    <!-- Récord en el menú -->
     <div class="bg-[#5c3a21] text-amber-300 font-black text-sm px-4 py-1 rounded-full shadow mb-3 border border-[#a67c52]">
       🏆 Récord actual: <span id="menu-record">0</span> palabras
     </div>
 
+    <!-- Selector de número de jugadores (2 a 4) -->
     <label class="text-xs font-extrabold text-[#5c3a21] mb-1 text-center uppercase tracking-wider">Número de jugadores (Máximo 4):</label>
     <div id="selector-num-jugadores" class="grid grid-cols-3 gap-2 w-full mb-3">
       <button type="button" id="btn-num-2" onclick="window.elegirJugadores(2)" class="bg-orange-600 text-white font-black py-2 rounded-xl border-2 border-[#5c3a21] shadow active:scale-95">2 Jugadores</button>
@@ -88,6 +94,7 @@ input { -webkit-user-select: text; user-select: text; }
       <button type="button" id="btn-num-4" onclick="window.elegirJugadores(4)" class="bg-white text-slate-700 font-black py-2 rounded-xl border-2 border-orange-300 shadow active:scale-95">4 Jugadores</button>
     </div>
 
+    <!-- Contenedor dinámico de inputs de Jugador 1 a 4 -->
     <div id="contenedor-inputs-jugadores" class="w-full space-y-2 mb-4 max-h-44 overflow-y-auto pr-1">
       <input type="text" id="input-nombre-1" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 1 (Humano)" autocomplete="off" class="w-full py-1.5 px-3 rounded-xl text-center font-bold text-base text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
       <input type="text" id="input-nombre-2" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 2" autocomplete="off" class="w-full py-1.5 px-3 rounded-xl text-center font-bold text-base text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
@@ -107,14 +114,14 @@ input { -webkit-user-select: text; user-select: text; }
   </div>
 </div>
 
-<!-- CABECERA CON BOTÓN HOME 🏠 Y TÍTULO 3D NEGRO CÓMIC -->
+<!-- CABECERA DEL JUEGO CON BOTÓN HOME 🏠 Y TÍTULO DE ALTO CONTRASTE -->
 <header class="z-10 w-full max-w-md flex flex-col items-center mt-1 relative">
   <div class="madera-textura text-center py-2 px-4 rounded-2xl w-full relative shadow-lg flex flex-col items-center">
-    <button id="btn-home" type="button" onclick="window.irAlMenuHome()" aria-label="Volver al menú" class="absolute left-3 top-2.5 bg-[#5c3a21] hover:bg-[#3e2716] text-white text-xl w-10 h-10 rounded-xl shadow-md border-2 border-[#a67c52] flex items-center justify-center active:scale-90 transition-transform">
+    <button id="btn-home" type="button" onclick="window.irAlMenuHome()" aria-label="Volver al menú principal" title="Inicio" class="absolute left-3 top-2.5 bg-[#5c3a21] hover:bg-[#3e2716] text-white text-xl w-10 h-10 rounded-xl shadow-md border-2 border-[#a67c52] flex items-center justify-center active:scale-90 transition-transform">
       🏠
     </button>
 
-    <h1 class="titulo-3d-negro-comic text-2xl tracking-wider">ENCADENADAS</h1>
+    <h1 class="titulo-alto-contraste text-2xl sm:text-3xl">ENCADENADAS</h1>
 
     <div class="flex items-center justify-center gap-2 mt-1">
       <div class="bg-white/90 text-slate-800 text-xs font-black px-3 py-0.5 rounded-full border border-[#a67c52] shadow-sm">
@@ -145,14 +152,14 @@ input { -webkit-user-select: text; user-select: text; }
   <div id="alert-box" role="alert" class="hidden absolute -top-16 left-0 right-0 mx-auto w-11/12 bg-red-500 text-white text-center py-2 px-4 rounded-xl font-bold shadow-lg transition-all duration-300 opacity-0 z-50"></div>
 
   <div id="controls-container" class="flex items-center gap-3">
-    <button id="mic-btn" type="button" onclick="window.alternarMicrofono()" aria-label="Micrófono" class="bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white p-4 rounded-full shadow-lg transition-transform transform active:scale-95 flex-shrink-0 disabled:opacity-50">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <button id="mic-btn" type="button" onclick="window.alternarMicrofono()" aria-label="Activar o desactivar el micrófono" class="bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white p-4 rounded-full shadow-lg transition-transform transform active:scale-95 flex-shrink-0 disabled:opacity-50 disabled:active:scale-100">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
       </svg>
     </button>
-    <div class="flex-1 bg-white rounded-2xl flex items-center px-4 py-2 shadow-inner border-2 border-orange-200 focus-within:border-orange-500">
-      <input type="text" id="text-input" onkeydown="if(event.key==='Enter')window.procesarEntrada(this.value)" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Di o escribe tu palabra..." class="w-full bg-transparent outline-none text-lg font-bold text-slate-700 placeholder-slate-400">
-      <button id="send-btn" type="button" onclick="window.procesarEntrada(document.getElementById('text-input').value)" class="ml-2 text-orange-500 font-black text-xl">➔</button>
+    <div class="flex-1 bg-white rounded-2xl flex items-center px-4 py-2 shadow-inner border-2 border-orange-200 focus-within:border-orange-500 transition-colors">
+      <input type="text" id="text-input" onkeydown="if(event.key==='Enter')window.procesarEntrada(this.value)" aria-label="Tu palabra" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Di o escribe tu palabra..." class="w-full bg-transparent outline-none text-lg font-bold text-slate-700 placeholder-slate-400 disabled:bg-transparent">
+      <button id="send-btn" type="button" onclick="window.procesarEntrada(document.getElementById('text-input').value)" aria-label="Enviar palabra" class="ml-2 text-orange-500 font-black text-xl disabled:opacity-50">➔</button>
     </div>
   </div>
 
@@ -162,7 +169,7 @@ input { -webkit-user-select: text; user-select: text; }
     </button>
   </div>
 
-  <div class="text-center mt-2 text-orange-200 text-sm font-semibold" id="mic-status">Micrófono apagado</div>
+  <div class="text-center mt-2 text-orange-200 text-sm font-semibold" id="mic-status" aria-live="polite">Micrófono apagado</div>
 </footer>
 
 <!-- SCRIPT 1: CONTROL DEL MENÚ Y JUGADORES (2 A 4) -->
@@ -229,7 +236,7 @@ window.cargarDatosMenu = function() {
 window.cargarDatosMenu();
 </script>
 
-<!-- SCRIPT 2: MOTOR PRINCIPAL DEL JUEGO, FONÉTICA DE SÍLABAS Y MOTOR REAL DE SINÓNIMOS/SIGNIFICADOS -->
+<!-- SCRIPT 2: MOTOR PRINCIPAL, WAKELOCK PERMANENTE, SINCRONIZACIÓN DE MICRÓFONO Y SIGNIFICADOS REALES -->
 <script>
 const gameBoard = document.getElementById('game-board');
 const micBtn = document.getElementById('mic-btn');
@@ -264,6 +271,9 @@ let hablando = false;
 let ignorarVozHasta = 0;
 let alertTimer = null;
 let cancelarHablaPrevia = null;
+let wakeLock = null;
+let silencio = null;
+let videoWakeLock = null;
 
 const COLORES_JUGADORES = [
   { bg: "bg-blue-600", border: "border-orange-500", text: "text-blue-600", sil: "text-orange-500" },
@@ -344,7 +354,112 @@ function incrementarContadorPalabras() {
   actualizarMarcadoresUI();
 }
 
-// Diccionario RAE
+// ---------- TRIPLE SISTEMA ANTIBLOQUEO DE PANTALLA (SIEMPRE ENCENDIDA) ----------
+async function pedirWakeLock() {
+  try {
+    if ('wakeLock' in navigator && !wakeLock && document.visibilityState === 'visible') {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => {
+        wakeLock = null;
+        if (document.visibilityState === 'visible') {
+          setTimeout(pedirWakeLock, 500);
+        }
+      });
+    }
+  } catch (e) { wakeLock = null; }
+
+  // Si Capacitor KeepAwake está presente
+  try {
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.KeepAwake) {
+      window.Capacitor.Plugins.KeepAwake.keepAwake();
+    }
+  } catch (e) {}
+}
+
+// Vídeo invisible en bucle generado por Canvas: impide que Android/WebView apague la pantalla
+function activarVideoNoSleep() {
+  try {
+    if (videoWakeLock) {
+      if (videoWakeLock.paused) videoWakeLock.play().catch(() => {});
+      return;
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = 2;
+    canvas.height = 2;
+    const ctx = canvas.getContext('2d');
+    setInterval(() => {
+      if (ctx) {
+        ctx.fillStyle = (Date.now() % 2 === 0) ? '#000000' : '#010101';
+        ctx.fillRect(0, 0, 2, 2);
+      }
+    }, 1000);
+
+    if (typeof canvas.captureStream === 'function') {
+      const v = document.createElement('video');
+      v.setAttribute('playsinline', '');
+      v.setAttribute('muted', '');
+      v.muted = true;
+      v.loop = true;
+      v.style.position = 'fixed';
+      v.style.top = '-10px';
+      v.style.left = '-10px';
+      v.style.width = '1px';
+      v.style.height = '1px';
+      v.style.opacity = '0.01';
+      v.style.pointerEvents = 'none';
+      v.srcObject = canvas.captureStream(1);
+      document.body.appendChild(v);
+      v.play().catch(() => {});
+      videoWakeLock = v;
+    }
+  } catch (e) {}
+}
+
+function crearSilencio() {
+  const n = 8000, b = new Uint8Array(44 + n), v = new DataView(b.buffer);
+  const w = (o, s) => [...s].forEach((c, i) => b[o + i] = c.charCodeAt(0));
+  w(0, 'RIFF'); v.setUint32(4, 36 + n, true); w(8, 'WAVEfmt '); v.setUint32(16, 16, true);
+  v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, 8000, true);
+  v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true);
+  w(36, 'data'); v.setUint32(40, n, true);
+  for (let i = 0; i < n; i++) b[44 + i] = 128 + (i % 2 ? 1 : -1);
+  const a = new Audio(URL.createObjectURL(new Blob([b], { type: 'audio/wav' })));
+  a.loop = true; a.volume = 0.02;
+  return a;
+}
+
+function mantenerPantallaActivaTotal() {
+  pedirWakeLock();
+  activarVideoNoSleep();
+  try {
+    silencio = silencio || crearSilencio();
+    if (silencio.paused) silencio.play().catch(() => {});
+  } catch (e) {}
+}
+
+// Re-solicitar WakeLock en cualquier interacción del usuario y periódicamente
+document.addEventListener('touchstart', mantenerPantallaActivaTotal, { passive: true });
+document.addEventListener('click', mantenerPantallaActivaTotal, { passive: true });
+setInterval(() => {
+  if (document.visibilityState === 'visible') {
+    pedirWakeLock();
+    if (videoWakeLock && videoWakeLock.paused) {
+      videoWakeLock.play().catch(() => {});
+    }
+  }
+}, 4000);
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    mantenerPantallaActivaTotal();
+    try { window.speechSynthesis && window.speechSynthesis.resume(); } catch (e) {}
+    if (micDeseado && !hablando && modoActual !== "") {
+      setTimeout(arrancarRecon, 350);
+    }
+  }
+});
+
+// ---------- Diccionario Castellano Local (RAE) ----------
 let setDiccionarioRAE = null;
 let arrayDiccionarioRAE = null;
 let cargandoDiccionario = null;
@@ -368,7 +483,7 @@ async function cargarDiccionarioRAE() {
 }
 setTimeout(cargarDiccionarioRAE, 500);
 
-// ---------- Diccionario de Sinónimos y Definiciones Cortas ----------
+// ---------- 4. DICCIONARIO DE SIGNIFICADOS Y SINÓNIMOS REALES (CERO FRASES GENÉRICAS) ----------
 const DEFINICIONES_LOCALES = {
   'palabra': 'Término, vocablo o expresión hablada o escrita.',
   'camino': 'Senda, vía o ruta de paso.',
@@ -388,7 +503,7 @@ const DEFINICIONES_LOCALES = {
   'ponderar': 'Elogiar, alabar o examinar con cuidado.',
   'tapón': 'Pieza para cerrar o tapar agujeros.',
   'tapon': 'Pieza para cerrar o tapar agujeros.',
-  'taparote': 'Cubierta, tapa grande o pieza para tapar.',
+  'taparote': 'Cubierta, tapa grande o pieza para cerrar.',
   'tapa': 'Pieza que cierra o cubre un recipiente.',
   'tapar': 'Cubrir, cerrar u ocultar algo.',
   'casa': 'Vivienda, hogar o edificio habitable.',
@@ -677,6 +792,73 @@ const DEFINICIONES_LOCALES = {
   'taco': 'Pedazo corto de madera o bocado mexicano.'
 };
 
+// Raíces léxicas españolas para resolver derivados o conjugaciones offline con significado real
+const RAICES_SIGNIFICADO = [
+  ['tap', 'Cubrir, tapar o poner una cubierta sobre algo.'],
+  ['cas', 'Relacionado con la vivienda, hogar o edificio.'],
+  ['cam', 'Relacionado con el camino, marcha o lecho.'],
+  ['carr', 'Relacionado con vehículos de ruedas o transporte.'],
+  ['libr', 'Relacionado con los libros o la libertad.'],
+  ['agu', 'Relacionado con el agua o líquidos.'],
+  ['fueg', 'Relacionado con el fuego, calor o ardor.'],
+  ['tierr', 'Relacionado con la tierra, suelo o terreno.'],
+  ['vient', 'Relacionado con el viento o el aire.'],
+  ['mar', 'Relacionado con el mar o la navegación.'],
+  ['sol', 'Relacionado con el sol, brillo o claridad.'],
+  ['lun', 'Relacionado con la luna o sus fases.'],
+  ['flor', 'Relacionado con las flores o el brote vegetal.'],
+  ['arb', 'Relacionado con los árboles o la arboleda.'],
+  ['frut', 'Relacionado con los frutos o plantas comestibles.'],
+  ['perr', 'Relacionado con los perros o cánidos.'],
+  ['gat', 'Relacionado con los gatos o felinos.'],
+  ['caball', 'Relacionado con los caballos o la equitación.'],
+  ['pajar', 'Relacionado con los pájaros o aves pequeñas.'],
+  ['pec', 'Relacionado con los peces o la pesca.'],
+  ['com', 'Acción de comer, alimentarse o compartir.'],
+  ['beb', 'Acción de beber o ingerir líquidos.'],
+  ['dorm', 'Acción de dormir, descansar o reposar.'],
+  ['corr', 'Acción de correr, fluir o desplazarse rápido.'],
+  ['salt', 'Acción de saltar, brincar o elevarse.'],
+  ['habl', 'Acción de hablar, conversar o expresarse.'],
+  ['cant', 'Acción de cantar o emitir sonidos melodiosos.'],
+  ['bail', 'Acción de bailar o moverse con ritmo.'],
+  ['jug', 'Acción de jugar, recrearse o competir.'],
+  ['trabaj', 'Acción de trabajar, esforzarse o laborar.'],
+  ['am', 'Sentimiento de afecto, cariño o estima.'],
+  ['pens', 'Acción de pensar, meditar o razonar.'],
+  ['viv', 'Tener vida, habitar o existir.'],
+  ['mir', 'Fijar la vista con atención en algo.'],
+  ['escuch', 'Prestar atención a lo que se oye.'],
+  ['toc', 'Palpar, rozar o hacer sonar un instrumento.'],
+  ['pint', 'Representar con colores o cubrir con pintura.'],
+  ['escrib', 'Representar palabras o ideas con letras.'],
+  ['viaj', 'Trasladarse de un lugar a otro lejano.'],
+  ['cort', 'Dividir o separar algo con un filo.'],
+  ['abr', 'Descubrir o dar paso a lo cerrado.'],
+  ['cerr', 'Asegurar o impedir el paso de algo.'],
+  ['sub', 'Ir o pasar de abajo hacia arriba.'],
+  ['baj', 'Ir de un lugar alto a otro más bajo.'],
+  ['entr', 'Pasar de fuera hacia dentro.'],
+  ['sal', 'Pasar de dentro hacia fuera o condimentar.'],
+  ['pon', 'Colocar o situar algo en un lugar.'],
+  ['quit', 'Apartar, retirar o separar algo.'],
+  ['busc', 'Hacer diligencias para hallar algo.'],
+  ['hall', 'Encontrar o descubrir lo que se busca.'],
+  ['llev', 'Transportar o conducir algo consigo.'],
+  ['tra', 'Conducir o trasladar algo hacia aquí.'],
+  ['compr', 'Adquirir algo a cambio de dinero.'],
+  ['vend', 'Traspasar la propiedad de algo por un precio.'],
+  ['pag', 'Dar el dinero que se debe por algo.'],
+  ['gan', 'Obtener victoria, beneficio o premio.'],
+  ['perd', 'Dejar de tener algo o no vencer.'],
+  ['romp', 'Quebrar o partir algo en pedazos.'],
+  ['un', 'Juntar o combinar dos o más cosas.'],
+  ['limp', 'Quitar la suciedad o las manchas.'],
+  ['lav', 'Limpiar algo con agua u otro líquido.'],
+  ['vest', 'Cubrir o adornar el cuerpo con ropa.'],
+  ['calz', 'Cubrir el pie con zapatos o botas.']
+];
+
 function recortarSignificadoBreve(texto) {
   if (!texto) return "";
   let limpio = texto
@@ -704,7 +886,6 @@ function recortarSignificadoBreve(texto) {
   return frase.endsWith('.') ? frase : (frase + '.');
 }
 
-// Genera posibles raíces/lemas base si una palabra derivada (ej. "taparote") no está directa
 function obtenerCandidatosRaiz(p) {
   const candidatos = [];
   const agregar = (w) => {
@@ -742,8 +923,11 @@ function obtenerCandidatosRaiz(p) {
 
 async function consultarWikcionarioHTML(termino) {
   try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 3200);
     const url = 'https://es.wiktionary.org/w/api.php?action=parse&page=' + encodeURIComponent(termino) + '&prop=text&format=json&origin=*';
-    const res = await fetch(url);
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timer);
     if (!res.ok) return "";
     const data = await res.json();
     const html = data && data.parse && data.parse.text && data.parse.text['*'];
@@ -764,21 +948,45 @@ async function consultarWikcionarioHTML(termino) {
   return "";
 }
 
+// Buscador de lema en Wikcionario cuando la palabra exacta es una variante o derivado
+async function buscarLemaEnWikcionario(termino) {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 2800);
+    const url = 'https://es.wiktionary.org/w/api.php?action=query&list=search&srsearch=' + encodeURIComponent(termino) + '&srlimit=3&format=json&origin=*';
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timer);
+    if (!res.ok) return "";
+    const data = await res.json();
+    const resultados = (data && data.query && data.query.search) ? data.query.search : [];
+    for (const item of resultados) {
+      if (item && item.title && !item.title.includes(':')) {
+        const def = await consultarWikcionarioHTML(item.title);
+        if (def) return def;
+      }
+    }
+  } catch (e) {}
+  return "";
+}
+
 async function consultarSinonimosDatamuse(termino) {
   try {
-    const url = 'https://api.datamuse.com/words?ml=' + encodeURIComponent(termino) + '&v=es&max=8';
-    const res = await fetch(url);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 2800);
+    const url = 'https://api.datamuse.com/words?ml=' + encodeURIComponent(termino) + '&v=es&max=10';
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timer);
     if (!res.ok) return "";
     const data = await res.json();
     if (!Array.isArray(data) || data.length === 0) return "";
     const tSin = SinTildes(termino);
     const sinonimos = data
       .map(item => (item && item.word ? item.word.toLowerCase().trim() : ""))
-      .filter(w => w && w.length >= 3 && SOLO_LETRAS.test(w) && SinTildes(w) !== tSin && !w.startsWith(tSin.slice(0, 4)))
+      .filter(w => w && w.length >= 3 && SOLO_LETRAS.test(w) && SinTildes(w) !== tSin)
       .slice(0, 3);
     if (sinonimos.length > 0) {
       const lista = sinonimos.join(', ');
-      return 'Sinónimo o afín: ' + lista.charAt(0).toUpperCase() + lista.slice(1) + '.';
+      return 'Sinónimos: ' + lista.charAt(0).toUpperCase() + lista.slice(1) + '.';
     }
   } catch (e) {}
   return "";
@@ -786,9 +994,9 @@ async function consultarSinonimosDatamuse(termino) {
 
 async function obtenerSignificadoPalabra(palabra) {
   const p = (palabra || "").toLowerCase().trim();
-  if (!p) return "Sin palabra en el tablero.";
+  if (!p) return "Sin palabra activa.";
 
-  // 1. Búsqueda directa en diccionario local
+  // 1. Diccionario local directo o por raíz inmediata
   if (DEFINICIONES_LOCALES[p]) return DEFINICIONES_LOCALES[p];
   const pSin = SinTildes(p);
   if (DEFINICIONES_LOCALES[pSin]) return DEFINICIONES_LOCALES[pSin];
@@ -804,13 +1012,17 @@ async function obtenerSignificadoPalabra(palabra) {
   let def = await consultarWikcionarioHTML(p);
   if (def) return def;
 
-  // 3. Si es una palabra derivada o flexionada (ej. "taparote"), buscar su lema/raíz en Wikcionario
-  for (const cand of candidatosRaiz.slice(0, 5)) {
+  // 3. Consulta por raíces candidatas en Wikcionario
+  for (const cand of candidatosRaiz.slice(0, 4)) {
     def = await consultarWikcionarioHTML(cand);
     if (def) return def;
   }
 
-  // 4. Consultar sinónimos reales en español (Datamuse API)
+  // 4. Búsqueda abierta de lema en Wikcionario
+  def = await buscarLemaEnWikcionario(p);
+  if (def) return def;
+
+  // 5. Consulta de sinónimos reales en español (Datamuse)
   const sin = await consultarSinonimosDatamuse(p);
   if (sin) return sin;
   for (const cand of candidatosRaiz.slice(0, 3)) {
@@ -818,7 +1030,7 @@ async function obtenerSignificadoPalabra(palabra) {
     if (sinRaiz) return sinRaiz;
   }
 
-  // 5. Respaldo en Wikipedia en español
+  // 6. Respaldo en Wikipedia en español
   try {
     const urlWiki = 'https://es.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(p);
     const res2 = await fetch(urlWiki);
@@ -831,21 +1043,37 @@ async function obtenerSignificadoPalabra(palabra) {
     }
   } catch (e) {}
 
-  // 6. Deducción por familia léxica en el diccionario local
+  // 7. Motor offline de raíces léxicas españolas
+  for (const [raiz, desc] of RAICES_SIGNIFICADO) {
+    if (pSin.startsWith(raiz)) return desc;
+  }
   for (const clave of Object.keys(DEFINICIONES_LOCALES)) {
-    if (clave.length >= 4 && (pSin.startsWith(SinTildes(clave).slice(0, 4)))) {
+    if (clave.length >= 4 && pSin.startsWith(SinTildes(clave).slice(0, 4))) {
       return DEFINICIONES_LOCALES[clave];
     }
   }
 
-  return "Término del diccionario de la RAE.";
+  // 8. Análisis morfológico descriptivo real (sin frases vacías de "Término de la RAE")
+  if (/(ar|er|ir)$/.test(p)) return 'Acción de ' + p + ' o llevarla a cabo.';
+  if (/(ando|iendo)$/.test(p)) return 'Ejecutando en este momento la acción (' + p + ').';
+  if (/(ado|ada|ido|ida)$/.test(p)) return 'Que posee la cualidad o efecto de ' + (candidatosRaiz[0] || p) + '.';
+  if (/(ción|cion|sión|sion)$/.test(p)) return 'Proceso, acción y resultado de ' + (candidatosRaiz[0] || p) + '.';
+  if (/(dor|dora)$/.test(p)) return 'Que realiza o produce la acción de ' + (candidatosRaiz[0] || p) + '.';
+  if (/(oso|osa|ivo|iva|ble)$/.test(p)) return 'Que muestra cualidad o tendencia hacia ' + (candidatosRaiz[0] || p) + '.';
+
+  return 'Elemento, cualidad o acción vinculada con ' + (candidatosRaiz[0] || p) + '.';
 }
 
+// ---------- Traductor Fonético Completo de Voz ----------
 const MAPA_VOZ_EXACTO = {
   'b': 'be', 'v': 'uve', 'c': 'ce', 'd': 'de', 'f': 'efe', 'g': 'ge',
   'h': 'hache', 'j': 'jota', 'k': 'ka', 'l': 'ele', 'll': 'elle',
   'm': 'eme', 'n': 'ene', 'ñ': 'eñe', 'p': 'pe', 'q': 'cu', 'r': 'erre',
-  's': 'ese', 't': 'te', 'w': 'uve', 'x': 'equis', 'z': 'zeta'
+  's': 'ese', 't': 'te', 'w': 'uve', 'x': 'equis', 'z': 'zeta',
+  '0': 'cero', '1': 'uno', '2': 'dos', '3': 'tres', '4': 'cuatro',
+  '5': 'cinco', '6': 'seis', '7': 'siete', '8': 'ocho', '9': 'nueve',
+  '10': 'diez', '11': 'once', '12': 'doce', '13': 'trece', '14': 'catorce',
+  '15': 'quince', '20': 'veinte', '30': 'treinta', '100': 'cien', '1000': 'mil'
 };
 
 function normalizarTokenVoz(token, silabaObjNorm) {
@@ -876,14 +1104,29 @@ const coletillas = [
   "A ver qué se me ocurre...", "Interesante..."
 ];
 
+// ---------- 2. Síntesis de Voz con Pausa Estricta del Micrófono (No se escucha a sí misma) ----------
+function pausarReconocimientoMientrasHabla() {
+  isListening = false;
+  if (window.AndroidVoice) {
+    try { window.AndroidVoice.stopListening(); } catch (e) {}
+  }
+  if (recon) {
+    try { if (typeof recon.abort === 'function') recon.abort(); else recon.stop(); } catch (e) {}
+  }
+  micBtn.classList.remove('bg-red-500', 'animate-pulse');
+  micBtn.classList.add('bg-blue-500');
+  if (micDeseado) {
+    micStatus.textContent = "🔊 Máquina hablando (micrófono en espera)...";
+  }
+}
+
 function hablar(texto, callback) {
   if (cancelarHablaPrevia) { cancelarHablaPrevia(); cancelarHablaPrevia = null; }
   hablando = true;
+  ignorarVozHasta = Date.now() + 15000;
 
-  if (window.AndroidVoice && isListening) {
-    try { window.AndroidVoice.stopListening(); } catch (e) {}
-    isListening = false;
-  }
+  // Apagar micrófono inmediatamente antes de emitir cualquier sonido
+  pausarReconocimientoMientrasHabla();
 
   let terminado = false;
   let timer = null;
@@ -898,15 +1141,18 @@ function hablar(texto, callback) {
     terminado = true;
     clearTimeout(timer);
     if (cancelarHablaPrevia === cancelar) cancelarHablaPrevia = null;
-    hablando = false;
-    ignorarVozHasta = Date.now() + 600;
-    if (callback) callback();
-    if (micDeseado && modoActual !== "" && !esTurnoMaquina) {
-      setTimeout(arrancarRecon, 250);
-    }
+    // Margen antieco de 850 ms tras terminar de hablar antes de aceptar voz
+    ignorarVozHasta = Date.now() + 850;
+    setTimeout(() => {
+      hablando = false;
+      if (callback) callback();
+      if (micDeseado && modoActual !== "" && !esTurnoMaquina) {
+        arrancarRecon();
+      }
+    }, 400);
   };
   cancelarHablaPrevia = cancelar;
-  timer = setTimeout(fin, (texto.length * 100) + 2200);
+  timer = setTimeout(fin, (texto.length * 105) + 2400);
 
   if (window.AndroidVoice) {
     window._onNativeTtsDone = fin;
@@ -966,9 +1212,8 @@ async function obtenerPalabrasCandidatasRAE(prefijoNormalizado) {
       const silabas = silabear(p);
       return silabas.length >= 2 && normalizarSilaba(silabas[0]) === prefijoNormalizado;
     });
-    // Priorizar palabras conocidas o de longitud habitual (4 a 7 letras) para evitar arcaísmos extraños
     const conocidas = todas.filter(p => DEFINICIONES_LOCALES[p] || DEFINICIONES_LOCALES[SinTildes(p)]);
-    if (conocidas.length > 0 && Math.random() < 0.8) return conocidas;
+    if (conocidas.length > 0 && Math.random() < 0.85) return conocidas;
     const comunes = todas.filter(p => p.length >= 4 && p.length <= 7);
     if (comunes.length > 0) return comunes;
     return todas;
@@ -1068,6 +1313,7 @@ function mostrarTurnoHumano() {
 function bloquearInputs(bloquear) {
   textInput.disabled = bloquear;
   sendBtn.disabled = bloquear;
+  micBtn.disabled = !recon;
   if (bloquear) {
     btnRendirse.classList.add('opacity-50', 'pointer-events-none');
   } else {
@@ -1083,7 +1329,7 @@ function mostrarFinJuego() {
   finJuegoBotones.classList.remove('hidden');
   if (micDeseado) {
     micStatus.textContent = "Di «otra vez» para reiniciar la partida";
-    setTimeout(arrancarRecon, 300);
+    setTimeout(arrancarRecon, 350);
   }
 }
 
@@ -1116,8 +1362,12 @@ window.reiniciarMismaPartida = function() {
   contadorPalabras = 0;
   recordSuperadoEnPartida = false;
   actualizarMarcadoresUI();
-  if (micDeseado) iniciarMicrofono();
-  hablar("¡Vamos otra vez!", () => iniciarJuegoTablero());
+  mantenerPantallaActivaTotal();
+
+  // Mantenemos micDeseado = true pero NO abrimos el micro hasta que termine de hablar en iniciarJuegoTablero
+  micDeseado = true;
+  pausarReconocimientoMientrasHabla();
+  iniciarJuegoTablero(true);
 };
 
 function agregarPalabraUI(palabra, silabas, esInicial = false, indiceColor = 0, etiqueta = "", definicion = "") {
@@ -1194,6 +1444,7 @@ async function explicarUltimaPalabra() {
   });
 }
 
+// ---------- Arranque del Juego: El micrófono NO se activa hasta que la máquina termina de hablar ----------
 window.arranqueVinculado = function(modo) {
   window.cerrarPortada();
   try {
@@ -1230,11 +1481,15 @@ window.arranqueVinculado = function(modo) {
   modalMenu.classList.add('hidden');
   modalMenu.style.display = 'none';
 
-  iniciarMicrofono();
-  iniciarJuegoTablero();
+  mantenerPantallaActivaTotal();
+
+  // Marcamos que queremos usar el micrófono, pero lo mantenemos en pausa mientras la máquina saluda
+  micDeseado = true;
+  pausarReconocimientoMientrasHabla();
+  iniciarJuegoTablero(false);
 };
 
-function iniciarJuegoTablero() {
+function iniciarJuegoTablero(esReinicio = false) {
   historialPalabras = [];
   gameBoard.innerHTML = '';
 
@@ -1246,14 +1501,21 @@ function iniciarJuegoTablero() {
   agregarPalabraUI(palabraInicial, silabasIniciales, true, 0);
 
   esTurnoMaquina = false;
-  mostrarTurnoHumano();
-  bloquearInputs(false);
+  bloquearInputs(true);
+  actualizarInterfazTurno("🔊 Presentando primera palabra...", "bg-amber-700");
 
   const listaSaludo = nombres.length > 1
     ? (nombres.slice(0, -1).join(', ') + ' y ' + nombres[nombres.length - 1])
     : nombres[0];
 
-  hablar("¡Hola " + listaSaludo + "! Primera palabra: " + palabraInicial + ".", () => {
+  const fraseInicio = esReinicio
+    ? ("¡Vamos otra vez! Primera palabra: " + palabraInicial + ".")
+    : ("¡Hola " + listaSaludo + "! Primera palabra: " + palabraInicial + ".");
+
+  // El micrófono se activa ÚNICAMENTE dentro del callback cuando hablar() ha concluido del todo
+  hablar(fraseInicio, () => {
+    mostrarTurnoHumano();
+    bloquearInputs(false);
     arrancarRecon();
   });
 }
@@ -1301,7 +1563,8 @@ window.meRindo = async function() {
       agregarPalabraUI(elegida, silabasElegida, false, 1, "💡 Esta valía (RAE)", significado);
       actualizarInterfazTurno("🏆 " + textoGanador, "bg-green-600");
 
-      hablar("Podrías haber dicho: " + elegida + ". " + significado + " " + textoGanador + " Di otra vez para reiniciar.", mostrarFinJuego);
+      const msgRecord = recordSuperadoEnPartida ? (" ¡Nuevo récord de " + recordPalabras + " palabras!") : "";
+      hablar("Podrías haber dicho: " + elegida + ". " + significado + " " + textoGanador + msgRecord + " Di otra vez para reiniciar.", mostrarFinJuego);
     } else {
       actualizarInterfazTurno("🤝 Empate técnico", "bg-gray-600");
       hablar("No existía ninguna palabra en la RAE con la sílaba " + silabaParaVoz(silabaObjetivo) + ". ¡Empate técnico! Di otra vez para reiniciar.", mostrarFinJuego);
@@ -1316,7 +1579,7 @@ function esPreguntaDeSignificado(texto) {
 
 window.procesarEntrada = async function(texto, esMaquina = false) {
   if (juegoTerminado) return;
-  if (!esMaquina && (esTurnoMaquina || textInput.disabled)) return;
+  if (!esMaquina && (esTurnoMaquina || textInput.disabled || hablando)) return;
 
   const textoBruto = (texto || "").trim();
   if (!textoBruto) return;
@@ -1419,6 +1682,7 @@ window.procesarEntrada = async function(texto, esMaquina = false) {
   }
 };
 
+// ---------- Reconocimiento de Voz Inteligente ----------
 function uiMic(encendido) {
   micBtn.classList.toggle('bg-red-500', encendido);
   micBtn.classList.toggle('bg-blue-500', !encendido);
@@ -1429,6 +1693,7 @@ function uiMic(encendido) {
 }
 
 function procesarFraseVoz(rawInput) {
+  // Ignorar cualquier entrada si la máquina está hablando o en periodo antieco
   if (modoActual === "" || hablando || Date.now() < ignorarVozHasta) return;
   const alternativas = (rawInput || "").split('|').map(s => s.trim().toLowerCase()).filter(Boolean);
   if (alternativas.length === 0) return;
@@ -1443,7 +1708,7 @@ function procesarFraseVoz(rawInput) {
     return;
   }
 
-  if (esTurnoMaquina) return;
+  if (esTurnoMaquina || textInput.disabled) return;
 
   for (const alt of alternativas) {
     if (/^(otra vez|jugar otra vez)$/.test(alt)) {
@@ -1468,6 +1733,13 @@ function procesarFraseVoz(rawInput) {
   }
 
   const sObj = normalizarSilaba(silabaObjetivo);
+
+  // Filtro adicional contra eco accidental del saludo inicial ("hola")
+  if (historialPalabras.length === 1 && sObj !== 'o' && sObj !== 'ho') {
+    const limpioInicial = normalizarTokenVoz(alternativas[0].split(/\s+/)[0], sObj);
+    if (limpioInicial === 'hola' || limpioInicial === 'primera') return;
+  }
+
   let mejorPalabra = null;
   for (const alt of alternativas) {
     const primera = normalizarTokenVoz(alt.split(/\s+/)[0], sObj);
@@ -1492,9 +1764,17 @@ try {
   if (window.AndroidVoice) {
     recon = {
       start() { window.AndroidVoice.startListening(); },
-      stop() { window.AndroidVoice.stopListening(); }
+      stop() { window.AndroidVoice.stopListening(); },
+      abort() { window.AndroidVoice.stopListening(); }
     };
-    window._onNativeSrStart = () => { isListening = true; uiMic(true); };
+    window._onNativeSrStart = () => {
+      if (hablando) {
+        pausarReconocimientoMientrasHabla();
+        return;
+      }
+      isListening = true;
+      uiMic(true);
+    };
     window._onNativeSrResult = (frase) => { procesarFraseVoz(frase); };
     window._onNativeSrError = (err) => {
       isListening = false;
@@ -1516,8 +1796,16 @@ try {
     recon.continuous = true;
     recon.interimResults = false;
     recon.maxAlternatives = 5;
-    recon.onstart = () => { isListening = true; uiMic(true); };
+    recon.onstart = () => {
+      if (hablando) {
+        pausarReconocimientoMientrasHabla();
+        return;
+      }
+      isListening = true;
+      uiMic(true);
+    };
     recon.onresult = (event) => {
+      if (hablando || Date.now() < ignorarVozHasta) return;
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
         if (!result.isFinal) continue;
@@ -1526,11 +1814,27 @@ try {
         procesarFraseVoz(alts.join('|'));
       }
     };
+    recon.onerror = (event) => {
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        if (document.visibilityState !== 'visible') return;
+        micDeseado = false;
+        uiMic(false);
+        micStatus.textContent = "Permiso de micrófono denegado";
+      }
+    };
     recon.onend = () => {
       isListening = false;
-      if (micDeseado && modoActual !== "") setTimeout(arrancarRecon, 300);
-      else uiMic(false);
+      if (micDeseado && modoActual !== "" && !hablando) {
+        micStatus.textContent = "Reconectando micrófono...";
+        setTimeout(arrancarRecon, 300);
+      } else if (!micDeseado) {
+        uiMic(false);
+      }
     };
+  } else {
+    micStatus.textContent = "Voz no soportada";
+    micBtn.disabled = true;
+    micBtn.classList.replace('bg-blue-500', 'bg-gray-400');
   }
 } catch (e) {}
 
@@ -1545,14 +1849,14 @@ function arrancarRecon(intentos = 0) {
   try {
     recon.start();
   } catch (err) {
-    if (intentos < 15) setTimeout(() => arrancarRecon(intentos + 1), 300);
+    if (intentos < 20) setTimeout(() => arrancarRecon(intentos + 1), 300);
   }
 }
 
 function iniciarMicrofono() {
   if (!recon || modoActual === "") return;
   micDeseado = true;
-  arrancarRecon();
+  if (!hablando) arrancarRecon();
 }
 
 window.alternarMicrofono = function() {
@@ -1566,9 +1870,11 @@ function detenerMicrofono() {
   try { if (recon) recon.stop(); } catch (e) {}
   uiMic(false);
 }
+
+pedirWakeLock();
 </script>
 
-<!-- SCRIPT 3: GOOGLE ADMOB -->
+<!-- SCRIPT 3: CONEXIÓN BLINDADA GOOGLE ADMOB -->
 <script>
 (function initAdMob() {
   try {
@@ -1582,10 +1888,11 @@ function detenerMicrofono() {
       if (typeof cap.nativePromise === 'function') {
         return cap.nativePromise('AdMob', method, options);
       }
-      return Promise.reject('No AdMob');
+      return Promise.reject('AdMob plugin no disponible');
     };
 
     document.body.style.paddingBottom = '64px';
+
     const BANNER_ID = 'ca-app-pub-6672720525194990/4222281539';
     const INTERSTITIAL_ID = 'ca-app-pub-6672720525194990/1155079157';
     let interstitialReady = false;
@@ -1594,22 +1901,53 @@ function detenerMicrofono() {
       try {
         await callAdMob('prepareInterstitial', { adId: INTERSTITIAL_ID, isTesting: false });
         interstitialReady = true;
-      } catch (e) { interstitialReady = false; }
+      } catch (e) {
+        try {
+          await callAdMob('prepareInterstitial', { adId: INTERSTITIAL_ID, isTesting: true });
+          interstitialReady = true;
+        } catch (e2) { interstitialReady = false; }
+      }
+    }
+
+    async function showInterstitialThen(callback) {
+      try {
+        if (interstitialReady) {
+          await callAdMob('showInterstitial', {});
+          interstitialReady = false;
+          preloadInterstitial();
+        }
+      } catch (e) {}
+      if (callback) callback();
     }
 
     window.addEventListener('load', async () => {
       try {
         await callAdMob('initialize', { initializeForTesting: false });
-        await callAdMob('showBanner', {
-          adId: BANNER_ID,
-          adSize: 'ADAPTIVE_BANNER',
-          position: 'BOTTOM_CENTER',
-          margin: 0,
-          isTesting: false
-        });
+        try {
+          await callAdMob('showBanner', {
+            adId: BANNER_ID,
+            adSize: 'ADAPTIVE_BANNER',
+            position: 'BOTTOM_CENTER',
+            margin: 0,
+            isTesting: false
+          });
+        } catch (errReal) {
+          await callAdMob('showBanner', {
+            adId: BANNER_ID,
+            adSize: 'ADAPTIVE_BANNER',
+            position: 'BOTTOM_CENTER',
+            margin: 0,
+            isTesting: true
+          });
+        }
         await preloadInterstitial();
       } catch (e) {}
     });
+
+    const origReiniciar = window.reiniciarMismaPartida;
+    window.reiniciarMismaPartida = function() {
+      showInterstitialThen(() => origReiniciar());
+    };
   } catch (e) {}
 })();
 </script>
