@@ -23,7 +23,7 @@ window.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Luckiest+Guy&family=Nunito:wght@700;900&display=swap');
 html, body { height: 100%; }
 body {
   font-family: 'Nunito', sans-serif;
@@ -39,17 +39,18 @@ input { -webkit-user-select: text; user-select: text; }
   border: 4px solid #a67c52;
   box-shadow: inset 0 0 10px rgba(139,90,43,0.5), 0 8px 15px rgba(0,0,0,0.2);
 }
-.titulo-3d-azul {
-  color: #3b82f6;
-  -webkit-text-stroke: 1.5px #1e3a8a;
+.titulo-3d-negro-comic {
+  font-family: 'Luckiest Guy', 'Bangers', 'Comic Sans MS', 'Chalkboard SE', cursive;
+  color: #27272a;
+  -webkit-text-stroke: 1.5px #000000;
   text-shadow:
-    0 1px 0 #2563eb,
-    0 2px 0 #1d4ed8,
-    0 3px 0 #1e40af,
-    0 4px 0 #1e3a8a,
-    0 5px 0 #172554,
-    0 7px 10px rgba(0, 0, 0, 0.45);
-  letter-spacing: 0.05em;
+    0 1px 0 #18181b,
+    0 2px 0 #09090b,
+    0 3px 0 #000000,
+    0 4px 0 #000000,
+    0 5px 0 #000000,
+    2px 6px 8px rgba(0, 0, 0, 0.55);
+  letter-spacing: 0.06em;
 }
 @keyframes flotar {
   0%, 100% { transform: translateY(0); }
@@ -70,11 +71,11 @@ input { -webkit-user-select: text; user-select: text; }
   </button>
 </div>
 
-<!-- MENÚ PRINCIPAL (CON TÍTULO "ENCADENADAS" EN 3D AZUL Y MÁXIMO 4 JUGADORES) -->
+<!-- MENÚ PRINCIPAL (TÍTULO 3D NEGRO CON FUENTE CÓMIC Y MÁXIMO 4 JUGADORES) -->
 <div id="modal-menu" role="dialog" aria-modal="true" class="fixed inset-0 z-50 bg-black/60 flex flex-col items-center justify-center p-4 backdrop-blur-sm">
   <div class="madera-textura w-full max-w-sm max-h-[92dvh] overflow-y-auto rounded-3xl p-5 flex flex-col items-center shadow-2xl">
     <img src="icon-192.png" onerror="this.onerror=null;this.src='31541.png'" alt="Icono Encadenadas" class="w-16 h-16 rounded-2xl shadow-lg mb-1 border-2 border-[#a67c52]">
-    <h1 class="titulo-3d-azul text-3xl font-black my-2 text-center">ENCADENADAS</h1>
+    <h1 class="titulo-3d-negro-comic text-3xl my-2 text-center">ENCADENADAS</h1>
 
     <div class="bg-[#5c3a21] text-amber-300 font-black text-sm px-4 py-1 rounded-full shadow mb-3 border border-[#a67c52]">
       🏆 Récord actual: <span id="menu-record">0</span> palabras
@@ -106,14 +107,14 @@ input { -webkit-user-select: text; user-select: text; }
   </div>
 </div>
 
-<!-- CABECERA CON BOTÓN HOME 🏠 Y CONTADOR DE RÉCORD -->
+<!-- CABECERA CON BOTÓN HOME 🏠 Y TÍTULO 3D NEGRO CÓMIC -->
 <header class="z-10 w-full max-w-md flex flex-col items-center mt-1 relative">
   <div class="madera-textura text-center py-2 px-4 rounded-2xl w-full relative shadow-lg flex flex-col items-center">
     <button id="btn-home" type="button" onclick="window.irAlMenuHome()" aria-label="Volver al menú" class="absolute left-3 top-2.5 bg-[#5c3a21] hover:bg-[#3e2716] text-white text-xl w-10 h-10 rounded-xl shadow-md border-2 border-[#a67c52] flex items-center justify-center active:scale-90 transition-transform">
       🏠
     </button>
 
-    <h1 class="titulo-3d-azul text-xl font-black tracking-wide">ENCADENADAS</h1>
+    <h1 class="titulo-3d-negro-comic text-2xl tracking-wider">ENCADENADAS</h1>
 
     <div class="flex items-center justify-center gap-2 mt-1">
       <div class="bg-white/90 text-slate-800 text-xs font-black px-3 py-0.5 rounded-full border border-[#a67c52] shadow-sm">
@@ -228,7 +229,7 @@ window.cargarDatosMenu = function() {
 window.cargarDatosMenu();
 </script>
 
-<!-- SCRIPT 2: MOTOR PRINCIPAL DEL JUEGO, FONÉTICA DE SÍLABAS Y DICCIONARIO DE SINÓNIMOS -->
+<!-- SCRIPT 2: MOTOR PRINCIPAL DEL JUEGO, FONÉTICA DE SÍLABAS Y MOTOR REAL DE SINÓNIMOS/SIGNIFICADOS -->
 <script>
 const gameBoard = document.getElementById('game-board');
 const micBtn = document.getElementById('mic-btn');
@@ -271,7 +272,7 @@ const COLORES_JUGADORES = [
   { bg: "bg-pink-600", border: "border-pink-500", text: "text-pink-700", sil: "text-pink-500" }
 ];
 
-// ---------- Función silabaParaVoz(): lectura natural de sílabas y "tó" en español ----------
+// ---------- Función silabaParaVoz(): lectura corrida sin deletrear y "tó" en español ----------
 const FONETICA_SILABAS_VOZ = {
   'to': 'tó', 'do': 'dó', 'no': 'nó', 'so': 'só', 'go': 'gó', 'lo': 'ló',
   'po': 'pó', 'ro': 'ró', 'co': 'có', 'mo': 'mó', 'bo': 'bó', 'vo': 'vó',
@@ -367,7 +368,7 @@ async function cargarDiccionarioRAE() {
 }
 setTimeout(cargarDiccionarioRAE, 500);
 
-// ---------- Gran Diccionario Offline de Sinónimos y Definiciones Cortas (3 a 8 palabras) ----------
+// ---------- Diccionario de Sinónimos y Definiciones Cortas ----------
 const DEFINICIONES_LOCALES = {
   'palabra': 'Término, vocablo o expresión hablada o escrita.',
   'camino': 'Senda, vía o ruta de paso.',
@@ -387,6 +388,9 @@ const DEFINICIONES_LOCALES = {
   'ponderar': 'Elogiar, alabar o examinar con cuidado.',
   'tapón': 'Pieza para cerrar o tapar agujeros.',
   'tapon': 'Pieza para cerrar o tapar agujeros.',
+  'taparote': 'Cubierta, tapa grande o pieza para tapar.',
+  'tapa': 'Pieza que cierra o cubre un recipiente.',
+  'tapar': 'Cubrir, cerrar u ocultar algo.',
   'casa': 'Vivienda, hogar o edificio habitable.',
   'perro': 'Can, mamífero doméstico fiel al humano.',
   'gato': 'Felino doméstico ágil y maullador.',
@@ -676,6 +680,8 @@ const DEFINICIONES_LOCALES = {
 function recortarSignificadoBreve(texto) {
   if (!texto) return "";
   let limpio = texto
+    .replace(/\{\{plm\|([^}|]+)(?:\|[^}]*)?\}\}/gi, '$1')
+    .replace(/\{\{(?:l\+|l|m|f|sinónimo|sinonimo)\|es\|([^}|]+)(?:\|[^}]*)?\}\}/gi, '$1')
     .replace(/\{\{[^}]*\}\}/g, '')
     .replace(/\[\[([^\]|]+\|)?([^\]]+)\]\]/g, '$2')
     .replace(/\[.*?\]/g, '')
@@ -698,53 +704,40 @@ function recortarSignificadoBreve(texto) {
   return frase.endsWith('.') ? frase : (frase + '.');
 }
 
-function deducirSignificadoPorMorfologia(p) {
-  const sin = SinTildes(p);
-  if (DEFINICIONES_LOCALES[sin]) return DEFINICIONES_LOCALES[sin];
-  if (p.endsWith('mente') && p.length > 7) {
-    return 'De manera ' + p.slice(0, -5) + '.';
+// Genera posibles raíces/lemas base si una palabra derivada (ej. "taparote") no está directa
+function obtenerCandidatosRaiz(p) {
+  const candidatos = [];
+  const agregar = (w) => {
+    if (w && w.length >= 3 && !candidatos.includes(w)) candidatos.push(w);
+  };
+
+  const sufijos = [
+    'arías', 'erías', 'irías', 'ábamos', 'asteis', 'isteis',
+    'mente', 'ísimo', 'ísima', 'ísimos', 'ísimas',
+    'arote', 'arota', 'etazo', 'etón', 'etona', 'ecito', 'ecita', 'ecillo', 'ecilla',
+    'ote', 'ota', 'otes', 'otas', 'azo', 'aza', 'azos', 'azas',
+    'ón', 'on', 'ona', 'ones', 'onas', 'ito', 'ita', 'itos', 'itas',
+    'illo', 'illa', 'illos', 'illas', 'uco', 'uca', 'ejo', 'eja',
+    'tivo', 'tiva', 'tivos', 'tivas', 'ivo', 'iva', 'ivos', 'ivas',
+    'dor', 'dora', 'dores', 'doras', 'ble', 'bles', 'oso', 'osa', 'osos', 'osas',
+    'ero', 'era', 'eros', 'eras', 'ista', 'istas', 'dad', 'tad',
+    'ando', 'iendo', 'ado', 'ada', 'ados', 'adas', 'ido', 'ida', 'idos', 'idas',
+    'es', 'as', 'os', 'a', 'o', 's'
+  ];
+
+  for (const suf of sufijos) {
+    if (p.endsWith(suf) && p.length - suf.length >= 3) {
+      const base = p.slice(0, p.length - suf.length);
+      agregar(base);
+      agregar(base + 'a');
+      agregar(base + 'o');
+      agregar(base + 'e');
+      agregar(base + 'ar');
+      agregar(base + 'er');
+      agregar(base + 'ir');
+    }
   }
-  if (/(tivo|tiva|tivos|tivas)$/.test(p)) {
-    const raiz = p.replace(/(tivo|tiva|tivos|tivas)$/, '');
-    return 'Que tiene capacidad o tendencia a ' + raiz + 'r.';
-  }
-  if (/(ción|cion|sión|sion)$/.test(p)) {
-    return 'Acción o efecto relacionado con ' + p + '.';
-  }
-  if (/(dora|dor|dores|doras)$/.test(p) && p.length > 5) {
-    return 'Que realiza la acción de ' + p.replace(/(dora|dor|dores|doras)$/, 'r') + '.';
-  }
-  if (/(able|ible|ables|ibles)$/.test(p) && p.length > 5) {
-    return 'Que puede ser objeto de dicha acción.';
-  }
-  if (/(oso|osa|osos|osas)$/.test(p) && p.length > 5) {
-    return 'Abundante en ' + p.replace(/(oso|osa|osos|osas)$/, '') + ' o con su cualidad.';
-  }
-  if (/(ero|era|eros|eras)$/.test(p) && p.length > 5) {
-    return 'Relacionado con ' + p.replace(/(ero|era|eros|eras)$/, '') + ' o su oficio.';
-  }
-  if (/(ista|istas)$/.test(p) && p.length > 5) {
-    return 'Persona dedicada o partidaria de esa actividad.';
-  }
-  if (/(dad|tad|dades)$/.test(p) && p.length > 5) {
-    return 'Cualidad o condición propia de ' + p + '.';
-  }
-  if (/(ito|ita|illo|illa)$/.test(p) && p.length > 5) {
-    return 'Variante diminutiva o afectiva del término.';
-  }
-  if (/(azo|aza|ón|on|ona)$/.test(p) && p.length > 5) {
-    return 'Aumentativo, golpe o elemento de tamaño mayor.';
-  }
-  if (/(ar|er|ir)$/.test(p)) {
-    return 'Verbo castellano: ejecutar la acción de ' + p + '.';
-  }
-  if (/(ando|iendo)$/.test(p)) {
-    return 'En proceso de realizar la acción (' + p + ').';
-  }
-  if (/(ado|ada|ido|ida)$/.test(p)) {
-    return 'Que ha recibido la acción o tiene esa cualidad.';
-  }
-  return "";
+  return candidatos;
 }
 
 async function consultarWikcionarioHTML(termino) {
@@ -762,10 +755,30 @@ async function consultarWikcionarioHTML(termino) {
     const candidatos = doc.querySelectorAll('dl > dd, ol > li');
     for (const nodo of candidatos) {
       const txt = (nodo.textContent || "").trim();
-      if (!txt || txt.length < 6) continue;
-      if (/^(Forma del|Plural de|Femenino de|Masculino de|Participio de|Gerundio de|Véase|Sinónimo)/i.test(txt)) continue;
+      if (!txt || txt.length < 5) continue;
+      if (/^(Forma del|Plural de|Femenino de|Masculino de|Participio de|Gerundio de|Véase)/i.test(txt)) continue;
       const breve = recortarSignificadoBreve(txt);
-      if (breve && breve.length >= 6) return breve;
+      if (breve && breve.length >= 5) return breve;
+    }
+  } catch (e) {}
+  return "";
+}
+
+async function consultarSinonimosDatamuse(termino) {
+  try {
+    const url = 'https://api.datamuse.com/words?ml=' + encodeURIComponent(termino) + '&v=es&max=8';
+    const res = await fetch(url);
+    if (!res.ok) return "";
+    const data = await res.json();
+    if (!Array.isArray(data) || data.length === 0) return "";
+    const tSin = SinTildes(termino);
+    const sinonimos = data
+      .map(item => (item && item.word ? item.word.toLowerCase().trim() : ""))
+      .filter(w => w && w.length >= 3 && SOLO_LETRAS.test(w) && SinTildes(w) !== tSin && !w.startsWith(tSin.slice(0, 4)))
+      .slice(0, 3);
+    if (sinonimos.length > 0) {
+      const lista = sinonimos.join(', ');
+      return 'Sinónimo o afín: ' + lista.charAt(0).toUpperCase() + lista.slice(1) + '.';
     }
   } catch (e) {}
   return "";
@@ -774,24 +787,38 @@ async function consultarWikcionarioHTML(termino) {
 async function obtenerSignificadoPalabra(palabra) {
   const p = (palabra || "").toLowerCase().trim();
   if (!p) return "Sin palabra en el tablero.";
+
+  // 1. Búsqueda directa en diccionario local
   if (DEFINICIONES_LOCALES[p]) return DEFINICIONES_LOCALES[p];
   const pSin = SinTildes(p);
   if (DEFINICIONES_LOCALES[pSin]) return DEFINICIONES_LOCALES[pSin];
 
-  if (p.endsWith('s') && DEFINICIONES_LOCALES[p.slice(0, -1)]) {
-    return DEFINICIONES_LOCALES[p.slice(0, -1)];
-  }
-  if (p.endsWith('es') && DEFINICIONES_LOCALES[p.slice(0, -2)]) {
-    return DEFINICIONES_LOCALES[p.slice(0, -2)];
+  const candidatosRaiz = obtenerCandidatosRaiz(p);
+  for (const cand of candidatosRaiz) {
+    if (DEFINICIONES_LOCALES[cand]) return DEFINICIONES_LOCALES[cand];
+    const candSin = SinTildes(cand);
+    if (DEFINICIONES_LOCALES[candSin]) return DEFINICIONES_LOCALES[candSin];
   }
 
+  // 2. Consulta directa a Wikcionario en español
   let def = await consultarWikcionarioHTML(p);
   if (def) return def;
 
-  if (p.endsWith('iva')) def = await consultarWikcionarioHTML(p.slice(0, -1) + 'o');
-  else if (p.endsWith('as') || p.endsWith('os')) def = await consultarWikcionarioHTML(p.slice(0, -1));
-  if (def) return def;
+  // 3. Si es una palabra derivada o flexionada (ej. "taparote"), buscar su lema/raíz en Wikcionario
+  for (const cand of candidatosRaiz.slice(0, 5)) {
+    def = await consultarWikcionarioHTML(cand);
+    if (def) return def;
+  }
 
+  // 4. Consultar sinónimos reales en español (Datamuse API)
+  const sin = await consultarSinonimosDatamuse(p);
+  if (sin) return sin;
+  for (const cand of candidatosRaiz.slice(0, 3)) {
+    const sinRaiz = await consultarSinonimosDatamuse(cand);
+    if (sinRaiz) return sinRaiz;
+  }
+
+  // 5. Respaldo en Wikipedia en español
   try {
     const urlWiki = 'https://es.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(p);
     const res2 = await fetch(urlWiki);
@@ -804,11 +831,14 @@ async function obtenerSignificadoPalabra(palabra) {
     }
   } catch (e) {}
 
-  const morf = deducirSignificadoPorMorfologia(p);
-  if (morf) return morf;
+  // 6. Deducción por familia léxica en el diccionario local
+  for (const clave of Object.keys(DEFINICIONES_LOCALES)) {
+    if (clave.length >= 4 && (pSin.startsWith(SinTildes(clave).slice(0, 4)))) {
+      return DEFINICIONES_LOCALES[clave];
+    }
+  }
 
-  const sils = silabear(p);
-  return 'Vocablo español (' + sils.join('-') + ').';
+  return "Término del diccionario de la RAE.";
 }
 
 const MAPA_VOZ_EXACTO = {
@@ -930,12 +960,18 @@ async function verificarPalabraEnServidor(palabra) {
 async function obtenerPalabrasCandidatasRAE(prefijoNormalizado) {
   await cargarDiccionarioRAE();
   if (arrayDiccionarioRAE) {
-    return arrayDiccionarioRAE.filter(p => {
+    const todas = arrayDiccionarioRAE.filter(p => {
       if (p.length < 3 || historialPalabras.includes(p)) return false;
       if (!SOLO_LETRAS.test(p)) return false;
       const silabas = silabear(p);
       return silabas.length >= 2 && normalizarSilaba(silabas[0]) === prefijoNormalizado;
     });
+    // Priorizar palabras conocidas o de longitud habitual (4 a 7 letras) para evitar arcaísmos extraños
+    const conocidas = todas.filter(p => DEFINICIONES_LOCALES[p] || DEFINICIONES_LOCALES[SinTildes(p)]);
+    if (conocidas.length > 0 && Math.random() < 0.8) return conocidas;
+    const comunes = todas.filter(p => p.length >= 4 && p.length <= 7);
+    if (comunes.length > 0) return comunes;
+    return todas;
   }
   return [];
 }
