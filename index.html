@@ -69,14 +69,14 @@ input { -webkit-user-select: text; user-select: text; }
       🏆 Récord actual: <span id="menu-record">0</span> palabras
     </div>
 
-    <label class="text-xs font-extrabold text-[#5c3a21] mb-1 text-center uppercase tracking-wider">Número de jugadores (Máximo 4):</label>
+    <label class="text-xs font-extrabold text-[#5c3a21] mb-1 text-center uppercase tracking-wider">Número de jugadores (Multijugador):</label>
     <div id="selector-num-jugadores" class="grid grid-cols-3 gap-2 w-full mb-3">
-      <button type="button" id="btn-num-2" onclick="window.elegirJugadores(2)" class="bg-orange-600 text-white font-black py-2 rounded-xl border-2 border-[#5c3a21] shadow active:scale-95">2 Jugadores</button>
-      <button type="button" id="btn-num-3" onclick="window.elegirJugadores(3)" class="bg-white text-slate-700 font-black py-2 rounded-xl border-2 border-orange-300 shadow active:scale-95">3 Jugadores</button>
-      <button type="button" id="btn-num-4" onclick="window.elegirJugadores(4)" class="bg-white text-slate-700 font-black py-2 rounded-xl border-2 border-orange-300 shadow active:scale-95">4 Jugadores</button>
+      <button type="button" id="btn-num-2" onclick="window.elegirJugadores(2)" class="bg-orange-600 text-white font-black py-2 rounded-xl border-2 border-[#5c3a21] shadow active:scale-95">2</button>
+      <button type="button" id="btn-num-3" onclick="window.elegirJugadores(3)" class="bg-white text-slate-700 font-black py-2 rounded-xl border-2 border-orange-300 shadow active:scale-95">3</button>
+      <button type="button" id="btn-num-4" onclick="window.elegirJugadores(4)" class="bg-white text-slate-700 font-black py-2 rounded-xl border-2 border-orange-300 shadow active:scale-95">4</button>
     </div>
 
-    <div id="contenedor-inputs-jugadores" class="w-full space-y-2 mb-4">
+    <div id="contenedor-inputs-jugadores" class="w-full space-y-2 mb-4 max-h-44 overflow-y-auto pr-1">
       <input type="text" id="input-nombre-1" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 1 (Humano)" autocomplete="off" class="w-full py-1.5 px-3 rounded-xl text-center font-bold text-base text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
       <input type="text" id="input-nombre-2" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 2" autocomplete="off" class="w-full py-1.5 px-3 rounded-xl text-center font-bold text-base text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
       <input type="text" id="input-nombre-3" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 3" autocomplete="off" class="hidden w-full py-1.5 px-3 rounded-xl text-center font-bold text-base text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
@@ -87,7 +87,7 @@ input { -webkit-user-select: text; user-select: text; }
       <span id="txt-pve">👤 Jugador 1 vs 🤖 Máquina (RAE)</span>
     </button>
     <button type="button" id="btn-pvp-menu" onclick="window.arranqueVinculado('pvp')" class="w-full bg-white border-4 border-blue-500 rounded-xl py-2.5 px-4 text-lg font-extrabold text-orange-600 shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
-      <span id="txt-pvp">👥 Multijugador (Hasta 4)</span>
+      <span id="txt-pvp">👥 Jugador 1 vs Jugador 2</span>
     </button>
     <p class="mt-3 text-xs font-bold text-[#5c3a21] text-center">
       Manos libres: di tu palabra, «¿qué significa?», «me rindo» o «otra vez» al terminar.
@@ -95,7 +95,7 @@ input { -webkit-user-select: text; user-select: text; }
   </div>
 </div>
 
-<!-- CABECERA CON BOTÓN HOME 🏠 Y CONTADOR -->
+<!-- CABECERA CON BOTÓN HOME 🏠 Y CONTADOR DE RÉCORD -->
 <header class="z-10 w-full max-w-md flex flex-col items-center mt-1 relative">
   <div class="madera-textura text-center py-2 px-4 rounded-2xl w-full relative shadow-lg flex flex-col items-center">
     <button id="btn-home" type="button" onclick="window.irAlMenuHome()" aria-label="Volver al menú" class="absolute left-3 top-2.5 bg-[#5c3a21] hover:bg-[#3e2716] text-white text-xl w-10 h-10 rounded-xl shadow-md border-2 border-[#a67c52] flex items-center justify-center active:scale-90 transition-transform">
@@ -119,11 +119,14 @@ input { -webkit-user-select: text; user-select: text; }
   </div>
 </header>
 
-<main id="game-board" class="z-10 flex-1 w-full max-w-md flex flex-col justify-end items-center pb-4 space-y-2 overflow-y-auto relative">
+<main id="game-board" class="z-10 flex-1 w-full max-w-md flex flex-col justify-end items-center pb-14 space-y-2 overflow-y-auto relative">
 </main>
 
 <footer class="z-20 w-full max-w-md bg-[#8b5a2b] border-t-8 border-[#5c3a21] rounded-t-3xl p-4 shadow-2xl relative">
-  <button id="btn-rendirse" type="button" onclick="window.meRindo()" class="absolute -top-14 right-4 bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-full shadow-lg border-2 border-red-800 flex items-center gap-1 active:scale-95 transition-transform z-30">
+  <div class="absolute -top-6 right-4 text-3xl transform rotate-12 pointer-events-none" aria-hidden="true">✏️</div>
+  <div class="absolute -top-4 left-6 text-2xl transform -rotate-12 pointer-events-none" aria-hidden="true">🧽</div>
+
+  <button id="btn-rendirse" type="button" onclick="window.meRindo()" class="absolute -top-12 right-4 bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-full shadow-lg border-2 border-red-800 flex items-center gap-1 active:scale-95 transition-transform z-30">
     <span aria-hidden="true">🏳️</span> Me rindo
   </button>
 
@@ -150,11 +153,13 @@ input { -webkit-user-select: text; user-select: text; }
   <div class="text-center mt-2 text-orange-200 text-sm font-semibold" id="mic-status">Micrófono apagado</div>
 </footer>
 
-<!-- SCRIPT 1: MENÚ Y JUGADORES (HASTA 4) -->
+<!-- SCRIPT 1: CONTROL DEL MENÚ Y JUGADORES (2 A 4) -->
 <script>
 window.numJugadores = 2;
 
 window.elegirJugadores = function(n) {
+  if (n < 2) n = 2;
+  if (n > 4) n = 4;
   window.numJugadores = n;
   try { localStorage.setItem('encadenadas_num_jug', String(n)); } catch (e) {}
   for (var i = 2; i <= 4; i++) {
@@ -187,7 +192,7 @@ window.actualizarTextoBotones = function() {
     if (window.numJugadores === 2) {
       tPvp.textContent = "👤 " + n1 + " vs 👤 " + n2;
     } else {
-      tPvp.textContent = "👥 Multijugador (" + window.numJugadores + " Jugadores)";
+      tPvp.textContent = "👥 Jugar " + window.numJugadores + " Jugadores";
     }
   }
 };
@@ -199,6 +204,7 @@ window.cargarDatosMenu = function() {
     document.getElementById('record-palabras').textContent = rec;
     var guardados = parseInt(localStorage.getItem('encadenadas_num_jug') || '2', 10);
     if (guardados >= 2 && guardados <= 4) window.numJugadores = guardados;
+    else window.numJugadores = 2;
     for (var i = 1; i <= 4; i++) {
       var clave = (i === 1) ? 'encadenadas_n1' : (i === 2) ? 'encadenadas_n2' : ('encadenadas_n' + i);
       var val = localStorage.getItem(clave) || "";
@@ -211,7 +217,7 @@ window.cargarDatosMenu = function() {
 window.cargarDatosMenu();
 </script>
 
-<!-- SCRIPT 2: MOTOR DE JUEGO, VOZ Y SIGNIFICADOS -->
+<!-- SCRIPT 2: MOTOR PRINCIPAL DEL JUEGO, FONÉTICA DE SÍLABAS Y DICCIONARIO DE SINÓNIMOS -->
 <script>
 const gameBoard = document.getElementById('game-board');
 const micBtn = document.getElementById('mic-btn');
@@ -254,6 +260,62 @@ const COLORES_JUGADORES = [
   { bg: "bg-pink-600", border: "border-pink-500", text: "text-pink-700", sil: "text-pink-500" }
 ];
 
+// ---------- 1 y 2. Función silabaParaVoz(): lectura natural de sílabas y "tó" en español ----------
+const FONETICA_SILABAS_VOZ = {
+  'to': 'tó', 'do': 'dó', 'no': 'nó', 'so': 'só', 'go': 'gó', 'lo': 'ló',
+  'po': 'pó', 'ro': 'ró', 'co': 'có', 'mo': 'mó', 'bo': 'bó', 'vo': 'vó',
+  'fo': 'fó', 'jo': 'jó', 'zo': 'zó', 'yo': 'yó', 'ho': 'ó', 'cho': 'chó',
+  'llo': 'lló', 'ño': 'ñó', 'tro': 'tró', 'pro': 'pró', 'bro': 'bró',
+  'cro': 'cró', 'dro': 'dró', 'fro': 'fró', 'gro': 'gró', 'plo': 'pló',
+  'clo': 'cló', 'blo': 'bló', 'flo': 'fló', 'glo': 'gló',
+  'tor': 'tór', 'por': 'pór', 'cor': 'cór', 'mor': 'mór', 'sor': 'sór',
+  'lor': 'lór', 'for': 'fór', 'bor': 'bór', 'dor': 'dór', 'nor': 'nór',
+  'tos': 'tós', 'pos': 'pós', 'cos': 'cós', 'mos': 'mós', 'los': 'lós',
+  'dos': 'dós', 'nos': 'nós', 'vos': 'vós', 'sos': 'sós',
+  'me': 'mé', 'te': 'té', 'se': 'sé', 'de': 'dé', 'le': 'lé', 'pe': 'pé',
+  're': 'ré', 'ce': 'zé', 'fe': 'fé', 'ge': 'jé', 'je': 'jé', 've': 'vé',
+  'be': 'bé', 'ne': 'né', 'que': 'ké', 'gue': 'gué', 'che': 'ché', 'lle': 'llé',
+  'mi': 'mí', 'ti': 'tí', 'si': 'sí', 'di': 'dí', 'li': 'lí', 'pi': 'pí',
+  'ri': 'rí', 'ci': 'zí', 'fi': 'fí', 'gi': 'jí', 'ji': 'jí', 'vi': 'ví',
+  'bi': 'bí', 'ni': 'ní', 'qui': 'kí', 'gui': 'guí',
+  'la': 'lá', 'pa': 'pá', 'ta': 'tá', 'sa': 'sá', 'ca': 'cá', 'ma': 'má',
+  'ba': 'bá', 'va': 'vá', 'fa': 'fá', 'ga': 'gá', 'ja': 'já', 'za': 'zá',
+  'da': 'dá', 'na': 'ná', 'ra': 'rá', 'bra': 'brá', 'pla': 'plá', 'cla': 'clá',
+  'tra': 'trá', 'pra': 'prá', 'cra': 'crá', 'dra': 'drá', 'fra': 'frá', 'gra': 'grá',
+  'bla': 'blá', 'fla': 'flá', 'gla': 'glá', 'cha': 'chá', 'lla': 'llá', 'ña': 'ñá',
+  'tu': 'tú', 'su': 'sú', 'lu': 'lú', 'pu': 'pú', 'ru': 'rú', 'cu': 'cú',
+  'mu': 'mú', 'bu': 'bú', 'vu': 'vú', 'fu': 'fú', 'gu': 'gú', 'ju': 'jú',
+  'in': 'ín', 'on': 'ón', 'an': 'án', 'en': 'én', 'un': 'ún',
+  'is': 'ís', 'as': 'ás', 'es': 'és', 'os': 'ós', 'us': 'ús',
+  'lon': 'lón', 'pon': 'pón', 'con': 'cón', 'son': 'són', 'ton': 'tón',
+  'mon': 'món', 'ron': 'rón', 'don': 'dón', 'non': 'nón', 'bon': 'bón',
+  'lan': 'lán', 'pan': 'pán', 'can': 'cán', 'san': 'sán', 'tan': 'tán',
+  'man': 'mán', 'van': 'ván', 'dan': 'dán', 'gran': 'grán', 'plan': 'plán'
+};
+
+function silabaParaVoz(silaba) {
+  let s = (silaba || "").toLowerCase().trim();
+  if (!s) return "";
+  if (FONETICA_SILABAS_VOZ[s]) return FONETICA_SILABAS_VOZ[s];
+  if (/[áéíóú]/.test(s)) return s;
+
+  s = s.replace(/^ge/, 'je').replace(/^gi/, 'ji').replace(/^que/, 'ke').replace(/^qui/, 'ki');
+
+  const mapaTilde = { 'a': 'á', 'e': 'é', 'i': 'í', 'o': 'ó', 'u': 'ú' };
+  const fuertes = ['a', 'e', 'o'];
+  for (let i = s.length - 1; i >= 0; i--) {
+    if (fuertes.includes(s[i])) {
+      return s.slice(0, i) + mapaTilde[s[i]] + s.slice(i + 1);
+    }
+  }
+  for (let i = s.length - 1; i >= 0; i--) {
+    if (mapaTilde[s[i]]) {
+      return s.slice(0, i) + mapaTilde[s[i]] + s.slice(i + 1);
+    }
+  }
+  return s;
+}
+
 function actualizarMarcadoresUI() {
   spanContadorPalabras.textContent = contadorPalabras;
   spanRecordPalabras.textContent = recordPalabras;
@@ -270,6 +332,7 @@ function incrementarContadorPalabras() {
   actualizarMarcadoresUI();
 }
 
+// Diccionario RAE
 let setDiccionarioRAE = null;
 let arrayDiccionarioRAE = null;
 let cargandoDiccionario = null;
@@ -293,70 +356,456 @@ async function cargarDiccionarioRAE() {
 }
 setTimeout(cargarDiccionarioRAE, 500);
 
+// ---------- 3. Gran Diccionario Offline de Sinónimos y Definiciones Cortas (3 a 8 palabras) ----------
 const DEFINICIONES_LOCALES = {
-  'palabra': 'Término o unidad lingüística con significado propio.',
-  'camino': 'Vía o senda para transitar de un lugar a otro.',
-  'verano': 'Estación más cálida del año.',
-  'planeta': 'Cuerpo celeste que gira alrededor de una estrella.',
-  'tesoro': 'Conjunto de objetos de gran valor guardados.',
-  'espejo': 'Superficie que refleja la imagen.',
-  'castillo': 'Edificio fortificado con murallas y torres.',
-  'naranja': 'Fruto redondo y jugoso del naranjo.',
-  'pelota': 'Bola elástica usada en juegos y deportes.',
-  'regalo': 'Obsequio o presente entregado a alguien.',
-  'melón': 'Fruto grande, dulce y jugoso.',
-  'loco': 'Que ha perdido la razón o actúa sin juicio.',
-  'casa': 'Vivienda o edificación para habitar.',
-  'perro': 'Mamífero doméstico fiel de cuatro patas.',
-  'roca': 'Material mineral duro y sólido.',
-  'sapo': 'Anfibio robusto de piel rugosa.'
+  // Palabras de arranque y ejemplos clave
+  'palabra': 'Término, vocablo o expresión hablada o escrita.',
+  'camino': 'Senda, vía o ruta de paso.',
+  'verano': 'Estación más calurosa del año, estío.',
+  'planeta': 'Cuerpo celeste que orbita una estrella.',
+  'tesoro': 'Riqueza, joyas o fortuna oculta.',
+  'espejo': 'Cristal pulido que refleja las imágenes.',
+  'castillo': 'Fortaleza amurallada con torres defensivas.',
+  'naranja': 'Fruto cítrico redondo, dulce y jugoso.',
+  'pelota': 'Bola elástica para jugar o hacer deporte.',
+  'regalo': 'Obsequio, presente o dádiva afectuosa.',
+  'melón': 'Fruto dulce y jugoso de verano.',
+  'melon': 'Fruto dulce y jugoso de verano.',
+  'loco': 'Demente, insensato o imprudente.',
+  'ponderativo': 'Que exagera, encarece o alaba mucho.',
+  'ponderativa': 'Que exagera, encarece o alaba mucho.',
+  'ponderar': 'Elogiar, alabar o examinar con cuidado.',
+  'tapón': 'Pieza para cerrar o tapar agujeros.',
+  'tapon': 'Pieza para cerrar o tapar agujeros.',
+
+  // Eslabones muy frecuentes en partidas
+  'casa': 'Vivienda, hogar o edificio habitable.',
+  'perro': 'Can, mamífero doméstico fiel al humano.',
+  'gato': 'Felino doméstico ágil y maullador.',
+  'roca': 'Piedra grande, dura y muy sólida.',
+  'sapo': 'Anfibio sin cola de piel rugosa.',
+  'rana': 'Anfibio saltador de piel lisa y verde.',
+  'brasa': 'Carbón o leña encendida sin llama.',
+  'pomo': 'Tirador o manilla redonda de puerta.',
+  'mono': 'Simio, primate ágil de cola larga.',
+  'mona': 'Hembra del mono; bonita o graciosa.',
+  'jota': 'Baile y canto tradicional popular español.',
+  'coche': 'Automóvil o vehículo de cuatro ruedas.',
+  'carro': 'Vehículo con ruedas o automóvil.',
+  'pato': 'Ave acuática de pico aplanado.',
+  'taza': 'Vasija pequeña con asa para beber.',
+  'vaso': 'Recipiente cilíndrico para beber líquidos.',
+  'copa': 'Vaso con pie para beber.',
+  'lupa': 'Lente de aumento para ver detalles.',
+  'vaca': 'Hembra del toro que da leche.',
+  'toro': 'Bovino macho adulto y robusto.',
+  'zorro': 'Mamífero cánido astuto de cola peluda.',
+  'lobo': 'Cánido salvaje que vive en manada.',
+  'oso': 'Mamífero grande y corpulento de pelaje denso.',
+  'llave': 'Utensilio metálico para abrir cerraduras.',
+  'rápido': 'Veloz, ágil, ligero o acelerado.',
+  'rapido': 'Veloz, ágil, ligero o acelerado.',
+  'lento': 'Pausado, tranquilo o de poca velocidad.',
+  'mesa': 'Mueble con tablero y patas.',
+  'silla': 'Asiento con respaldo para una persona.',
+  'sillón': 'Asiento amplio y cómodo con brazos.',
+  'sillon': 'Asiento amplio y cómodo con brazos.',
+  'sofá': 'Asiento cómodo para varias personas.',
+  'sofa': 'Asiento cómodo para varias personas.',
+  'cama': 'Mueble con colchón para dormir.',
+  'puerta': 'Abertura o panel para entrar y salir.',
+  'ventana': 'Abertura en la pared para dar luz.',
+  'techo': 'Parte superior que cubre una habitación.',
+  'suelo': 'Superficie inferior por donde se camina.',
+  'pared': 'Muro vertical que cierra un espacio.',
+  'muro': 'Pared gruesa de piedra o ladrillo.',
+  'torre': 'Edificio muy alto respecto a su base.',
+  'puente': 'Construcción para cruzar sobre un río.',
+  'calle': 'Vía pública entre edificios de una población.',
+  'plaza': 'Espacio público amplio dentro de una ciudad.',
+  'parque': 'Jardín público con árboles y paseo.',
+  'jardín': 'Terreno donde se cultivan plantas y flores.',
+  'jardin': 'Terreno donde se cultivan plantas y flores.',
+  'flor': 'Brote colorido y aromático de muchas plantas.',
+  'rosa': 'Flor hermosa y aromática del rosal.',
+  'árbol': 'Planta grande de tronco leñoso y ramas.',
+  'arbol': 'Planta grande de tronco leñoso y ramas.',
+  'hoja': 'Lámina verde de las plantas o papel.',
+  'rama': 'Parte del árbol donde brotan las hojas.',
+  'raíz': 'Órgano subterráneo que fija la planta.',
+  'raiz': 'Órgano subterráneo que fija la planta.',
+  'fruto': 'Producto de las plantas que contiene semillas.',
+  'fruta': 'Fruto comestible de sabor generalmente dulce.',
+  'manzana': 'Fruta redonda y crujiente del manzano.',
+  'pera': 'Fruta jugosa más ancha por abajo.',
+  'plátano': 'Fruta alargada y dulce de piel amarilla.',
+  'platano': 'Fruta alargada y dulce de piel amarilla.',
+  'limón': 'Fruto cítrico amarillo de sabor ácido.',
+  'limon': 'Fruto cítrico amarillo de sabor ácido.',
+  'fresa': 'Fruta roja, pequeña, dulce y aromática.',
+  'uva': 'Fruto pequeño de la vid para vino.',
+  'vino': 'Bebida alcohólica hecha de zumo de uva.',
+  'agua': 'Líquido transparente e inodoro vital.',
+  'fuego': 'Calor y llama producidos por la combustión.',
+  'tierra': 'Planeta que habitamos o suelo cultivable.',
+  'aire': 'Gas atmosférico que respiramos; viento suave.',
+  'viento': 'Corriente de aire en la atmósfera.',
+  'lluvia': 'Agua que cae de las nubes.',
+  'nieve': 'Agua helada blanca que cae de nubes.',
+  'nube': 'Masa de vapor de agua suspendida arriba.',
+  'cielo': 'Espacio azul visible sobre la Tierra.',
+  'sol': 'Estrella luminosa centro de nuestro sistema.',
+  'luna': 'Satélite natural que gira alrededor de la Tierra.',
+  'estrella': 'Astro que brilla con luz propia.',
+  'mar': 'Gran masa de agua salada.',
+  'río': 'Corriente natural y continua de agua.',
+  'rio': 'Corriente natural y continua de agua.',
+  'lago': 'Gran masa de agua rodeada de tierra.',
+  'isla': 'Porción de tierra rodeada de agua.',
+  'monte': 'Elevación natural del terreno, montaña.',
+  'montaña': 'Gran elevación natural del terreno.',
+  'valle': 'Llanura situada entre montañas o alturas.',
+  'playa': 'Orilla arenosa junto al mar o río.',
+  'arena': 'Conjunto de partículas finas de roca.',
+  'piedra': 'Fragmento de roca dura y compacta.',
+  'oro': 'Metal precioso amarillo, brillante y valioso.',
+  'plata': 'Metal precioso blanco y brillante.',
+  'hierro': 'Metal duro y tenaz muy usado.',
+  'acero': 'Aleación resistente de hierro y carbono.',
+  'cobre': 'Metal rojizo gran conductor eléctrico.',
+  'libro': 'Conjunto de hojas impresas encuadernadas.',
+  'papel': 'Lámina fina hecha de pasta vegetal.',
+  'carta': 'Mensaje escrito enviado o naipe de baraja.',
+  'sobre': 'Cubierta de papel para guardar cartas.',
+  'lápiz': 'Utensilio con mina de grafito para escribir.',
+  'lapiz': 'Utensilio con mina de grafito para escribir.',
+  'pluma': 'Pieza de ave o utensilio para escribir.',
+  'tinta': 'Líquido coloreado usado para escribir o imprimir.',
+  'reloj': 'Instrumento que mide e indica la hora.',
+  'tiempo': 'Duración de las cosas o estado atmosférico.',
+  'hora': 'Unidad de tiempo de sesenta minutos.',
+  'minuto': 'Unidad de tiempo de sesenta segundos.',
+  'día': 'Tiempo de veinticuatro horas o claridad solar.',
+  'dia': 'Tiempo de veinticuatro horas o claridad solar.',
+  'noche': 'Parte del día sin luz del sol.',
+  'tarde': 'Parte del día entre mediodía y noche.',
+  'mañana': 'Primera parte del día o día siguiente.',
+  'semana': 'Periodo de siete días consecutivos.',
+  'mes': 'Cada una de las doce partes del año.',
+  'año': 'Tiempo que tarda la Tierra en orbitar.',
+  'mano': 'Parte del brazo humano con cinco dedos.',
+  'dedo': 'Cada una de las cinco partes de la mano.',
+  'pie': 'Extremidad inferior que sirve para caminar.',
+  'pierna': 'Extremidad inferior entre rodilla y tobillo.',
+  'brazo': 'Extremidad superior desde hombro hasta mano.',
+  'cabeza': 'Parte superior del cuerpo donde está el cerebro.',
+  'cara': 'Rostro, parte anterior de la cabeza.',
+  'rostro': 'Cara de las personas, semblante.',
+  'ojo': 'Órgano de la vista.',
+  'boca': 'Abertura para comer, hablar y respirar.',
+  'labio': 'Borde carnoso exterior de la boca.',
+  'diente': 'Pieza ósea blanca para masticar.',
+  'lengua': 'Órgano muscular de la boca o idioma.',
+  'nariz': 'Órgano del olfato situado en la cara.',
+  'oreja': 'Parte externa del órgano del oído.',
+  'pelo': 'Cabello o hebra que crece en la piel.',
+  'cuello': 'Parte que une la cabeza con el tronco.',
+  'pecho': 'Parte frontal superior del tronco humano.',
+  'espalda': 'Parte posterior del tronco humano.',
+  'corazón': 'Órgano que impulsa la sangre; centro afectivo.',
+  'corazon': 'Órgano que impulsa la sangre; centro afectivo.',
+  'sangre': 'Líquido rojo que circula por las venas.',
+  'hueso': 'Pieza dura que forma el esqueleto.',
+  'piel': 'Tejido externo que cubre el cuerpo.',
+  'voz': 'Sonido producido al hablar o cantar.',
+  'canto': 'Acción de cantar; borde o piedra.',
+  'música': 'Arte de combinar sonidos con ritmo y melodía.',
+  'musica': 'Arte de combinar sonidos con ritmo y melodía.',
+  'nota': 'Signo musical, apunte breve o calificación.',
+  'tono': 'Grado de elevación del sonido o matiz.',
+  'ruido': 'Sonido inarticulado, confuso o molesto.',
+  'silencio': 'Ausencia total de ruido o de voz.',
+  'luz': 'Claridad que ilumina y permite ver.',
+  'sombra': 'Zona oscura donde no da la luz.',
+  'color': 'Impresión visual producida por la luz.',
+  'rojo': 'Color vivo como el de la sangre.',
+  'azul': 'Color del cielo despejado y del mar.',
+  'verde': 'Color de la hierba fresca y esmeralda.',
+  'amarillo': 'Color como el del oro o el limón.',
+  'blanco': 'Color claro como la nieve o leche.',
+  'negro': 'Color totalmente oscuro como el carbón.',
+  'gris': 'Color intermedio entre blanco y negro.',
+  'ropa': 'Prendas de vestir en general.',
+  'camisa': 'Prenda de vestir con cuello y botones.',
+  'pantalón': 'Prenda de vestir con dos perneras.',
+  'pantalon': 'Prenda de vestir con dos perneras.',
+  'zapato': 'Calzado que cubre el pie.',
+  'bota': 'Calzado que cubre el pie y tobillo.',
+  'sombrero': 'Prenda para cubrir la cabeza con ala.',
+  'gorra': 'Prenda redonda con visera para la cabeza.',
+  'anillo': 'Aro pequeño que se lleva en el dedo.',
+  'joya': 'Objeto de adorno hecho con metales preciosos.',
+  'bolsa': 'Saco de papel, tela o plástico.',
+  'saco': 'Costal o receptáculo grande de tela.',
+  'caja': 'Recipiente con tapa para guardar objetos.',
+  'bote': 'Recipiente pequeño, salto o barco pequeño.',
+  'barco': 'Embarcación para navegar por el agua.',
+  'nave': 'Barco, vehículo espacial o edificio amplio.',
+  'vela': 'Cilindro de cera con mecha o lona naval.',
+  'remo': 'Pala larga de madera para impulsar botes.',
+  'tren': 'Ferrocarril formado por vagones sobre vías.',
+  'avión': 'Aeronave con alas y motor para volar.',
+  'avion': 'Aeronave con alas y motor para volar.',
+  'vuelo': 'Acción de desplazarse por el aire.',
+  'ala': 'Miembro para volar de aves o aviones.',
+  'ave': 'Animal vertebrado con plumas y dos alas.',
+  'pájaro': 'Ave pequeña voladora.',
+  'pajaro': 'Ave pequeña voladora.',
+  'nido': 'Refugio que construyen las aves para criar.',
+  'huevo': 'Cuerpo redondeado puesto por las aves.',
+  'pez': 'Animal vertebrado acuático con aletas y escamas.',
+  'red': 'Malla de hilos para pescar o atrapar.',
+  'hilo': 'Hebra larga y delgada de fibra textil.',
+  'tela': 'Tejido hecho con muchos hilos entrecruzados.',
+  'lana': 'Pelo suave de las ovejas para tejer.',
+  'seda': 'Hilo fino y suave producido por gusanos.',
+  'pan': 'Alimento básico de harina horneada.',
+  'leche': 'Líquido nutritivo blanco producido por hembras.',
+  'queso': 'Alimento sólido elaborado con leche cuajada.',
+  'sopa': 'Plato líquido con caldo, pasta o verduras.',
+  'caldo': 'Líquido resultante de cocer alimentos.',
+  'carne': 'Parte muscular comestible de los animales.',
+  'pollo': 'Cría de ave, especialmente gallina joven.',
+  'gallo': 'Ave doméstica macho de cresta roja.',
+  'gallina': 'Ave doméstica que pone huevos.',
+  'sal': 'Sustancia blanca cristalina que da sabor.',
+  'miel': 'Sustancia dulce y espesa que hacen las abejas.',
+  'abeja': 'Insecto alado productor de cera y miel.',
+  'mosca': 'Insecto volador común de dos alas.',
+  'hormiga': 'Insecto pequeño y trabajador que vive en colonias.',
+  'araña': 'Arácnido de ocho patas que teje redes.',
+  'caballo': 'Mamífero equino veloz usado para montar.',
+  'burro': 'Asno, animal doméstico de orejas largas.',
+  'oveja': 'Mamífero rumiante cubierto de lana.',
+  'cabra': 'Mamífero rumiante ágil que da leche.',
+  'cerdo': 'Puerco, mamífero doméstico de cuerpo grueso.',
+  'león': 'Gran felino africano llamado rey de la selva.',
+  'leon': 'Gran felino africano llamado rey de la selva.',
+  'tigre': 'Gran felino asiático de piel rayada.',
+  'elefante': 'Gran mamífero con trompa larga y colmillos.',
+  'jirafa': 'Mamífero africano de cuello muy largo.',
+  'ratón': 'Roedor pequeño de cola larga y ágil.',
+  'raton': 'Roedor pequeño de cola larga y ágil.',
+  'rata': 'Roedor mediano de cola larga.',
+  'conejo': 'Mamífero de orejas largas que vive en madrigueras.',
+  'amigo': 'Persona con quien se tiene afecto y confianza.',
+  'vecino': 'Que habita cerca o en el mismo barrio.',
+  'niño': 'Persona que está en la etapa de la infancia.',
+  'niña': 'Persona de corta edad en la infancia.',
+  'padre': 'Varón que tiene uno o más hijos.',
+  'madre': 'Mujer que ha tenido uno o más hijos.',
+  'hijo': 'Descendiente directo respecto de sus padres.',
+  'hermano': 'Persona que comparte los mismos padres.',
+  'rey': 'Monarca o soberano de un reino.',
+  'reina': 'Mujer que ejerce la soberanía real.',
+  'corona': 'Aro de metal precioso símbolo de realeza.',
+  'trono': 'Asiento real con gradas y dosel.',
+  'juego': 'Actividad recreativa sometida a reglas.',
+  'dado': 'Cubo numerado usado en juegos de azar.',
+  'ficha': 'Pieza pequeña usada para jugar o anotar.',
+  'meta': 'Fin u objetivo al que se dirige algo.',
+  'premio': 'Recompensa o galardón por un mérito.',
+  'récord': 'Mejor marca o resultado registrado.',
+  'record': 'Mejor marca o resultado registrado.',
+  'fácil': 'Sencillo, que no requiere gran esfuerzo.',
+  'facil': 'Sencillo, que no requiere gran esfuerzo.',
+  'difícil': 'Complicado, que requiere esfuerzo o habilidad.',
+  'dificil': 'Complicado, que requiere esfuerzo o habilidad.',
+  'dócil': 'Suave, obediente, apacible o fácil de guiar.',
+  'docil': 'Suave, obediente, apacible o fácil de guiar.',
+  'jocoso': 'Gracioso, chistoso, festivo o divertido.',
+  'alegre': 'Contento, animado o lleno de gozo.',
+  'triste': 'Apenado, melancólico o sin alegría.',
+  'fuerte': 'Robusto, vigoroso o de gran resistencia.',
+  'débil': 'De poca fuerza, vigor o resistencia.',
+  'debil': 'De poca fuerza, vigor o resistencia.',
+  'grande': 'Que supera en tamaño a lo común.',
+  'pequeño': 'De tamaño reducido o corta edad.',
+  'alto': 'Elevado o de gran estatura.',
+  'bajo': 'De poca altura o situado abajo.',
+  'bueno': 'De valor positivo, bondadoso o útil.',
+  'malo': 'Negativo, dañino o de mala calidad.',
+  'nuevo': 'Recién hecho o sin estrenar.',
+  'viejo': 'Antiguo o de mucha edad.',
+  'claro': 'Luminoso, nítido o fácil de comprender.',
+  'oscuro': 'Falto de luz o de claridad.',
+  'dulce': 'De sabor agradable como el azúcar o miel.',
+  'amargo': 'De sabor fuerte y desagradable como la hiel.',
+  'caliente': 'Que tiene o desprende temperatura elevada.',
+  'frío': 'Que tiene temperatura baja o sin calor.',
+  'frio': 'Que tiene temperatura baja o sin calor.',
+  'lleno': 'Ocupado por completo, repleto.',
+  'vacío': 'Que no contiene nada en su interior.',
+  'vacio': 'Que no contiene nada en su interior.',
+  'limpio': 'Sin manchas ni suciedad, aseado.',
+  'sucio': 'Que tiene manchas, polvo o impurezas.',
+  'rico': 'Adinerado, abundante o muy sabroso.',
+  'pobre': 'Escaso de recursos o humilde.',
+  'sabio': 'Que posee profundos conocimientos y prudencia.',
+  'tonto': 'Falto de entendimiento, necio o ingenuo.',
+  'listo': 'Inteligente, sagaz o preparado para algo.',
+  'valiente': 'Que actúa con valor y decisión.',
+  'cobarde': 'Que carece de valor o tiene miedo.',
+  'libre': 'Que tiene facultad para obrar sin ataduras.',
+  'preso': 'Encarcelado o privado de libertad.',
+  'cierto': 'Verdadero, seguro e indudable.',
+  'falso': 'Engañoso, fingido o falto de verdad.',
+  'noto': 'Percibo, advierto o siento algo; viento sur.',
+  'tope': 'Límite máximo o extremo donde choca algo.',
+  'taco': 'Pedazo corto de madera o bocado mexicano.'
 };
 
-function limpiarDefinicionSinonima(texto) {
+function recortarSignificadoBreve(texto) {
   if (!texto) return "";
-  let limpio = texto.replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').replace(/\s+/g, ' ').trim();
-  const partes = limpio.split(/[.;:]/)[0];
-  if (partes && partes.length > 5 && partes.length < 90) {
-    return partes.endsWith('.') ? partes : (partes + '.');
+  let limpio = texto
+    .replace(/\{\{[^}]*\}\}/g, '')
+    .replace(/\[\[([^\]|]+\|)?([^\]]+)\]\]/g, '$2')
+    .replace(/\[.*?\]/g, '')
+    .replace(/\(.*?\)/g, '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/'''|''/g, '')
+    .replace(/^[\s:;.,-–—•*#0-9]+/, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!limpio) return "";
+
+  let frase = limpio.split(/[.;:]/)[0].trim();
+  const palabras = frase.split(/\s+/).filter(Boolean);
+  if (palabras.length > 9) {
+    frase = palabras.slice(0, 9).join(' ').replace(/[,;:]$/, '');
   }
-  return limpio.slice(0, 90) + '.';
+  if (frase.length < 4) return "";
+  frase = frase.charAt(0).toUpperCase() + frase.slice(1);
+  return frase.endsWith('.') ? frase : (frase + '.');
+}
+
+// Analizador morfológico para dar significados concisos incluso sin conexión en palabras derivadas
+function deducirSignificadoPorMorfologia(p) {
+  const sin = SinTildes(p);
+  if (DEFINICIONES_LOCALES[sin]) return DEFINICIONES_LOCALES[sin];
+  if (p.endsWith('mente') && p.length > 7) {
+    return 'De manera ' + p.slice(0, -5) + '.';
+  }
+  if (/(tivo|tiva|tivos|tivas)$/.test(p)) {
+    const raiz = p.replace(/(tivo|tiva|tivos|tivas)$/, '');
+    return 'Que tiene capacidad o tendencia a ' + raiz + 'r.';
+  }
+  if (/(ción|cion|sión|sion)$/.test(p)) {
+    return 'Acción o efecto relacionado con ' + p + '.';
+  }
+  if (/(dora|dor|dores|doras)$/.test(p) && p.length > 5) {
+    return 'Que realiza la acción de ' + p.replace(/(dora|dor|dores|doras)$/, 'r') + '.';
+  }
+  if (/(able|ible|ables|ibles)$/.test(p) && p.length > 5) {
+    return 'Que puede ser objeto de dicha acción.';
+  }
+  if (/(oso|osa|osos|osas)$/.test(p) && p.length > 5) {
+    return 'Abundante en ' + p.replace(/(oso|osa|osos|osas)$/, '') + ' o con su cualidad.';
+  }
+  if (/(ero|era|eros|eras)$/.test(p) && p.length > 5) {
+    return 'Relacionado con ' + p.replace(/(ero|era|eros|eras)$/, '') + ' o su oficio.';
+  }
+  if (/(ista|istas)$/.test(p) && p.length > 5) {
+    return 'Persona dedicada o partidaria de esa actividad.';
+  }
+  if (/(dad|tad|dades)$/.test(p) && p.length > 5) {
+    return 'Cualidad o condición propia de ' + p + '.';
+  }
+  if (/(ito|ita|illo|illa)$/.test(p) && p.length > 5) {
+    return 'Variante diminutiva o afectiva del término.';
+  }
+  if (/(azo|aza|ón|on|ona)$/.test(p) && p.length > 5) {
+    return 'Aumentativo, golpe o elemento de tamaño mayor.';
+  }
+  if (/(ar|er|ir)$/.test(p)) {
+    return 'Verbo castellano: ejecutar la acción de ' + p + '.';
+  }
+  if (/(ando|iendo)$/.test(p)) {
+    return 'En proceso de realizar la acción (' + p + ').';
+  }
+  if (/(ado|ada|ido|ida)$/.test(p)) {
+    return 'Que ha recibido la acción o tiene esa cualidad.';
+  }
+  return "";
+}
+
+async function consultarWikcionarioHTML(termino) {
+  try {
+    const url = 'https://es.wiktionary.org/w/api.php?action=parse&page=' + encodeURIComponent(termino) + '&prop=text&format=json&origin=*';
+    const res = await fetch(url);
+    if (!res.ok) return "";
+    const data = await res.json();
+    const html = data && data.parse && data.parse.text && data.parse.text['*'];
+    if (!html) return "";
+
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    doc.querySelectorAll('.reference, .mw-editsection, style, script, ul, table').forEach(el => el.remove());
+
+    const candidatos = doc.querySelectorAll('dl > dd, ol > li');
+    for (const nodo of candidatos) {
+      const txt = (nodo.textContent || "").trim();
+      if (!txt || txt.length < 6) continue;
+      if (/^(Forma del|Plural de|Femenino de|Masculino de|Participio de|Gerundio de|Véase|Sinónimo)/i.test(txt)) continue;
+      const breve = recortarSignificadoBreve(txt);
+      if (breve && breve.length >= 6) return breve;
+    }
+  } catch (e) {}
+  return "";
 }
 
 async function obtenerSignificadoPalabra(palabra) {
   const p = (palabra || "").toLowerCase().trim();
-  if (!p) return "Sin palabra activa.";
+  if (!p) return "Sin palabra en el tablero.";
   if (DEFINICIONES_LOCALES[p]) return DEFINICIONES_LOCALES[p];
+  const pSin = SinTildes(p);
+  if (DEFINICIONES_LOCALES[pSin]) return DEFINICIONES_LOCALES[pSin];
 
-  try {
-    const urlWik = 'https://es.wiktionary.org/w/api.php?action=query&prop=extracts&explaintext=1&titles=' + encodeURIComponent(p) + '&format=json&origin=*';
-    const res = await fetch(urlWik);
-    if (res.ok) {
-      const data = await res.json();
-      const pages = (data && data.query && data.query.pages) ? data.query.pages : {};
-      const keys = Object.keys(pages);
-      if (keys.length > 0 && pages[keys[0]].extract) {
-        const lineas = pages[keys[0]].extract.split('\n').map(l => l.trim()).filter(Boolean);
-        for (let i = 0; i < lineas.length; i++) {
-          if (/^;?\d+[\s.:]/.test(lineas[i])) {
-            const acep = limpiarDefinicionSinonima(lineas[i].replace(/^;?\d+[\s.:]+/, ''));
-            if (acep.length > 5) return acep;
-          }
-        }
-      }
-    }
-  } catch (e) {}
+  // Si es plural simple, mirar singular en diccionario local
+  if (p.endsWith('s') && DEFINICIONES_LOCALES[p.slice(0, -1)]) {
+    return DEFINICIONES_LOCALES[p.slice(0, -1)];
+  }
+  if (p.endsWith('es') && DEFINICIONES_LOCALES[p.slice(0, -2)]) {
+    return DEFINICIONES_LOCALES[p.slice(0, -2)];
+  }
 
+  // 1. Consulta HTML renderizada a Wikcionario en español (resuelve todas las plantillas)
+  let def = await consultarWikcionarioHTML(p);
+  if (def) return def;
+
+  if (p.endsWith('iva')) def = await consultarWikcionarioHTML(p.slice(0, -1) + 'o');
+  else if (p.endsWith('as') || p.endsWith('os')) def = await consultarWikcionarioHTML(p.slice(0, -1));
+  if (def) return def;
+
+  // 2. Respaldo con Wikipedia en español
   try {
     const urlWiki = 'https://es.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(p);
     const res2 = await fetch(urlWiki);
     if (res2.ok) {
       const data2 = await res2.json();
-      if (data2 && data2.extract) return limpiarDefinicionSinonima(data2.extract);
+      if (data2 && data2.extract) {
+        const breveWiki = recortarSignificadoBreve(data2.extract);
+        if (breveWiki.length > 6) return breveWiki;
+      }
     }
   } catch (e) {}
 
+  // 3. Respaldo morfológico inteligente offline
+  const morf = deducirSignificadoPorMorfologia(p);
+  if (morf) return morf;
+
   const sils = silabear(p);
-  return 'Palabra válida con sílabas ' + sils.join('-') + '.';
+  return 'Vocablo español (' + sils.join('-') + ').';
 }
 
 const MAPA_VOZ_EXACTO = {
@@ -369,11 +818,6 @@ const MAPA_VOZ_EXACTO = {
 function normalizarTokenVoz(token, silabaObjNorm) {
   let limpio = (token || "").trim().toLowerCase().replace(/[.,!?;:¡¿"']/g, '');
   if (!limpio) return "";
-  
-  // Forzar pronunciación correcta de TO y otras sílabas en español
-  if (limpio === 'to' || silabaObjNorm === 'to') return 'to';
-  if (limpio === 'tu' && silabaObjNorm === 'to') return 'to';
-
   if (MAPA_VOZ_EXACTO[limpio]) {
     if (limpio === 'c' && silabaObjNorm === 'se') return 'se';
     if ((limpio === 'b' || limpio === 'v') && silabaObjNorm === 've') return 've';
@@ -393,7 +837,11 @@ const diccionarioEmojis = {
   'roca': '🪨', 'rápido': '⚡', 'jota': '💃'
 };
 const palabrasArranque = ['palabra', 'camino', 'verano', 'planeta', 'tesoro', 'espejo', 'castillo', 'naranja', 'pelota', 'regalo'];
-const coletillas = ["Mmm...", "A ver...", "Déjame pensar...", "Estudiando la RAE..."];
+const coletillas = [
+  "Mmm...", "A ver, a ver...", "Déjame pensar...",
+  "Esta es difícil...", "Voy a buscar en el diccionario...",
+  "A ver qué se me ocurre...", "Interesante..."
+];
 
 function hablar(texto, callback) {
   if (cancelarHablaPrevia) { cancelarHablaPrevia(); cancelarHablaPrevia = null; }
@@ -418,14 +866,14 @@ function hablar(texto, callback) {
     clearTimeout(timer);
     if (cancelarHablaPrevia === cancelar) cancelarHablaPrevia = null;
     hablando = false;
-    ignorarVozHasta = Date.now() + 500;
+    ignorarVozHasta = Date.now() + 600;
     if (callback) callback();
     if (micDeseado && modoActual !== "" && !esTurnoMaquina) {
       setTimeout(arrancarRecon, 250);
     }
   };
   cancelarHablaPrevia = cancelar;
-  timer = setTimeout(fin, (texto.length * 95) + 2000);
+  timer = setTimeout(fin, (texto.length * 100) + 2200);
 
   if (window.AndroidVoice) {
     window._onNativeTtsDone = fin;
@@ -466,7 +914,14 @@ async function verificarPalabraEnServidor(palabra) {
     const encontrada = arrayDiccionarioRAE.find(w => SinTildes(w) === pSin);
     return encontrada || false;
   }
-  return p;
+  try {
+    const res = await fetch('https://api.datamuse.com/words?sp=' + encodeURIComponent(p) + '&max=10&v=es');
+    const data = await res.json();
+    const ok = data.some(item => item.word.toLowerCase() === p);
+    return ok ? p : false;
+  } catch (e) {
+    return p;
+  }
 }
 
 async function obtenerPalabrasCandidatasRAE(prefijoNormalizado) {
@@ -531,10 +986,11 @@ function silabear(palabra) {
   }
   const hardcoded = {
     'palabra': ['pa','la','bra'], 'brasa': ['bra','sa'], 'sapo': ['sa','po'],
-    'pomo': ['po','mo'], 'mono': ['mo','no'], 'camino': ['ca','mi','no'],
+    'pomo': ['po','mo'], 'mono': ['mo','no'], 'noto': ['no','to'],
+    'tope': ['to','pe'], 'perro': ['pe','rro'], 'roca': ['ro','ca'],
+    'carta': ['car','ta'], 'taco': ['ta','co'], 'camino': ['ca','mi','no'],
     'verano': ['ve','ra','no'], 'planeta': ['pla','ne','ta'], 'tesoro': ['te','so','ro'],
-    'espejo': ['es','pe','jo'], 'castillo': ['cas','ti','llo'], 'naranja': ['na','ran','ja'],
-    'motor': ['mo','tor'], 'toro': ['to','ro'], 'toma': ['to','ma'], 'tono': ['to','no']
+    'espejo': ['es','pe','jo'], 'castillo': ['cas','ti','llo'], 'naranja': ['na','ran','ja']
   };
   return hardcoded[p] || silabas;
 }
@@ -549,7 +1005,7 @@ function normalizarSilaba(silaba) {
     .replace(/rr/g, "r");
 }
 
-function mostrarAlerta(mensaje, duracion = 3500) {
+function mostrarAlerta(mensaje, duracion = 3800) {
   clearTimeout(alertTimer);
   alertBox.textContent = mensaje;
   alertBox.classList.remove('hidden');
@@ -587,7 +1043,7 @@ function mostrarFinJuego() {
   btnRendirse.classList.add('hidden');
   finJuegoBotones.classList.remove('hidden');
   if (micDeseado) {
-    micStatus.textContent = "Di «otra vez» para reiniciar";
+    micStatus.textContent = "Di «otra vez» para reiniciar la partida";
     setTimeout(arrancarRecon, 300);
   }
 }
@@ -692,7 +1148,7 @@ async function explicarUltimaPalabra() {
   const significado = await obtenerSignificadoPalabra(ultima);
   mostrarDefinicionEnUltimaPalabraUI(ultima, significado);
 
-  hablar(ultima + ": " + significado + " Turno de " + nombres[jugadorActual] + ", con " + silabaObjetivo + ".", () => {
+  hablar(ultima + ": " + significado + " Sigue el turno de " + nombres[jugadorActual] + ", empieza por " + silabaParaVoz(silabaObjetivo) + ".", () => {
     mostrarTurnoHumano();
     bloquearInputs(false);
     arrancarRecon();
@@ -754,14 +1210,18 @@ function iniciarJuegoTablero() {
   mostrarTurnoHumano();
   bloquearInputs(false);
 
-  hablar("Primera palabra: " + palabraInicial + ".", () => {
+  const listaSaludo = nombres.length > 1
+    ? (nombres.slice(0, -1).join(', ') + ' y ' + nombres[nombres.length - 1])
+    : nombres[0];
+
+  hablar("¡Hola " + listaSaludo + "! Primera palabra: " + palabraInicial + ".", () => {
     arrancarRecon();
   });
 }
 
 async function juegaMaquina() {
   if (modoActual !== 'pve' || juegoTerminado) return;
-  actualizarInterfazTurno("📚 La máquina busca...", "bg-purple-500");
+  actualizarInterfazTurno("📚 Buscando en la RAE...", "bg-purple-500");
 
   const prefijo = normalizarSilaba(silabaObjetivo);
   const candidatas = await obtenerPalabrasCandidatasRAE(prefijo);
@@ -770,8 +1230,8 @@ async function juegaMaquina() {
     const elegida = candidatas[Math.floor(Math.random() * candidatas.length)];
     await window.procesarEntrada(elegida, true);
   } else {
-    actualizarInterfazTurno("¡Gana " + nombres[0] + "!", "bg-green-500");
-    hablar("¡No quedan palabras con " + silabaObjetivo + "! ¡Has ganado, " + nombres[0] + "!", () => {
+    actualizarInterfazTurno("¡Victoria de " + nombres[0] + "!", "bg-green-500");
+    hablar("¡No quedan palabras en el diccionario que empiecen por " + silabaParaVoz(silabaObjetivo) + "! ¡Has ganado, " + nombres[0] + "! Di otra vez para jugar de nuevo.", () => {
       mostrarFinJuego();
     });
   }
@@ -782,11 +1242,13 @@ window.meRindo = async function() {
   bloquearInputs(true);
 
   const rindiente = nombres[jugadorActual];
-  let textoGanador = (modoActual === 'pve') ? "¡Gana la máquina!" : "¡Fin de partida!";
+  let textoGanador = (modoActual === 'pve')
+    ? "¡Gana la máquina!"
+    : (nombres.length === 2 ? ("¡Gana " + nombres[1 - jugadorActual] + "!") : ("¡Fin de la partida por rendición de " + rindiente + "!"));
 
-  actualizarInterfazTurno("Buscando solución...", "bg-red-500");
+  actualizarInterfazTurno("Consultando RAE y significado...", "bg-red-500");
 
-  hablar(rindiente + " se rinde. Buscando alternativa...", async () => {
+  hablar(rindiente + " se rinde. Buscando una palabra válida...", async () => {
     const prefijo = normalizarSilaba(silabaObjetivo);
     const candidatas = await obtenerPalabrasCandidatasRAE(prefijo);
 
@@ -797,20 +1259,20 @@ window.meRindo = async function() {
 
       historialPalabras.push(elegida);
       silabaObjetivo = silabasElegida[silabasElegida.length - 1];
-      agregarPalabraUI(elegida, silabasElegida, false, 1, "💡 Alternativa", significado);
+      agregarPalabraUI(elegida, silabasElegida, false, 1, "💡 Esta valía (RAE)", significado);
       actualizarInterfazTurno("🏆 " + textoGanador, "bg-green-600");
 
-      hablar("Podías haber dicho: " + elegida + ". Significado: " + significado + " " + textoGanador, mostrarFinJuego);
+      hablar("Podrías haber dicho: " + elegida + ". " + significado + " " + textoGanador + " Di otra vez para reiniciar.", mostrarFinJuego);
     } else {
-      actualizarInterfazTurno("🤝 Empate", "bg-gray-600");
-      hablar("No existían más palabras. ¡Empate técnico!", mostrarFinJuego);
+      actualizarInterfazTurno("🤝 Empate técnico", "bg-gray-600");
+      hablar("No existía ninguna palabra en la RAE con la sílaba " + silabaParaVoz(silabaObjetivo) + ". ¡Empate técnico! Di otra vez para reiniciar.", mostrarFinJuego);
     }
   });
 };
 
 function esPreguntaDeSignificado(texto) {
   const limpio = SinTildes((texto || "").toLowerCase().trim());
-  return /(que significa|eso que es|que es eso|cual es su significado|que quiere decir|significado)/.test(limpio);
+  return /(que significa|eso que es|que es eso|cual es su significado|cual es el significado|que quiere decir|significado)/.test(limpio);
 }
 
 window.procesarEntrada = async function(texto, esMaquina = false) {
@@ -828,8 +1290,8 @@ window.procesarEntrada = async function(texto, esMaquina = false) {
 
   if (!esMaquina && /^otra vez$/i.test(textoBruto)) {
     textInput.value = "";
-    mostrarAlerta("«Otra vez» solo funciona al acabar la partida.");
-    hablar("La partida sigue en curso. Debe empezar por " + silabaObjetivo + ".");
+    mostrarAlerta("La orden «otra vez» solo funciona cuando acaba la partida.");
+    hablar("La partida aún no ha terminado. Debe empezar por " + silabaParaVoz(silabaObjetivo) + ".");
     return;
   }
 
@@ -843,9 +1305,9 @@ window.procesarEntrada = async function(texto, esMaquina = false) {
     return;
   }
   if (historialPalabras.includes(palabra)) {
-    mostrarAlerta("La palabra '" + palabra + "' ya se usó.");
+    mostrarAlerta("La palabra '" + palabra + "' ya se ha usado.");
     textInput.value = "";
-    hablar("La palabra " + palabra + " ya se usó.");
+    hablar("La palabra " + palabra + " ya se ha usado. Prueba con otra.");
     return;
   }
 
@@ -858,21 +1320,20 @@ window.procesarEntrada = async function(texto, esMaquina = false) {
   let jugadaValida = false;
   let vozError = "";
   if (s1 !== s2) {
-    // CORRECCIÓN: Pronuncia fonéticamente la sílaba correcta en voz sin deletrear
-    mostrarAlerta("¡Debe empezar por '" + silabaObjetivo.toUpperCase() + "'!");
-    vozError = palabra + ", no. Empieza por " + silabaObjetivo + ", no por " + silabasWord[0] + ".";
+    mostrarAlerta("¡Error! Debe empezar por '" + silabaObjetivo.toUpperCase() + "', no por '" + silabasWord[0] + "'.");
+    vozError = palabra + ", no. Debe empezar por " + silabaParaVoz(silabaObjetivo) + ", no por " + silabaParaVoz(silabasWord[0]) + ". Inténtalo otra vez.";
   } else if (esMaquina) {
     jugadaValida = true;
   } else {
-    actualizarInterfazTurno("Validando RAE...", "bg-yellow-500");
+    actualizarInterfazTurno("Consultando RAE...", "bg-yellow-500");
     const formaRAE = await verificarPalabraEnServidor(palabra);
     if (formaRAE && typeof formaRAE === 'string') {
       palabra = formaRAE;
       silabasWord = silabear(palabra);
       jugadaValida = true;
     } else {
-      mostrarAlerta("'" + palabra + "' no está en la RAE.");
-      vozError = palabra + " no está en el diccionario.";
+      mostrarAlerta("'" + palabra + "' no está en el diccionario RAE.");
+      vozError = palabra + " no viene en el diccionario. Inténtalo otra vez.";
     }
   }
 
@@ -924,7 +1385,7 @@ function uiMic(encendido) {
   micBtn.classList.toggle('bg-blue-500', !encendido);
   micBtn.classList.toggle('animate-pulse', encendido);
   if (!encendido) micStatus.textContent = "Micrófono apagado";
-  else if (juegoTerminado) micStatus.textContent = "Di «otra vez» para reiniciar";
+  else if (juegoTerminado) micStatus.textContent = "Escuchando... (di «otra vez» para reiniciar)";
   else micStatus.textContent = "Escuchando...";
 }
 
@@ -947,8 +1408,8 @@ function procesarFraseVoz(rawInput) {
 
   for (const alt of alternativas) {
     if (/^(otra vez|jugar otra vez)$/.test(alt)) {
-      mostrarAlerta("La partida sigue en curso.");
-      hablar("La partida no ha terminado. Te toca con " + silabaObjetivo + ".");
+      mostrarAlerta("«Otra vez» solo funciona cuando acaba la partida.");
+      hablar("La orden otra vez solo funciona cuando haya acabado la partida. Te toca con " + silabaParaVoz(silabaObjetivo) + ".");
       return;
     }
   }
@@ -996,7 +1457,14 @@ try {
     };
     window._onNativeSrStart = () => { isListening = true; uiMic(true); };
     window._onNativeSrResult = (frase) => { procesarFraseVoz(frase); };
-    window._onNativeSrError = () => { isListening = false; };
+    window._onNativeSrError = (err) => {
+      isListening = false;
+      if (err === 'not-allowed') {
+        micDeseado = false;
+        uiMic(false);
+        micStatus.textContent = "Permiso de micrófono denegado";
+      }
+    };
     window._onNativeSrEnd = () => {
       isListening = false;
       if (micDeseado && modoActual !== "" && !hablando) setTimeout(arrancarRecon, 350);
@@ -1081,6 +1549,14 @@ function detenerMicrofono() {
     document.body.style.paddingBottom = '64px';
     const BANNER_ID = 'ca-app-pub-6672720525194990/4222281539';
     const INTERSTITIAL_ID = 'ca-app-pub-6672720525194990/1155079157';
+    let interstitialReady = false;
+
+    async function preloadInterstitial() {
+      try {
+        await callAdMob('prepareInterstitial', { adId: INTERSTITIAL_ID, isTesting: false });
+        interstitialReady = true;
+      } catch (e) { interstitialReady = false; }
+    }
 
     window.addEventListener('load', async () => {
       try {
@@ -1092,6 +1568,7 @@ function detenerMicrofono() {
           margin: 0,
           isTesting: false
         });
+        await preloadInterstitial();
       } catch (e) {}
     });
   } catch (e) {}
