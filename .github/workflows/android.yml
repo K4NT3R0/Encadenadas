@@ -5,6 +5,9 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -163,7 +166,7 @@ jobs:
           sed -i 's/targetSdkVersion = [0-9]*/targetSdkVersion = 36/g' android/variables.gradle
 
           MANIFEST="android/app/src/main/AndroidManifest.xml"
-          sed -i 's|</manifest>|<uses-permission android:name="android.permission.RECORD_AUDIO" /><uses-permission android:name="com.google.android.gms.permission.AD_ID" /><queries><intent><action android:name="android.speech.RecognitionService" /></intent><intent><action android:name="android.intent.action.TTS_SERVICE" /></intent></queries></manifest>|g' "$MANIFEST"
+          sed -i 's|</manifest>|<uses-permission android:name="android.permission.RECORD_AUDIO" /><uses-permission android:name="android.permission.WAKE_LOCK" /><uses-permission android:name="com.google.android.gms.permission.AD_ID" /><queries><intent><action android:name="android.speech.RecognitionService" /></intent><intent><action android:name="android.intent.action.TTS_SERVICE" /></intent></queries></manifest>|g' "$MANIFEST"
           sed -i 's|</application>|<meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6672720525194990~2961170754"/><meta-data android:name="com.google.android.gms.ads.DELAY_APP_MEASUREMENT_INIT" android:value="false"/></application>|g' "$MANIFEST"
 
           cat << 'EOF' > android/app/src/main/java/com/k4nt3r0/encadenadas/MainActivity.java
@@ -181,6 +184,7 @@ jobs:
           import android.speech.SpeechRecognizer;
           import android.speech.tts.TextToSpeech;
           import android.speech.tts.UtteranceProgressListener;
+          import android.view.WindowManager;
           import android.webkit.JavascriptInterface;
           import com.getcapacitor.BridgeActivity;
           import java.util.ArrayList;
@@ -195,6 +199,9 @@ jobs:
               @Override
               public void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
+
+                  // Mantener la pantalla siempre encendida a nivel nativo de Android
+                  getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
                   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                       if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
@@ -221,6 +228,12 @@ jobs:
                   getBridge().getWebView().addJavascriptInterface(new NativeVoiceBridge(), "AndroidVoice");
               }
 
+              @Override
+              public void onResume() {
+                  super.onResume();
+                  getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+              }
+
               private void evalJs(final String js) {
                   mainHandler.post(() -> {
                       if (getBridge() != null && getBridge().getWebView() != null) {
@@ -233,6 +246,14 @@ jobs:
                   @JavascriptInterface
                   public void speak(final String text) {
                       mainHandler.post(() -> {
+                          // Asegurar que el micrófono nativo se detiene antes de hablar
+                          try {
+                              if (sr != null) {
+                                  sr.stopListening();
+                                  sr.cancel();
+                              }
+                          } catch (Exception e) {}
+
                           if (tts != null) {
                               Bundle params = new Bundle();
                               tts.speak(text, TextToSpeech.QUEUE_FLUSH, params, "utt_" + System.currentTimeMillis());
@@ -313,11 +334,11 @@ jobs:
           }
           EOF
 
-          VC=$((20 + ${{ github.run_number }}))
+          VC=$((60 + ${{ github.run_number }}))
           sed -i "s/versionCode 1/versionCode $VC/g" android/app/build.gradle
-          sed -i 's/versionName "1.0"/versionName "1.1.${{ github.run_number }}"/g' android/app/build.gradle
+          sed -i 's/versionName "1.0"/versionName "1.2.${{ github.run_number }}"/g' android/app/build.gradle
 
-      - name: Preparar Llave Digital y Compilar APK + AAB
+      - name: Preparar Llave Digital Fija, Certificado PEM y Compilar APK + AAB
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
@@ -328,12 +349,22 @@ jobs:
 
           if [ -n "$KEYSTORE_BASE64" ]; then
             echo "$KEYSTORE_BASE64" | tr -d ' \n\r\t' | base64 -d -i > "$KS_PATH" || true
+          elif [ -f "release.keystore" ]; then
+            cp release.keystore "$KS_PATH"
           fi
 
           if ! keytool -list -keystore "$KS_PATH" -storepass "$PASS" -alias micuadrante >/dev/null 2>&1; then
             rm -f "$KS_PATH"
             keytool -genkeypair -v -keystore "$KS_PATH" -alias micuadrante -keyalg RSA -keysize 2048 -validity 10000 -storepass "$PASS" -keypass "$PASS" -dname "CN=K4NT3R0, OU=Apps, O=K4NT3R0, L=Cadiz, S=Andalucia, C=ES"
+            cp "$KS_PATH" release.keystore
+            git config user.name "github-actions"
+            git config user.email "actions@github.com"
+            git add release.keystore
+            git commit -m "Guardar clave de firma permanente [skip ci]" || true
+            git push || true
           fi
+
+          keytool -export -rfc -keystore "$KS_PATH" -alias micuadrante -file upload_certificate.pem -storepass "$PASS"
 
           cd android
           chmod +x gradlew
@@ -355,3 +386,9 @@ jobs:
         with:
           name: Encadenadas-GooglePlay-AAB-FIRMADO
           path: android/app/build/outputs/bundle/release/app-release.aab
+
+      - name: Subir Certificado PEM para actualizar clave en Google Play
+        uses: actions/upload-artifact@v4
+        with:
+          name: Certificado-PEM-GooglePlay
+          path: upload_certificate.pem
