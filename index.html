@@ -39,6 +39,18 @@ input { -webkit-user-select: text; user-select: text; }
   border: 4px solid #a67c52;
   box-shadow: inset 0 0 10px rgba(139,90,43,0.5), 0 8px 15px rgba(0,0,0,0.2);
 }
+.titulo-3d-azul {
+  color: #3b82f6;
+  -webkit-text-stroke: 1.5px #1e3a8a;
+  text-shadow:
+    0 1px 0 #2563eb,
+    0 2px 0 #1d4ed8,
+    0 3px 0 #1e40af,
+    0 4px 0 #1e3a8a,
+    0 5px 0 #172554,
+    0 7px 10px rgba(0, 0, 0, 0.45);
+  letter-spacing: 0.05em;
+}
 @keyframes flotar {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-4px); }
@@ -58,22 +70,21 @@ input { -webkit-user-select: text; user-select: text; }
   </button>
 </div>
 
-<!-- MENÚ PRINCIPAL (MÁXIMO 4 JUGADORES) -->
+<!-- MENÚ PRINCIPAL (CON TÍTULO "ENCADENADAS" EN 3D AZUL Y MÁXIMO 4 JUGADORES) -->
 <div id="modal-menu" role="dialog" aria-modal="true" class="fixed inset-0 z-50 bg-black/60 flex flex-col items-center justify-center p-4 backdrop-blur-sm">
   <div class="madera-textura w-full max-w-sm max-h-[92dvh] overflow-y-auto rounded-3xl p-5 flex flex-col items-center shadow-2xl">
     <img src="icon-192.png" onerror="this.onerror=null;this.src='31541.png'" alt="Icono Encadenadas" class="w-16 h-16 rounded-2xl shadow-lg mb-1 border-2 border-[#a67c52]">
-    <h1 class="text-2xl font-black text-slate-800 drop-shadow-md tracking-wide">PALABRAS</h1>
-    <h2 class="text-xl font-black text-orange-600 drop-shadow-md mb-2 tracking-wide">ENCADENADAS</h2>
+    <h1 class="titulo-3d-azul text-3xl font-black my-2 text-center">ENCADENADAS</h1>
 
     <div class="bg-[#5c3a21] text-amber-300 font-black text-sm px-4 py-1 rounded-full shadow mb-3 border border-[#a67c52]">
       🏆 Récord actual: <span id="menu-record">0</span> palabras
     </div>
 
-    <label class="text-xs font-extrabold text-[#5c3a21] mb-1 text-center uppercase tracking-wider">Número de jugadores (Multijugador):</label>
+    <label class="text-xs font-extrabold text-[#5c3a21] mb-1 text-center uppercase tracking-wider">Número de jugadores (Máximo 4):</label>
     <div id="selector-num-jugadores" class="grid grid-cols-3 gap-2 w-full mb-3">
-      <button type="button" id="btn-num-2" onclick="window.elegirJugadores(2)" class="bg-orange-600 text-white font-black py-2 rounded-xl border-2 border-[#5c3a21] shadow active:scale-95">2</button>
-      <button type="button" id="btn-num-3" onclick="window.elegirJugadores(3)" class="bg-white text-slate-700 font-black py-2 rounded-xl border-2 border-orange-300 shadow active:scale-95">3</button>
-      <button type="button" id="btn-num-4" onclick="window.elegirJugadores(4)" class="bg-white text-slate-700 font-black py-2 rounded-xl border-2 border-orange-300 shadow active:scale-95">4</button>
+      <button type="button" id="btn-num-2" onclick="window.elegirJugadores(2)" class="bg-orange-600 text-white font-black py-2 rounded-xl border-2 border-[#5c3a21] shadow active:scale-95">2 Jugadores</button>
+      <button type="button" id="btn-num-3" onclick="window.elegirJugadores(3)" class="bg-white text-slate-700 font-black py-2 rounded-xl border-2 border-orange-300 shadow active:scale-95">3 Jugadores</button>
+      <button type="button" id="btn-num-4" onclick="window.elegirJugadores(4)" class="bg-white text-slate-700 font-black py-2 rounded-xl border-2 border-orange-300 shadow active:scale-95">4 Jugadores</button>
     </div>
 
     <div id="contenedor-inputs-jugadores" class="w-full space-y-2 mb-4 max-h-44 overflow-y-auto pr-1">
@@ -102,7 +113,7 @@ input { -webkit-user-select: text; user-select: text; }
       🏠
     </button>
 
-    <h1 class="text-xl font-black text-slate-800 drop-shadow-md tracking-wide">ENCADENADAS</h1>
+    <h1 class="titulo-3d-azul text-xl font-black tracking-wide">ENCADENADAS</h1>
 
     <div class="flex items-center justify-center gap-2 mt-1">
       <div class="bg-white/90 text-slate-800 text-xs font-black px-3 py-0.5 rounded-full border border-[#a67c52] shadow-sm">
@@ -260,7 +271,7 @@ const COLORES_JUGADORES = [
   { bg: "bg-pink-600", border: "border-pink-500", text: "text-pink-700", sil: "text-pink-500" }
 ];
 
-// ---------- 1 y 2. Función silabaParaVoz(): lectura natural de sílabas y "tó" en español ----------
+// ---------- Función silabaParaVoz(): lectura natural de sílabas y "tó" en español ----------
 const FONETICA_SILABAS_VOZ = {
   'to': 'tó', 'do': 'dó', 'no': 'nó', 'so': 'só', 'go': 'gó', 'lo': 'ló',
   'po': 'pó', 'ro': 'ró', 'co': 'có', 'mo': 'mó', 'bo': 'bó', 'vo': 'vó',
@@ -356,9 +367,8 @@ async function cargarDiccionarioRAE() {
 }
 setTimeout(cargarDiccionarioRAE, 500);
 
-// ---------- 3. Gran Diccionario Offline de Sinónimos y Definiciones Cortas (3 a 8 palabras) ----------
+// ---------- Gran Diccionario Offline de Sinónimos y Definiciones Cortas (3 a 8 palabras) ----------
 const DEFINICIONES_LOCALES = {
-  // Palabras de arranque y ejemplos clave
   'palabra': 'Término, vocablo o expresión hablada o escrita.',
   'camino': 'Senda, vía o ruta de paso.',
   'verano': 'Estación más calurosa del año, estío.',
@@ -377,8 +387,6 @@ const DEFINICIONES_LOCALES = {
   'ponderar': 'Elogiar, alabar o examinar con cuidado.',
   'tapón': 'Pieza para cerrar o tapar agujeros.',
   'tapon': 'Pieza para cerrar o tapar agujeros.',
-
-  // Eslabones muy frecuentes en partidas
   'casa': 'Vivienda, hogar o edificio habitable.',
   'perro': 'Can, mamífero doméstico fiel al humano.',
   'gato': 'Felino doméstico ágil y maullador.',
@@ -690,7 +698,6 @@ function recortarSignificadoBreve(texto) {
   return frase.endsWith('.') ? frase : (frase + '.');
 }
 
-// Analizador morfológico para dar significados concisos incluso sin conexión en palabras derivadas
 function deducirSignificadoPorMorfologia(p) {
   const sin = SinTildes(p);
   if (DEFINICIONES_LOCALES[sin]) return DEFINICIONES_LOCALES[sin];
@@ -771,7 +778,6 @@ async function obtenerSignificadoPalabra(palabra) {
   const pSin = SinTildes(p);
   if (DEFINICIONES_LOCALES[pSin]) return DEFINICIONES_LOCALES[pSin];
 
-  // Si es plural simple, mirar singular en diccionario local
   if (p.endsWith('s') && DEFINICIONES_LOCALES[p.slice(0, -1)]) {
     return DEFINICIONES_LOCALES[p.slice(0, -1)];
   }
@@ -779,7 +785,6 @@ async function obtenerSignificadoPalabra(palabra) {
     return DEFINICIONES_LOCALES[p.slice(0, -2)];
   }
 
-  // 1. Consulta HTML renderizada a Wikcionario en español (resuelve todas las plantillas)
   let def = await consultarWikcionarioHTML(p);
   if (def) return def;
 
@@ -787,7 +792,6 @@ async function obtenerSignificadoPalabra(palabra) {
   else if (p.endsWith('as') || p.endsWith('os')) def = await consultarWikcionarioHTML(p.slice(0, -1));
   if (def) return def;
 
-  // 2. Respaldo con Wikipedia en español
   try {
     const urlWiki = 'https://es.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(p);
     const res2 = await fetch(urlWiki);
@@ -800,7 +804,6 @@ async function obtenerSignificadoPalabra(palabra) {
     }
   } catch (e) {}
 
-  // 3. Respaldo morfológico inteligente offline
   const morf = deducirSignificadoPorMorfologia(p);
   if (morf) return morf;
 
