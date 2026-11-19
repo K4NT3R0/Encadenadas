@@ -26,7 +26,7 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Descargar Diccionario Castellano RAE optimizado y preparar imagenes
+      - name: Descargar Diccionario Castellano ampliado y preparar imagenes
         run: |
           npm init -y
           npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6 @capacitor-community/admob@6 sharp
@@ -51,31 +51,64 @@ jobs:
           }
 
           async function run() {
-            const urls = [
+            const primaryUrls = [
               'https://raw.githubusercontent.com/javierarce/palabras/master/listado-general.txt',
-              'https://raw.githubusercontent.com/JorgeDuenasLerin/diccionario-espanol-txt/master/0_palabras_todas.txt'
+              'https://raw.githubusercontent.com/JorgeDuenasLerin/diccionario-espanol-txt/master/0_palabras_todas_no_conjugaciones.txt'
             ];
-            let rawText = '';
-            for (const u of urls) {
-              try {
-                rawText = await downloadText(u);
-                if (rawText && rawText.length > 50000) break;
-              } catch (e) {}
-            }
+            const fallbackUrl = 'https://raw.githubusercontent.com/JorgeDuenasLerin/diccionario-espanol-txt/master/0_palabras_todas.txt';
 
-            const extras = ['jota', 'palabra', 'brasa', 'sapo', 'pomo', 'mono', 'dócil', 'jocoso', 'soñando'];
-            const regex = /^[a-záéíóúüñ]{2,14}$/;
+            const extras = [
+              'jota', 'palabra', 'brasa', 'sapo', 'pomo', 'mono', 'dócil', 'jocoso',
+              'soñando', 'caliza', 'calizo', 'derbi', 'loca', 'oleoso', 'riolada',
+              'binario', 'doblada', 'ciática', 'riojano', 'carea'
+            ];
+            const regex = /^[a-záéíóúüñ]{2,16}$/;
             const wordsSet = new Set(extras);
 
-            if (rawText) {
-              for (const line of rawText.split(/\r?\n/)) {
-                const w = line.trim().toLowerCase();
-                if (regex.test(w)) wordsSet.add(w);
-                if (wordsSet.size >= 95000) break;
+            let loadedLists = 0;
+            for (const u of primaryUrls) {
+              try {
+                const txt = await downloadText(u);
+                if (txt && txt.length > 50000) {
+                  loadedLists++;
+                  for (const line of txt.split(/\r?\n/)) {
+                    const w = line.trim().toLowerCase();
+                    if (regex.test(w)) wordsSet.add(w);
+                  }
+                }
+              } catch (e) {
+                console.log('Aviso descargando ' + u + ':', e.message);
               }
             }
 
+            // Si faltó alguna de las listas principales, añadir respaldo completo
+            if (loadedLists < 2 || wordsSet.size < 110000) {
+              try {
+                const txtFull = await downloadText(fallbackUrl);
+                if (txtFull && txtFull.length > 50000) {
+                  for (const line of txtFull.split(/\r?\n/)) {
+                    const w = line.trim().toLowerCase();
+                    if (regex.test(w)) wordsSet.add(w);
+                  }
+                }
+              } catch (e) {
+                console.log('Aviso respaldo:', e.message);
+              }
+            }
+
+            // Añadir también todas las palabras del diccionario_basico.json si existe
+            if (fs.existsSync('diccionario_basico.json')) {
+              try {
+                const basico = JSON.parse(fs.readFileSync('diccionario_basico.json', 'utf8'));
+                for (const k of Object.keys(basico)) {
+                  const w = k.trim().toLowerCase();
+                  if (regex.test(w)) wordsSet.add(w);
+                }
+              } catch (e) {}
+            }
+
             const wordArray = Array.from(wordsSet);
+            console.log('Total palabras compiladas en diccionario.json:', wordArray.length);
             fs.writeFileSync('diccionario.json', JSON.stringify(wordArray));
 
             const iconSrc = ['31541.png', '31341.png', 'icon-512.png', 'icon-192.png'].find(f => fs.existsSync(f));
@@ -200,7 +233,6 @@ jobs:
               public void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
 
-                  // Mantener la pantalla siempre encendida a nivel nativo de Android
                   getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
                   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -246,7 +278,6 @@ jobs:
                   @JavascriptInterface
                   public void speak(final String text) {
                       mainHandler.post(() -> {
-                          // Asegurar que el micrófono nativo se detiene antes de hablar
                           try {
                               if (sr != null) {
                                   sr.stopListening();
