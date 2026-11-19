@@ -87,7 +87,7 @@ jobs:
             await sharp(splashSrc).png().toFile('splash.png');
 
             fs.mkdirSync('www', { recursive: true });
-            for (const f of ['index.html', 'manifest.json', 'sw.js', 'diccionario.json', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'splash.png', '31541.png', '31336.png']) {
+            for (const f of ['index.html', 'manifest.json', 'sw.js', 'diccionario.json', 'diccionario_basico.json', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'splash.png', '31541.png', '31336.png']) {
               if (fs.existsSync(f)) fs.copyFileSync(f, 'www/' + f);
             }
           }
@@ -334,7 +334,7 @@ jobs:
           }
           EOF
 
-          VC=$((60 + ${{ github.run_number }}))
+          VC=$((100 + ${{ github.run_number }}))
           sed -i "s/versionCode 1/versionCode $VC/g" android/app/build.gradle
           sed -i 's/versionName "1.0"/versionName "1.2.${{ github.run_number }}"/g' android/app/build.gradle
 
