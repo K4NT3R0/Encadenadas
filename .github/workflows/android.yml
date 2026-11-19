@@ -81,7 +81,6 @@ jobs:
               }
             }
 
-            // Si faltó alguna de las listas principales, añadir respaldo completo
             if (loadedLists < 2 || wordsSet.size < 110000) {
               try {
                 const txtFull = await downloadText(fallbackUrl);
@@ -96,7 +95,6 @@ jobs:
               }
             }
 
-            // Añadir también todas las palabras del diccionario_basico.json si existe
             if (fs.existsSync('diccionario_basico.json')) {
               try {
                 const basico = JSON.parse(fs.readFileSync('diccionario_basico.json', 'utf8'));
@@ -206,8 +204,10 @@ jobs:
           package com.k4nt3r0.encadenadas;
 
           import android.Manifest;
+          import android.content.Context;
           import android.content.Intent;
           import android.content.pm.PackageManager;
+          import android.media.AudioManager;
           import android.os.Build;
           import android.os.Bundle;
           import android.os.Handler;
@@ -227,13 +227,19 @@ jobs:
               private TextToSpeech tts;
               private SpeechRecognizer sr;
               private Intent srIntent;
+              private AudioManager audioManager;
+              private boolean mutedMusic = false;
+              private boolean mutedNotification = false;
+              private boolean mutedSystem = false;
               private final Handler mainHandler = new Handler(Looper.getMainLooper());
+              private final Runnable restoreAudioRunnable = this::restoreAudioStreams;
 
               @Override
               public void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
 
                   getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                  audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 
                   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                       if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
@@ -260,10 +266,60 @@ jobs:
                   getBridge().getWebView().addJavascriptInterface(new NativeVoiceBridge(), "AndroidVoice");
               }
 
+              private void muteRecognizerBeeps() {
+                  if (audioManager == null) return;
+                  mainHandler.removeCallbacks(restoreAudioRunnable);
+
+                  try {
+                      if (!mutedMusic && !audioManager.isStreamMute(AudioManager.STREAM_MUSIC)) {
+                          audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_MUTE, 0);
+                          mutedMusic = true;
+                      }
+                  } catch (Exception e) {}
+
+                  try {
+                      if (!mutedNotification && !audioManager.isStreamMute(AudioManager.STREAM_NOTIFICATION)) {
+                          audioManager.adjustStreamVolume(AudioManager.STREAM_NOTIFICATION, AudioManager.ADJUST_MUTE, 0);
+                          mutedNotification = true;
+                      }
+                  } catch (Exception e) {}
+
+                  try {
+                      if (!mutedSystem && !audioManager.isStreamMute(AudioManager.STREAM_SYSTEM)) {
+                          audioManager.adjustStreamVolume(AudioManager.STREAM_SYSTEM, AudioManager.ADJUST_MUTE, 0);
+                          mutedSystem = true;
+                      }
+                  } catch (Exception e) {}
+              }
+
+              private void restoreAudioStreams() {
+                  if (audioManager == null) return;
+                  mainHandler.removeCallbacks(restoreAudioRunnable);
+
+                  if (mutedMusic) {
+                      try { audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0); } catch (Exception e) {}
+                      mutedMusic = false;
+                  }
+                  if (mutedNotification) {
+                      try { audioManager.adjustStreamVolume(AudioManager.STREAM_NOTIFICATION, AudioManager.ADJUST_UNMUTE, 0); } catch (Exception e) {}
+                      mutedNotification = false;
+                  }
+                  if (mutedSystem) {
+                      try { audioManager.adjustStreamVolume(AudioManager.STREAM_SYSTEM, AudioManager.ADJUST_UNMUTE, 0); } catch (Exception e) {}
+                      mutedSystem = false;
+                  }
+              }
+
               @Override
               public void onResume() {
                   super.onResume();
                   getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+              }
+
+              @Override
+              public void onPause() {
+                  restoreAudioStreams();
+                  super.onPause();
               }
 
               private void evalJs(final String js) {
@@ -284,6 +340,8 @@ jobs:
                                   sr.cancel();
                               }
                           } catch (Exception e) {}
+
+                          restoreAudioStreams();
 
                           if (tts != null) {
                               Bundle params = new Bundle();
@@ -336,8 +394,10 @@ jobs:
                                       @Override public void onEvent(int eventType, Bundle params) {}
                                   });
                               }
+                              muteRecognizerBeeps();
                               sr.startListening(srIntent);
                           } catch (Exception e) {
+                              restoreAudioStreams();
                               evalJs("window._onNativeSrEnd && window._onNativeSrEnd()");
                           }
                       });
@@ -352,12 +412,15 @@ jobs:
                                   sr.cancel();
                               }
                           } catch (Exception e) {}
+                          mainHandler.removeCallbacks(restoreAudioRunnable);
+                          mainHandler.postDelayed(restoreAudioRunnable, 400);
                       });
                   }
               }
 
               @Override
               public void onDestroy() {
+                  restoreAudioStreams();
                   if (tts != null) { tts.stop(); tts.shutdown(); }
                   if (sr != null) { sr.destroy(); }
                   super.onDestroy();
