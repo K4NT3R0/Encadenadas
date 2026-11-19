@@ -108,7 +108,7 @@ input { -webkit-user-select: text; user-select: text; }
       <span id="txt-pvp">👥 Jugador 1 vs Jugador 2</span>
     </button>
     <p class="mt-3 text-xs font-bold text-[#5c3a21] text-center">
-      Manos libres: di tu palabra (plurales válidos), «¿qué significa?» (sinónimos), «me rindo» o «otra vez» al terminar.
+      Manos libres: di tu palabra (los plurales pasan a singular), «¿qué significa?» (sinónimos), «me rindo» o «otra vez» al terminar.
     </p>
   </div>
 </div>
@@ -235,7 +235,7 @@ window.cargarDatosMenu = function() {
 window.cargarDatosMenu();
 </script>
 
-<!-- SCRIPT 2: MOTOR PRINCIPAL, PLURALES VÁLIDOS, SOLO SINÓNIMOS, WAKELOCK Y VOZ -->
+<!-- SCRIPT 2: MOTOR PRINCIPAL, PLURAL -> SINGULAR, SOLO SINÓNIMOS, WAKELOCK Y VOZ -->
 <script>
 const gameBoard = document.getElementById('game-board');
 const micBtn = document.getElementById('mic-btn');
@@ -251,6 +251,8 @@ const controlsContainer = document.getElementById('controls-container');
 const spanContadorPalabras = document.getElementById('contador-palabras');
 const spanRecordPalabras = document.getElementById('record-palabras');
 const spanMenuRecord = document.getElementById('menu-record');
+
+window._anuncioPantallaCompletaActivo = false;
 
 let historialPalabras = [];
 let silabaObjetivo = "";
@@ -452,6 +454,7 @@ setInterval(() => {
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') {
     mantenerPantallaActivaTotal();
+    if (window._anuncioPantallaCompletaActivo) return;
     try { window.speechSynthesis && window.speechSynthesis.resume(); } catch (e) {}
     if (micDeseado && !hablando && modoActual !== "") {
       setTimeout(arrancarRecon, 350);
@@ -786,6 +789,24 @@ const SINONIMOS_LOCALES = {
 const SOLO_LETRAS = /^[a-záéíóúüñ]+$/;
 const SINONIMO_LIMPIO = /^[a-záéíóúüñ]{3,22}$/;
 
+// Palabras que terminan en -s de forma natural y NO deben convertirse a singular
+const EXCEPCIONES_NO_PLURAL = new Set([
+  'lunes', 'martes', 'miercoles', 'jueves', 'viernes',
+  'paraguas', 'pararrayos', 'sacacorchos', 'abrelatas', 'cumpleanos', 'cumpleaños',
+  'lavaplatos', 'rompecabezas', 'rascacielos', 'salvavidas', 'parabrisas',
+  'virus', 'caos', 'cosmos', 'atlas', 'biceps', 'triceps', 'forceps',
+  'tenis', 'brindis', 'gratis', 'crisis', 'tesis', 'dosis', 'analisis',
+  'sintesis', 'hipotesis', 'parentesis', 'oasis', 'enfasis', 'chasis',
+  'croquis', 'iris', 'cutis', 'pelvis', 'pubis', 'artritis', 'otitis',
+  'gastritis', 'hepatitis', 'sinusitis', 'apendicitis', 'bronquitis',
+  'pais', 'compas', 'autobus', 'estres', 'interes', 'reves', 'cipres',
+  'arnes', 'frances', 'ingles', 'portugues', 'japones', 'cordobes',
+  'aragones', 'leones', 'cortes', 'marques', 'burgues', 'montanes', 'montañes',
+  'mes', 'res', 'tos', 'dos', 'tres', 'seis', 'dios', 'gas', 'bus', 'plus', 'pus', 'ras', 'anis', 'paris', 'adios',
+  'antes', 'despues', 'entonces', 'menos', 'lejos', 'ademas', 'jamas',
+  'detras', 'atras', 'quizas', 'mientras', 'apenas', 'mas', 'nosotros', 'vosotros'
+]);
+
 // Obtener posibles formas singulares válidas en español a partir de un plural
 function obtenerSingularesDePlural(p) {
   const candidatos = [];
@@ -798,7 +819,10 @@ function obtenerSingularesDePlural(p) {
     add(p.slice(0, -3) + 'z', 'ces');
   }
   if (p.endsWith('es') && p.length >= 4) {
-    add(p.slice(0, -2), 'es');
+    const baseEs = p.slice(0, -2);
+    if (/[bcdfghjklmnñpqrstvwxyíú]$/.test(baseEs)) {
+      add(baseEs, 'es');
+    }
   }
   if (p.endsWith('s') && p.length >= 3) {
     add(p.slice(0, -1), 's');
@@ -806,7 +830,27 @@ function obtenerSingularesDePlural(p) {
   return candidatos;
 }
 
-// Consulta EXCLUSIVA de la sección de Sinónimos en Español en Wikcionario (nunca notas al pie ↑ ni otros idiomas)
+// Convierte un plural en español a su singular del diccionario (si procede)
+function convertirPluralASingularLocal(palabra) {
+  const p = (palabra || "").toLowerCase().trim();
+  if (!p || !p.endsWith('s') || p.length < 3) return null;
+  const pSin = SinTildes(p);
+  if (EXCEPCIONES_NO_PLURAL.has(p) || EXCEPCIONES_NO_PLURAL.has(pSin)) return null;
+  if (!setDiccionarioRAE) return null;
+
+  const singulares = obtenerSingularesDePlural(p);
+  for (const { word: cand, regla } of singulares) {
+    const sing = buscarEnDiccionarioLocal(cand);
+    if (!sing) continue;
+
+    if (regla === 'ces' && sing.endsWith('z')) return sing;
+    if (regla === 'es' && /[bcdfghjklmnñpqrstvwxyíú]$/.test(sing)) return sing;
+    if (regla === 's' && /[aeiouáéíóúbcdfgklmnpt]$/.test(sing)) return sing;
+  }
+  return null;
+}
+
+// Consulta EXCLUSIVA de la sección de Sinónimos en Español en Wikcionario
 async function consultarSinonimosWikcionario(termino) {
   try {
     const controller = new AbortController();
@@ -824,7 +868,6 @@ async function consultarSinonimosWikcionario(termino) {
       : (page.revisions && page.revisions[0] ? page.revisions[0]['*'] : "");
     if (!raw) return [];
 
-    // Aislar estrictamente la sección de Español ({{lengua|es}})
     const matchEs = raw.match(/==\s*\{\{lengua\|es\}\}\s*==/i);
     if (!matchEs) return [];
     const inicioEs = matchEs.index + matchEs[0].length;
@@ -841,7 +884,6 @@ async function consultarSinonimosWikcionario(termino) {
       if (!encontrados.includes(w)) encontrados.push(w);
     };
 
-    // 1) Plantillas {{sinónimo|...}} o {{sinónimos|...}}
     const regexTpl = /\{\{sin[óo]nimos?\|([^}]+)\}\}/gi;
     let m;
     while ((m = regexTpl.exec(seccionEs)) !== null) {
@@ -854,7 +896,6 @@ async function consultarSinonimosWikcionario(termino) {
       }
     }
 
-    // 2) Líneas explícitas de Sinónimos: [[palabra1]], [[palabra2]]
     const regexLin = /Sin[óo]nimos?\s*:?\s*([^\n]+)/gi;
     while ((m = regexLin.exec(seccionEs)) !== null) {
       const linea = m[1];
@@ -874,7 +915,6 @@ async function consultarSinonimosWikcionario(termino) {
   }
 }
 
-// Consulta de sinónimos reales en español vía Datamuse (rel_syn prioritario, luego ml)
 async function consultarSinonimosDatamuse(termino) {
   const tSin = SinTildes(termino);
   const endpoints = [
@@ -906,13 +946,11 @@ async function consultarSinonimosDatamuse(termino) {
   return [];
 }
 
-// Devuelve ÚNICAMENTE sinónimos reales separados por coma (o "" si no hay ninguno)
 async function obtenerSinonimosPalabra(palabra) {
   const p = (palabra || "").toLowerCase().trim();
   if (!p) return "";
   const pSin = SinTildes(p);
 
-  // 1. Diccionario local de sinónimos (directo o desde singular si es plural)
   if (SINONIMOS_LOCALES[p]) return SINONIMOS_LOCALES[p];
   if (SINONIMOS_LOCALES[pSin]) return SINONIMOS_LOCALES[pSin];
 
@@ -923,7 +961,6 @@ async function obtenerSinonimosPalabra(palabra) {
     if (SINONIMOS_LOCALES[singSin]) return SINONIMOS_LOCALES[singSin];
   }
 
-  // 2. Sección exclusiva de Sinónimos en Español de Wikcionario
   let syns = await consultarSinonimosWikcionario(p);
   if (syns.length > 0) return syns.join(', ');
 
@@ -932,7 +969,6 @@ async function obtenerSinonimosPalabra(palabra) {
     if (syns.length > 0) return syns.join(', ');
   }
 
-  // 3. Sinónimos reales en español desde Datamuse
   syns = await consultarSinonimosDatamuse(p);
   if (syns.length > 0) return syns.join(', ');
 
@@ -941,7 +977,6 @@ async function obtenerSinonimosPalabra(palabra) {
     if (syns.length > 0) return syns.join(', ');
   }
 
-  // Si no existen sinónimos reales, devolver cadena vacía (nunca definiciones ni texto inventado)
   return "";
 }
 
@@ -985,7 +1020,7 @@ const coletillas = [
 ];
 
 // ---------- Síntesis de Voz con Pausa Estricta del Micrófono ----------
-function pausarReconocimientoMientrasHabla() {
+function pausarReconocimientoMientrasHabla(mensajeEstado) {
   isListening = false;
   if (window.AndroidVoice) {
     try { window.AndroidVoice.stopListening(); } catch (e) {}
@@ -995,12 +1030,25 @@ function pausarReconocimientoMientrasHabla() {
   }
   micBtn.classList.remove('bg-red-500', 'animate-pulse');
   micBtn.classList.add('bg-blue-500');
-  if (micDeseado) {
+  if (mensajeEstado) {
+    micStatus.textContent = mensajeEstado;
+  } else if (micDeseado) {
     micStatus.textContent = "🔊 Máquina hablando (micrófono en espera)...";
   }
 }
 
+window.pausarTodoParaAnuncio = function() {
+  if (cancelarHablaPrevia) {
+    cancelarHablaPrevia();
+    cancelarHablaPrevia = null;
+  }
+  hablando = false;
+  ignorarVozHasta = Date.now() + 60000;
+  pausarReconocimientoMientrasHabla("⏳ Esperando a que termine el anuncio...");
+};
+
 function hablar(texto, callback) {
+  if (window._anuncioPantallaCompletaActivo) return;
   if (cancelarHablaPrevia) { cancelarHablaPrevia(); cancelarHablaPrevia = null; }
   hablando = true;
   ignorarVozHasta = Date.now() + 15000;
@@ -1023,6 +1071,7 @@ function hablar(texto, callback) {
     ignorarVozHasta = Date.now() + 850;
     setTimeout(() => {
       hablando = false;
+      if (window._anuncioPantallaCompletaActivo) return;
       if (callback) callback();
       if (micDeseado && modoActual !== "" && !esTurnoMaquina) {
         arrancarRecon();
@@ -1058,7 +1107,7 @@ function hablar(texto, callback) {
   }
 }
 
-// ---------- Validación en Diccionario RAE (CON SOPORTE COMPLETO DE PLURALES) ----------
+// ---------- Validación en Diccionario RAE (PLURALES -> SINGULAR AUTOMÁTICO) ----------
 function buscarEnDiccionarioLocal(palabra) {
   if (!setDiccionarioRAE) return false;
   if (setDiccionarioRAE.has(palabra)) return palabra;
@@ -1069,61 +1118,31 @@ function buscarEnDiccionarioLocal(palabra) {
   return false;
 }
 
-function construirPluralCorrecto(palabraUsuario, singularRAE, regla) {
-  // Si el usuario o el dictado de voz ya incluyó tilde (ej. "jóvenes", "árboles"), respetarla
-  if (/[áéíóú]/.test(palabraUsuario)) return palabraUsuario;
-
-  if (regla === 'ces') {
-    return singularRAE.slice(0, -1) + 'ces';
-  }
-  if (regla === 'es') {
-    // Palabras agudas acabadas en vocal con tilde + n/s pierden la tilde en plural (melón -> melones, tapón -> tapones)
-    if (/[áéíóú][ns]$/.test(singularRAE)) {
-      return SinTildes(singularRAE) + 'es';
-    }
-    return singularRAE + 'es';
-  }
-  return singularRAE + 's';
-}
-
 async function verificarPalabraEnServidor(palabra) {
   await cargarDiccionarioRAE();
   const p = palabra.toLowerCase().trim();
   if (!p) return false;
 
   if (setDiccionarioRAE) {
-    // 1. Coincidencia directa (incluye palabras ya registradas en plural)
+    // 1. Si el jugador dijo un plural válido, devolver directamente su SINGULAR
+    const singularDetectado = convertirPluralASingularLocal(p);
+    if (singularDetectado) return singularDetectado;
+
+    // 2. Si no es plural (o su singular no existe), validar coincidencia directa en diccionario
     const directa = buscarEnDiccionarioLocal(p);
     if (directa) return directa;
 
-    // 2. Comprobación de plurales válidos en español (-s, -es, -ces)
-    const singulares = obtenerSingularesDePlural(p);
-    for (const { word: cand, regla } of singulares) {
-      const sing = buscarEnDiccionarioLocal(cand);
-      if (!sing) continue;
-
-      if (regla === 'ces' && sing.endsWith('z')) {
-        return construirPluralCorrecto(p, sing, 'ces');
-      }
-      if (regla === 'es' && /[bcdfghjklmnñpqrstvwxyíú]$/.test(sing)) {
-        return construirPluralCorrecto(p, sing, 'es');
-      }
-      if (regla === 's' && /[aeiouáéíóúbcdfgklmnpt]$/.test(sing)) {
-        return construirPluralCorrecto(p, sing, 's');
-      }
-    }
     return false;
   }
 
   // Respaldo online si el JSON local no cargara
   try {
-    const pruebas = [p, ...obtenerSingularesDePlural(p).map(c => c.word)];
-    for (const cand of pruebas) {
+    const singulares = EXCEPCIONES_NO_PLURAL.has(SinTildes(p)) ? [] : obtenerSingularesDePlural(p).map(c => c.word);
+    for (const cand of [...singulares, p]) {
       const res = await fetch('https://api.datamuse.com/words?sp=' + encodeURIComponent(cand) + '&max=10&v=es');
       const data = await res.json();
-      if (data.some(item => SinTildes(item.word.toLowerCase()) === SinTildes(cand))) {
-        return p;
-      }
+      const match = data.find(item => SinTildes(item.word.toLowerCase()) === SinTildes(cand));
+      if (match) return match.word.toLowerCase();
     }
     return false;
   } catch (e) {
@@ -1137,6 +1156,8 @@ async function obtenerPalabrasCandidatasRAE(prefijoNormalizado) {
     const todas = arrayDiccionarioRAE.filter(p => {
       if (p.length < 3 || historialPalabras.includes(p)) return false;
       if (!SOLO_LETRAS.test(p)) return false;
+      // Evitar que la máquina elija plurales si existe el singular
+      if (convertirPluralASingularLocal(p)) return false;
       const silabas = silabear(p);
       return silabas.length >= 2 && normalizarSilaba(silabas[0]) === prefijoNormalizado;
     });
@@ -1180,7 +1201,7 @@ function silabear(palabra) {
           } else if (isConsonante(next3)) {
             let grupo = next2 + next3;
             if (inseparables.includes(grupo)) {
-              silabaActual += next1; silabas.push(silabaActual); silabaActual = ""; i++;
+              silabas.push(silabaActual); silabaActual = "";
             } else {
               silabaActual += next1 + next2; silabas.push(silabaActual); silabaActual = ""; i += 2;
             }
@@ -1255,13 +1276,14 @@ function mostrarFinJuego() {
   controlsContainer.classList.add('hidden');
   btnRendirse.classList.add('hidden');
   finJuegoBotones.classList.remove('hidden');
-  if (micDeseado) {
+  if (micDeseado && !window._anuncioPantallaCompletaActivo) {
     micStatus.textContent = "Di «otra vez» para reiniciar la partida";
     setTimeout(arrancarRecon, 350);
   }
 }
 
 window.irAlMenuHome = function() {
+  if (window._anuncioPantallaCompletaActivo) return;
   if (cancelarHablaPrevia) { cancelarHablaPrevia(); cancelarHablaPrevia = null; }
   hablando = false;
   modoActual = "";
@@ -1277,6 +1299,7 @@ window.irAlMenuHome = function() {
 };
 
 window.reiniciarMismaPartida = function() {
+  if (window._anuncioPantallaCompletaActivo) return;
   if (!modoActual) {
     window.irAlMenuHome();
     return;
@@ -1359,7 +1382,7 @@ function mostrarSinonimosEnUltimaPalabraUI(palabra, sinonimos) {
 }
 
 async function responderSinonimosUltimaPalabra() {
-  if (historialPalabras.length === 0 || juegoTerminado) return;
+  if (historialPalabras.length === 0 || juegoTerminado || window._anuncioPantallaCompletaActivo) return;
   const ultima = historialPalabras[historialPalabras.length - 1];
   bloquearInputs(true);
   actualizarInterfazTurno('🔄 Buscando sinónimos de "' + ultima + '"...', "bg-amber-600");
@@ -1422,6 +1445,7 @@ window.arranqueVinculado = function(modo) {
 };
 
 function iniciarJuegoTablero(esReinicio = false) {
+  if (window._anuncioPantallaCompletaActivo) return;
   historialPalabras = [];
   gameBoard.innerHTML = '';
 
@@ -1452,7 +1476,7 @@ function iniciarJuegoTablero(esReinicio = false) {
 }
 
 async function juegaMaquina() {
-  if (modoActual !== 'pve' || juegoTerminado) return;
+  if (modoActual !== 'pve' || juegoTerminado || window._anuncioPantallaCompletaActivo) return;
   actualizarInterfazTurno("📚 Buscando en la RAE...", "bg-purple-500");
 
   const prefijo = normalizarSilaba(silabaObjetivo);
@@ -1470,7 +1494,7 @@ async function juegaMaquina() {
 }
 
 window.meRindo = async function() {
-  if (esTurnoMaquina || textInput.disabled || juegoTerminado) return;
+  if (esTurnoMaquina || textInput.disabled || juegoTerminado || window._anuncioPantallaCompletaActivo) return;
   bloquearInputs(true);
 
   const rindiente = nombres[jugadorActual];
@@ -1510,7 +1534,7 @@ function esPreguntaDeSinonimos(texto) {
 }
 
 window.procesarEntrada = async function(texto, esMaquina = false) {
-  if (juegoTerminado) return;
+  if (juegoTerminado || window._anuncioPantallaCompletaActivo) return;
   if (!esMaquina && (esTurnoMaquina || textInput.disabled || hablando)) return;
 
   const textoBruto = (texto || "").trim();
@@ -1562,9 +1586,15 @@ window.procesarEntrada = async function(texto, esMaquina = false) {
     actualizarInterfazTurno("Consultando RAE...", "bg-yellow-500");
     const formaRAE = await verificarPalabraEnServidor(palabra);
     if (formaRAE && typeof formaRAE === 'string') {
-      palabra = formaRAE;
-      silabasWord = silabear(palabra);
-      jugadaValida = true;
+      // Si el usuario dijo un plural, formaRAE ya viene convertida a SINGULAR
+      if (historialPalabras.includes(formaRAE)) {
+        mostrarAlerta("La palabra '" + formaRAE + "' ya se ha usado.");
+        vozError = "La palabra " + formaRAE + " ya se ha usado. Prueba con otra.";
+      } else {
+        palabra = formaRAE;
+        silabasWord = silabear(palabra);
+        jugadaValida = true;
+      }
     } else {
       mostrarAlerta("'" + palabra + "' no está en el diccionario RAE.");
       vozError = palabra + " no viene en el diccionario. Inténtalo otra vez.";
@@ -1625,7 +1655,7 @@ function uiMic(encendido) {
 }
 
 function procesarFraseVoz(rawInput) {
-  if (modoActual === "" || hablando || Date.now() < ignorarVozHasta) return;
+  if (modoActual === "" || hablando || window._anuncioPantallaCompletaActivo || Date.now() < ignorarVozHasta) return;
   const alternativas = (rawInput || "").split('|').map(s => s.trim().toLowerCase()).filter(Boolean);
   if (alternativas.length === 0) return;
 
@@ -1699,7 +1729,7 @@ try {
       abort() { window.AndroidVoice.stopListening(); }
     };
     window._onNativeSrStart = () => {
-      if (hablando) {
+      if (hablando || window._anuncioPantallaCompletaActivo) {
         pausarReconocimientoMientrasHabla();
         return;
       }
@@ -1717,7 +1747,7 @@ try {
     };
     window._onNativeSrEnd = () => {
       isListening = false;
-      if (micDeseado && modoActual !== "" && !hablando) setTimeout(arrancarRecon, 350);
+      if (micDeseado && modoActual !== "" && !hablando && !window._anuncioPantallaCompletaActivo) setTimeout(arrancarRecon, 350);
       else if (!micDeseado) uiMic(false);
     };
   } else if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -1728,7 +1758,7 @@ try {
     recon.interimResults = false;
     recon.maxAlternatives = 5;
     recon.onstart = () => {
-      if (hablando) {
+      if (hablando || window._anuncioPantallaCompletaActivo) {
         pausarReconocimientoMientrasHabla();
         return;
       }
@@ -1736,7 +1766,7 @@ try {
       uiMic(true);
     };
     recon.onresult = (event) => {
-      if (hablando || Date.now() < ignorarVozHasta) return;
+      if (hablando || window._anuncioPantallaCompletaActivo || Date.now() < ignorarVozHasta) return;
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
         if (!result.isFinal) continue;
@@ -1755,7 +1785,7 @@ try {
     };
     recon.onend = () => {
       isListening = false;
-      if (micDeseado && modoActual !== "" && !hablando) {
+      if (micDeseado && modoActual !== "" && !hablando && !window._anuncioPantallaCompletaActivo) {
         micStatus.textContent = "Reconectando micrófono...";
         setTimeout(arrancarRecon, 300);
       } else if (!micDeseado) {
@@ -1770,13 +1800,13 @@ try {
 } catch (e) {}
 
 setInterval(() => {
-  if (micDeseado && !isListening && !hablando && modoActual !== "" && document.visibilityState === 'visible') {
+  if (micDeseado && !isListening && !hablando && !window._anuncioPantallaCompletaActivo && modoActual !== "" && document.visibilityState === 'visible') {
     arrancarRecon();
   }
 }, 2500);
 
 function arrancarRecon(intentos = 0) {
-  if (!recon || !micDeseado || isListening || hablando || modoActual === "") return;
+  if (!recon || !micDeseado || isListening || hablando || window._anuncioPantallaCompletaActivo || modoActual === "") return;
   try {
     recon.start();
   } catch (err) {
@@ -1787,10 +1817,11 @@ function arrancarRecon(intentos = 0) {
 function iniciarMicrofono() {
   if (!recon || modoActual === "") return;
   micDeseado = true;
-  if (!hablando) arrancarRecon();
+  if (!hablando && !window._anuncioPantallaCompletaActivo) arrancarRecon();
 }
 
 window.alternarMicrofono = function() {
+  if (window._anuncioPantallaCompletaActivo) return;
   if (micDeseado) detenerMicrofono();
   else iniciarMicrofono();
 };
@@ -1805,7 +1836,7 @@ function detenerMicrofono() {
 pedirWakeLock();
 </script>
 
-<!-- SCRIPT 3: CONEXIÓN BLINDADA GOOGLE ADMOB -->
+<!-- SCRIPT 3: CONEXIÓN BLINDADA GOOGLE ADMOB CON ESPERA REAL DE CIERRE DEL INTERSTICIAL -->
 <script>
 (function initAdMob() {
   try {
@@ -1841,14 +1872,83 @@ pedirWakeLock();
     }
 
     async function showInterstitialThen(callback) {
-      try {
-        if (interstitialReady) {
-          await callAdMob('showInterstitial', {});
-          interstitialReady = false;
-          preloadInterstitial();
+      if (window._anuncioPantallaCompletaActivo) return;
+      if (!interstitialReady) {
+        preloadInterstitial();
+        if (callback) callback();
+        return;
+      }
+
+      window._anuncioPantallaCompletaActivo = true;
+      if (typeof window.pausarTodoParaAnuncio === 'function') {
+        window.pausarTodoParaAnuncio();
+      }
+
+      let resuelto = false;
+      let anuncioMostrado = false;
+      let listeners = [];
+      let safetyTimer = null;
+      let returnTimer = null;
+
+      const limpiar = () => {
+        clearTimeout(safetyTimer);
+        clearTimeout(returnTimer);
+        document.removeEventListener('visibilitychange', onVisChange);
+        listeners.forEach(l => {
+          try { if (l && typeof l.remove === 'function') l.remove(); } catch (e) {}
+        });
+        listeners = [];
+      };
+
+      const finalizarAnuncio = () => {
+        if (resuelto) return;
+        resuelto = true;
+        limpiar();
+        interstitialReady = false;
+        window._anuncioPantallaCompletaActivo = false;
+        preloadInterstitial();
+        // Esperar 350 ms para que Android devuelva el foco de pantalla y audio antes de iniciar la partida
+        setTimeout(() => {
+          if (callback) callback();
+        }, 350);
+      };
+
+      const onVisChange = () => {
+        if (anuncioMostrado && document.visibilityState === 'visible') {
+          clearTimeout(returnTimer);
+          returnTimer = setTimeout(finalizarAnuncio, 1200);
         }
-      } catch (e) {}
-      if (callback) callback();
+      };
+      document.addEventListener('visibilitychange', onVisChange);
+
+      try {
+        const admob = cap.Plugins && cap.Plugins.AdMob;
+        if (admob && typeof admob.addListener === 'function') {
+          listeners.push(await admob.addListener('interstitialAdShowed', () => {
+            anuncioMostrado = true;
+            clearTimeout(safetyTimer);
+          }));
+          listeners.push(await admob.addListener('interstitialAdDismissed', () => {
+            finalizarAnuncio();
+          }));
+          listeners.push(await admob.addListener('interstitialAdFailedToShow', () => {
+            finalizarAnuncio();
+          }));
+        }
+
+        // Si por red o fallo de AdMob el anuncio no abre en 4 s, desbloquear partida
+        safetyTimer = setTimeout(() => {
+          if (!anuncioMostrado) finalizarAnuncio();
+        }, 4000);
+
+        await callAdMob('showInterstitial', {});
+
+        if (listeners.length === 0) {
+          finalizarAnuncio();
+        }
+      } catch (e) {
+        finalizarAnuncio();
+      }
     }
 
     window.addEventListener('load', async () => {
