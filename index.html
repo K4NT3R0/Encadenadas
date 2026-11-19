@@ -40,7 +40,6 @@ input { -webkit-user-select: text; user-select: text; }
   border: 4px solid #a67c52;
   box-shadow: inset 0 0 10px rgba(139,90,43,0.5), 0 8px 15px rgba(0,0,0,0.2);
 }
-/* Título de alto contraste: Blanco brillante con contorno y relieve 3D chocolate oscuro */
 .titulo-alto-contraste {
   font-family: 'Titan One', 'Nunito', sans-serif;
   font-weight: 900;
@@ -109,7 +108,7 @@ input { -webkit-user-select: text; user-select: text; }
       <span id="txt-pvp">👥 Jugador 1 vs Jugador 2</span>
     </button>
     <p class="mt-3 text-xs font-bold text-[#5c3a21] text-center">
-      Manos libres: di tu palabra, «¿qué significa?», «me rindo» o «otra vez» al terminar.
+      Manos libres: di tu palabra (plurales válidos), «¿qué significa?» (sinónimos), «me rindo» o «otra vez» al terminar.
     </p>
   </div>
 </div>
@@ -158,7 +157,7 @@ input { -webkit-user-select: text; user-select: text; }
       </svg>
     </button>
     <div class="flex-1 bg-white rounded-2xl flex items-center px-4 py-2 shadow-inner border-2 border-orange-200 focus-within:border-orange-500 transition-colors">
-      <input type="text" id="text-input" onkeydown="if(event.key==='Enter')window.procesarEntrada(this.value)" aria-label="Tu palabra" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Di o escribe tu palabra..." class="w-full bg-transparent outline-none text-lg font-bold text-slate-700 placeholder-slate-400 disabled:bg-transparent">
+      <input type="text" id="text-input" onkeydown="if(event.key==='Enter')window.procesarEntrada(this.value)" aria-label="Tu palabra" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Di o escribe palabra..." class="w-full bg-transparent outline-none text-lg font-bold text-slate-700 placeholder-slate-400 disabled:bg-transparent">
       <button id="send-btn" type="button" onclick="window.procesarEntrada(document.getElementById('text-input').value)" aria-label="Enviar palabra" class="ml-2 text-orange-500 font-black text-xl disabled:opacity-50">➔</button>
     </div>
   </div>
@@ -236,7 +235,7 @@ window.cargarDatosMenu = function() {
 window.cargarDatosMenu();
 </script>
 
-<!-- SCRIPT 2: MOTOR PRINCIPAL, WAKELOCK PERMANENTE, SINCRONIZACIÓN DE MICRÓFONO Y SIGNIFICADOS REALES -->
+<!-- SCRIPT 2: MOTOR PRINCIPAL, PLURALES VÁLIDOS, SOLO SINÓNIMOS, WAKELOCK Y VOZ -->
 <script>
 const gameBoard = document.getElementById('game-board');
 const micBtn = document.getElementById('mic-btn');
@@ -293,10 +292,12 @@ const FONETICA_SILABAS_VOZ = {
   'tor': 'tór', 'por': 'pór', 'cor': 'cór', 'mor': 'mór', 'sor': 'sór',
   'lor': 'lór', 'for': 'fór', 'bor': 'bór', 'dor': 'dór', 'nor': 'nór',
   'tos': 'tós', 'pos': 'pós', 'cos': 'cós', 'mos': 'mós', 'los': 'lós',
-  'dos': 'dós', 'nos': 'nós', 'vos': 'vós', 'sos': 'sós',
+  'dos': 'dós', 'nos': 'nós', 'vos': 'vós', 'sos': 'sós', 'ros': 'rós',
   'me': 'mé', 'te': 'té', 'se': 'sé', 'de': 'dé', 'le': 'lé', 'pe': 'pé',
   're': 'ré', 'ce': 'zé', 'fe': 'fé', 'ge': 'jé', 'je': 'jé', 've': 'vé',
   'be': 'bé', 'ne': 'né', 'que': 'ké', 'gue': 'gué', 'che': 'ché', 'lle': 'llé',
+  'ces': 'zés', 'ges': 'jés', 'les': 'lés', 'mes': 'més', 'nes': 'nés',
+  'pes': 'pés', 'res': 'rés', 'ses': 'sés', 'tes': 'tés', 'ves': 'vés',
   'mi': 'mí', 'ti': 'tí', 'si': 'sí', 'di': 'dí', 'li': 'lí', 'pi': 'pí',
   'ri': 'rí', 'ci': 'zí', 'fi': 'fí', 'gi': 'jí', 'ji': 'jí', 'vi': 'ví',
   'bi': 'bí', 'ni': 'ní', 'qui': 'kí', 'gui': 'guí',
@@ -305,6 +306,8 @@ const FONETICA_SILABAS_VOZ = {
   'da': 'dá', 'na': 'ná', 'ra': 'rá', 'bra': 'brá', 'pla': 'plá', 'cla': 'clá',
   'tra': 'trá', 'pra': 'prá', 'cra': 'crá', 'dra': 'drá', 'fra': 'frá', 'gra': 'grá',
   'bla': 'blá', 'fla': 'flá', 'gla': 'glá', 'cha': 'chá', 'lla': 'llá', 'ña': 'ñá',
+  'tas': 'tás', 'sas': 'sás', 'las': 'lás', 'mas': 'más', 'nas': 'nás',
+  'pas': 'pás', 'ras': 'rás', 'cas': 'cás', 'das': 'dás', 'bas': 'bás',
   'tu': 'tú', 'su': 'sú', 'lu': 'lú', 'pu': 'pú', 'ru': 'rú', 'cu': 'cú',
   'mu': 'mú', 'bu': 'bú', 'vu': 'vú', 'fu': 'fú', 'gu': 'gú', 'ju': 'jú',
   'in': 'ín', 'on': 'ón', 'an': 'án', 'en': 'én', 'un': 'ún',
@@ -368,7 +371,6 @@ async function pedirWakeLock() {
     }
   } catch (e) { wakeLock = null; }
 
-  // Si Capacitor KeepAwake está presente
   try {
     if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.KeepAwake) {
       window.Capacitor.Plugins.KeepAwake.keepAwake();
@@ -376,7 +378,6 @@ async function pedirWakeLock() {
   } catch (e) {}
 }
 
-// Vídeo invisible en bucle generado por Canvas: impide que Android/WebView apague la pantalla
 function activarVideoNoSleep() {
   try {
     if (videoWakeLock) {
@@ -437,7 +438,6 @@ function mantenerPantallaActivaTotal() {
   } catch (e) {}
 }
 
-// Re-solicitar WakeLock en cualquier interacción del usuario y periódicamente
 document.addEventListener('touchstart', mantenerPantallaActivaTotal, { passive: true });
 document.addEventListener('click', mantenerPantallaActivaTotal, { passive: true });
 setInterval(() => {
@@ -459,10 +459,15 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-// ---------- Diccionario Castellano Local (RAE) ----------
+// ---------- Diccionario Castellano Local (RAE) con índice rápido ----------
 let setDiccionarioRAE = null;
 let arrayDiccionarioRAE = null;
+let mapSinTildesRAE = null;
 let cargandoDiccionario = null;
+
+function SinTildes(str) {
+  return (str || "").replace(/ñ/g, "\u0001").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\u0001/g, "ñ");
+}
 
 async function cargarDiccionarioRAE() {
   if (setDiccionarioRAE) return true;
@@ -474,6 +479,12 @@ async function cargarDiccionarioRAE() {
       const lista = await res.json();
       arrayDiccionarioRAE = lista;
       setDiccionarioRAE = new Set(lista);
+      mapSinTildesRAE = new Map();
+      for (let i = 0; i < lista.length; i++) {
+        const w = lista[i];
+        const s = SinTildes(w);
+        if (!mapSinTildesRAE.has(s)) mapSinTildesRAE.set(s, w);
+      }
       return true;
     } catch (e) {
       return false;
@@ -483,585 +494,455 @@ async function cargarDiccionarioRAE() {
 }
 setTimeout(cargarDiccionarioRAE, 500);
 
-// ---------- 4. DICCIONARIO DE SIGNIFICADOS Y SINÓNIMOS REALES (CERO FRASES GENÉRICAS) ----------
-const DEFINICIONES_LOCALES = {
-  'palabra': 'Término, vocablo o expresión hablada o escrita.',
-  'camino': 'Senda, vía o ruta de paso.',
-  'verano': 'Estación más calurosa del año, estío.',
-  'planeta': 'Cuerpo celeste que orbita una estrella.',
-  'tesoro': 'Riqueza, joyas o fortuna oculta.',
-  'espejo': 'Cristal pulido que refleja las imágenes.',
-  'castillo': 'Fortaleza amurallada con torres defensivas.',
-  'naranja': 'Fruto cítrico redondo, dulce y jugoso.',
-  'pelota': 'Bola elástica para jugar o hacer deporte.',
-  'regalo': 'Obsequio, presente o dádiva afectuosa.',
-  'melón': 'Fruto dulce y jugoso de verano.',
-  'melon': 'Fruto dulce y jugoso de verano.',
-  'loco': 'Demente, insensato o imprudente.',
-  'ponderativo': 'Que exagera, encarece o alaba mucho.',
-  'ponderativa': 'Que exagera, encarece o alaba mucho.',
-  'ponderar': 'Elogiar, alabar o examinar con cuidado.',
-  'tapón': 'Pieza para cerrar o tapar agujeros.',
-  'tapon': 'Pieza para cerrar o tapar agujeros.',
-  'taparote': 'Cubierta, tapa grande o pieza para cerrar.',
-  'tapa': 'Pieza que cierra o cubre un recipiente.',
-  'tapar': 'Cubrir, cerrar u ocultar algo.',
-  'casa': 'Vivienda, hogar o edificio habitable.',
-  'perro': 'Can, mamífero doméstico fiel al humano.',
-  'gato': 'Felino doméstico ágil y maullador.',
-  'roca': 'Piedra grande, dura y muy sólida.',
-  'sapo': 'Anfibio sin cola de piel rugosa.',
-  'rana': 'Anfibio saltador de piel lisa y verde.',
-  'brasa': 'Carbón o leña encendida sin llama.',
-  'pomo': 'Tirador o manilla redonda de puerta.',
-  'mono': 'Simio, primate ágil de cola larga.',
-  'mona': 'Hembra del mono; bonita o graciosa.',
-  'jota': 'Baile y canto tradicional popular español.',
-  'coche': 'Automóvil o vehículo de cuatro ruedas.',
-  'carro': 'Vehículo con ruedas o automóvil.',
-  'pato': 'Ave acuática de pico aplanado.',
-  'taza': 'Vasija pequeña con asa para beber.',
-  'vaso': 'Recipiente cilíndrico para beber líquidos.',
-  'copa': 'Vaso con pie para beber.',
-  'lupa': 'Lente de aumento para ver detalles.',
-  'vaca': 'Hembra del toro que da leche.',
-  'toro': 'Bovino macho adulto y robusto.',
-  'zorro': 'Mamífero cánido astuto de cola peluda.',
-  'lobo': 'Cánido salvaje que vive en manada.',
-  'oso': 'Mamífero grande y corpulento de pelaje denso.',
-  'llave': 'Utensilio metálico para abrir cerraduras.',
-  'rápido': 'Veloz, ágil, ligero o acelerado.',
-  'rapido': 'Veloz, ágil, ligero o acelerado.',
-  'lento': 'Pausado, tranquilo o de poca velocidad.',
-  'mesa': 'Mueble con tablero y patas.',
-  'silla': 'Asiento con respaldo para una persona.',
-  'sillón': 'Asiento amplio y cómodo con brazos.',
-  'sillon': 'Asiento amplio y cómodo con brazos.',
-  'sofá': 'Asiento cómodo para varias personas.',
-  'sofa': 'Asiento cómodo para varias personas.',
-  'cama': 'Mueble con colchón para dormir.',
-  'puerta': 'Abertura o panel para entrar y salir.',
-  'ventana': 'Abertura en la pared para dar luz.',
-  'techo': 'Parte superior que cubre una habitación.',
-  'suelo': 'Superficie inferior por donde se camina.',
-  'pared': 'Muro vertical que cierra un espacio.',
-  'muro': 'Pared gruesa de piedra o ladrillo.',
-  'torre': 'Edificio muy alto respecto a su base.',
-  'puente': 'Construcción para cruzar sobre un río.',
-  'calle': 'Vía pública entre edificios de una población.',
-  'plaza': 'Espacio público amplio dentro de una ciudad.',
-  'parque': 'Jardín público con árboles y paseo.',
-  'jardín': 'Terreno donde se cultivan plantas y flores.',
-  'jardin': 'Terreno donde se cultivan plantas y flores.',
-  'flor': 'Brote colorido y aromático de muchas plantas.',
-  'rosa': 'Flor hermosa y aromática del rosal.',
-  'árbol': 'Planta grande de tronco leñoso y ramas.',
-  'arbol': 'Planta grande de tronco leñoso y ramas.',
-  'hoja': 'Lámina verde de las plantas o papel.',
-  'rama': 'Parte del árbol donde brotan las hojas.',
-  'raíz': 'Órgano subterráneo que fija la planta.',
-  'raiz': 'Órgano subterráneo que fija la planta.',
-  'fruto': 'Producto de las plantas que contiene semillas.',
-  'fruta': 'Fruto comestible de sabor generalmente dulce.',
-  'manzana': 'Fruta redonda y crujiente del manzano.',
-  'pera': 'Fruta jugosa más ancha por abajo.',
-  'plátano': 'Fruta alargada y dulce de piel amarilla.',
-  'platano': 'Fruta alargada y dulce de piel amarilla.',
-  'limón': 'Fruto cítrico amarillo de sabor ácido.',
-  'limon': 'Fruto cítrico amarillo de sabor ácido.',
-  'fresa': 'Fruta roja, pequeña, dulce y aromática.',
-  'uva': 'Fruto pequeño de la vid para vino.',
-  'vino': 'Bebida alcohólica hecha de zumo de uva.',
-  'agua': 'Líquido transparente e inodoro vital.',
-  'fuego': 'Calor y llama producidos por la combustión.',
-  'tierra': 'Planeta que habitamos o suelo cultivable.',
-  'aire': 'Gas atmosférico que respiramos; viento suave.',
-  'viento': 'Corriente de aire en la atmósfera.',
-  'lluvia': 'Agua que cae de las nubes.',
-  'nieve': 'Agua helada blanca que cae de nubes.',
-  'nube': 'Masa de vapor de agua suspendida arriba.',
-  'cielo': 'Espacio azul visible sobre la Tierra.',
-  'sol': 'Estrella luminosa centro de nuestro sistema.',
-  'luna': 'Satélite natural que gira alrededor de la Tierra.',
-  'estrella': 'Astro que brilla con luz propia.',
-  'mar': 'Gran masa de agua salada.',
-  'río': 'Corriente natural y continua de agua.',
-  'rio': 'Corriente natural y continua de agua.',
-  'lago': 'Gran masa de agua rodeada de tierra.',
-  'isla': 'Porción de tierra rodeada de agua.',
-  'monte': 'Elevación natural del terreno, montaña.',
-  'montaña': 'Gran elevación natural del terreno.',
-  'valle': 'Llanura situada entre montañas o alturas.',
-  'playa': 'Orilla arenosa junto al mar o río.',
-  'arena': 'Conjunto de partículas finas de roca.',
-  'piedra': 'Fragmento de roca dura y compacta.',
-  'oro': 'Metal precioso amarillo, brillante y valioso.',
-  'plata': 'Metal precioso blanco y brillante.',
-  'hierro': 'Metal duro y tenaz muy usado.',
-  'acero': 'Aleación resistente de hierro y carbono.',
-  'cobre': 'Metal rojizo gran conductor eléctrico.',
-  'libro': 'Conjunto de hojas impresas encuadernadas.',
-  'papel': 'Lámina fina hecha de pasta vegetal.',
-  'carta': 'Mensaje escrito enviado o naipe de baraja.',
-  'sobre': 'Cubierta de papel para guardar cartas.',
-  'lápiz': 'Utensilio con mina de grafito para escribir.',
-  'lapiz': 'Utensilio con mina de grafito para escribir.',
-  'pluma': 'Pieza de ave o utensilio para escribir.',
-  'tinta': 'Líquido coloreado usado para escribir o imprimir.',
-  'reloj': 'Instrumento que mide e indica la hora.',
-  'tiempo': 'Duración de las cosas o estado atmosférico.',
-  'hora': 'Unidad de tiempo de sesenta minutos.',
-  'minuto': 'Unidad de tiempo de sesenta segundos.',
-  'día': 'Tiempo de veinticuatro horas o claridad solar.',
-  'dia': 'Tiempo de veinticuatro horas o claridad solar.',
-  'noche': 'Parte del día sin luz del sol.',
-  'tarde': 'Parte del día entre mediodía y noche.',
-  'mañana': 'Primera parte del día o día siguiente.',
-  'semana': 'Periodo de siete días consecutivos.',
-  'mes': 'Cada una de las doce partes del año.',
-  'año': 'Tiempo que tarda la Tierra en orbitar.',
-  'mano': 'Parte del brazo humano con cinco dedos.',
-  'dedo': 'Cada una de las cinco partes de la mano.',
-  'pie': 'Extremidad inferior que sirve para caminar.',
-  'pierna': 'Extremidad inferior entre rodilla y tobillo.',
-  'brazo': 'Extremidad superior desde hombro hasta mano.',
-  'cabeza': 'Parte superior del cuerpo donde está el cerebro.',
-  'cara': 'Rostro, parte anterior de la cabeza.',
-  'rostro': 'Cara de las personas, semblante.',
-  'ojo': 'Órgano de la vista.',
-  'boca': 'Abertura para comer, hablar y respirar.',
-  'labio': 'Borde carnoso exterior de la boca.',
-  'diente': 'Pieza ósea blanca para masticar.',
-  'lengua': 'Órgano muscular de la boca o idioma.',
-  'nariz': 'Órgano del olfato situado en la cara.',
-  'oreja': 'Parte externa del órgano del oído.',
-  'pelo': 'Cabello o hebra que crece en la piel.',
-  'cuello': 'Parte que une la cabeza con el tronco.',
-  'pecho': 'Parte frontal superior del tronco humano.',
-  'espalda': 'Parte posterior del tronco humano.',
-  'corazón': 'Órgano que impulsa la sangre; centro afectivo.',
-  'corazon': 'Órgano que impulsa la sangre; centro afectivo.',
-  'sangre': 'Líquido rojo que circula por las venas.',
-  'hueso': 'Pieza dura que forma el esqueleto.',
-  'piel': 'Tejido externo que cubre el cuerpo.',
-  'voz': 'Sonido producido al hablar o cantar.',
-  'canto': 'Acción de cantar; borde o piedra.',
-  'música': 'Arte de combinar sonidos con ritmo y melodía.',
-  'musica': 'Arte de combinar sonidos con ritmo y melodía.',
-  'nota': 'Signo musical, apunte breve o calificación.',
-  'tono': 'Grado de elevación del sonido o matiz.',
-  'ruido': 'Sonido inarticulado, confuso o molesto.',
-  'silencio': 'Ausencia total de ruido o de voz.',
-  'luz': 'Claridad que ilumina y permite ver.',
-  'sombra': 'Zona oscura donde no da la luz.',
-  'color': 'Impresión visual producida por la luz.',
-  'rojo': 'Color vivo como el de la sangre.',
-  'azul': 'Color del cielo despejado y del mar.',
-  'verde': 'Color de la hierba fresca y esmeralda.',
-  'amarillo': 'Color como el del oro o el limón.',
-  'blanco': 'Color claro como la nieve o leche.',
-  'negro': 'Color totalmente oscuro como el carbón.',
-  'gris': 'Color intermedio entre blanco y negro.',
-  'ropa': 'Prendas de vestir en general.',
-  'camisa': 'Prenda de vestir con cuello y botones.',
-  'pantalón': 'Prenda de vestir con dos perneras.',
-  'pantalon': 'Prenda de vestir con dos perneras.',
-  'zapato': 'Calzado que cubre el pie.',
-  'bota': 'Calzado que cubre el pie y tobillo.',
-  'sombrero': 'Prenda para cubrir la cabeza con ala.',
-  'gorra': 'Prenda redonda con visera para la cabeza.',
-  'anillo': 'Aro pequeño que se lleva en el dedo.',
-  'joya': 'Objeto de adorno hecho con metales preciosos.',
-  'bolsa': 'Saco de papel, tela o plástico.',
-  'saco': 'Costal o receptáculo grande de tela.',
-  'caja': 'Recipiente con tapa para guardar objetos.',
-  'bote': 'Recipiente pequeño, salto o barco pequeño.',
-  'barco': 'Embarcación para navegar por el agua.',
-  'nave': 'Barco, vehículo espacial o edificio amplio.',
-  'vela': 'Cilindro de cera con mecha o lona naval.',
-  'remo': 'Pala larga de madera para impulsar botes.',
-  'tren': 'Ferrocarril formado por vagones sobre vías.',
-  'avión': 'Aeronave con alas y motor para volar.',
-  'avion': 'Aeronave con alas y motor para volar.',
-  'vuelo': 'Acción de desplazarse por el aire.',
-  'ala': 'Miembro para volar de aves o aviones.',
-  'ave': 'Animal vertebrado con plumas y dos alas.',
-  'pájaro': 'Ave pequeña voladora.',
-  'pajaro': 'Ave pequeña voladora.',
-  'nido': 'Refugio que construyen las aves para criar.',
-  'huevo': 'Cuerpo redondeado puesto por las aves.',
-  'pez': 'Animal vertebrado acuático con aletas y escamas.',
-  'red': 'Malla de hilos para pescar o atrapar.',
-  'hilo': 'Hebra larga y delgada de fibra textil.',
-  'tela': 'Tejido hecho con muchos hilos entrecruzados.',
-  'lana': 'Pelo suave de las ovejas para tejer.',
-  'seda': 'Hilo fino y suave producido por gusanos.',
-  'pan': 'Alimento básico de harina horneada.',
-  'leche': 'Líquido nutritivo blanco producido por hembras.',
-  'queso': 'Alimento sólido elaborado con leche cuajada.',
-  'sopa': 'Plato líquido con caldo, pasta o verduras.',
-  'caldo': 'Líquido resultante de cocer alimentos.',
-  'carne': 'Parte muscular comestible de los animales.',
-  'pollo': 'Cría de ave, especialmente gallina joven.',
-  'gallo': 'Ave doméstica macho de cresta roja.',
-  'gallina': 'Ave doméstica que pone huevos.',
-  'sal': 'Sustancia blanca cristalina que da sabor.',
-  'miel': 'Sustancia dulce y espesa que hacen las abejas.',
-  'abeja': 'Insecto alado productor de cera y miel.',
-  'mosca': 'Insecto volador común de dos alas.',
-  'hormiga': 'Insecto pequeño y trabajador que vive en colonias.',
-  'araña': 'Arácnido de ocho patas que teje redes.',
-  'caballo': 'Mamífero equino veloz usado para montar.',
-  'burro': 'Asno, animal doméstico de orejas largas.',
-  'oveja': 'Mamífero rumiante cubierto de lana.',
-  'cabra': 'Mamífero rumiante ágil que da leche.',
-  'cerdo': 'Puerco, mamífero doméstico de cuerpo grueso.',
-  'león': 'Gran felino africano llamado rey de la selva.',
-  'leon': 'Gran felino africano llamado rey de la selva.',
-  'tigre': 'Gran felino asiático de piel rayada.',
-  'elefante': 'Gran mamífero con trompa larga y colmillos.',
-  'jirafa': 'Mamífero africano de cuello muy largo.',
-  'ratón': 'Roedor pequeño de cola larga y ágil.',
-  'raton': 'Roedor pequeño de cola larga y ágil.',
-  'rata': 'Roedor mediano de cola larga.',
-  'conejo': 'Mamífero de orejas largas que vive en madrigueras.',
-  'amigo': 'Persona con quien se tiene afecto y confianza.',
-  'vecino': 'Que habita cerca o en el mismo barrio.',
-  'niño': 'Persona que está en la etapa de la infancia.',
-  'niña': 'Persona de corta edad en la infancia.',
-  'padre': 'Varón que tiene uno o más hijos.',
-  'madre': 'Mujer que ha tenido uno o más hijos.',
-  'hijo': 'Descendiente directo respecto de sus padres.',
-  'hermano': 'Persona que comparte los mismos padres.',
-  'rey': 'Monarca o soberano de un reino.',
-  'reina': 'Mujer que ejerce la soberanía real.',
-  'corona': 'Aro de metal precioso símbolo de realeza.',
-  'trono': 'Asiento real con gradas y dosel.',
-  'juego': 'Actividad recreativa sometida a reglas.',
-  'dado': 'Cubo numerado usado en juegos de azar.',
-  'ficha': 'Pieza pequeña usada para jugar o anotar.',
-  'meta': 'Fin u objetivo al que se dirige algo.',
-  'premio': 'Recompensa o galardón por un mérito.',
-  'récord': 'Mejor marca o resultado registrado.',
-  'record': 'Mejor marca o resultado registrado.',
-  'fácil': 'Sencillo, que no requiere gran esfuerzo.',
-  'facil': 'Sencillo, que no requiere gran esfuerzo.',
-  'difícil': 'Complicado, que requiere esfuerzo o habilidad.',
-  'dificil': 'Complicado, que requiere esfuerzo o habilidad.',
-  'dócil': 'Suave, obediente, apacible o fácil de guiar.',
-  'docil': 'Suave, obediente, apacible o fácil de guiar.',
-  'jocoso': 'Gracioso, chistoso, festivo o divertido.',
-  'alegre': 'Contento, animado o lleno de gozo.',
-  'triste': 'Apenado, melancólico o sin alegría.',
-  'fuerte': 'Robusto, vigoroso o de gran resistencia.',
-  'débil': 'De poca fuerza, vigor o resistencia.',
-  'debil': 'De poca fuerza, vigor o resistencia.',
-  'grande': 'Que supera en tamaño a lo común.',
-  'pequeño': 'De tamaño reducido o corta edad.',
-  'alto': 'Elevado o de gran estatura.',
-  'bajo': 'De poca altura o situado abajo.',
-  'bueno': 'De valor positivo, bondadoso o útil.',
-  'malo': 'Negativo, dañino o de mala calidad.',
-  'nuevo': 'Recién hecho o sin estrenar.',
-  'viejo': 'Antiguo o de mucha edad.',
-  'claro': 'Luminoso, nítido o fácil de comprender.',
-  'oscuro': 'Falto de luz o de claridad.',
-  'dulce': 'De sabor agradable como el azúcar o miel.',
-  'amargo': 'De sabor fuerte y desagradable como la hiel.',
-  'caliente': 'Que tiene o desprende temperatura elevada.',
-  'frío': 'Que tiene temperatura baja o sin calor.',
-  'frio': 'Que tiene temperatura baja o sin calor.',
-  'lleno': 'Ocupado por completo, repleto.',
-  'vacío': 'Que no contiene nada en su interior.',
-  'vacio': 'Que no contiene nada en su interior.',
-  'limpio': 'Sin manchas ni suciedad, aseado.',
-  'sucio': 'Que tiene manchas, polvo o impurezas.',
-  'rico': 'Adinerado, abundante o muy sabroso.',
-  'pobre': 'Escaso de recursos o humilde.',
-  'sabio': 'Que posee profundos conocimientos y prudencia.',
-  'tonto': 'Falto de entendimiento, necio o ingenuo.',
-  'listo': 'Inteligente, sagaz o preparado para algo.',
-  'valiente': 'Que actúa con valor y decisión.',
-  'cobarde': 'Que carece de valor o tiene miedo.',
-  'libre': 'Que tiene facultad para obrar sin ataduras.',
-  'preso': 'Encarcelado o privado de libertad.',
-  'cierto': 'Verdadero, seguro e indudable.',
-  'falso': 'Engañoso, fingido o falto de verdad.',
-  'noto': 'Percibo, advierto o siento algo; viento sur.',
-  'tope': 'Límite máximo o extremo donde choca algo.',
-  'taco': 'Pedazo corto de madera o bocado mexicano.'
+// ---------- SOLO SINÓNIMOS (Sin definiciones ni textos genéricos) ----------
+const SINONIMOS_LOCALES = {
+  'palabra': 'término, vocablo, voz',
+  'camino': 'senda, vía, ruta',
+  'verano': 'estío, canícula',
+  'planeta': 'astro, mundo, esfera',
+  'tesoro': 'fortuna, riqueza, caudal',
+  'espejo': 'cristal, luna, reflejo',
+  'castillo': 'fortaleza, alcázar, ciudadela',
+  'naranja': 'cítrico, anaranjado',
+  'pelota': 'balón, bola, esfera',
+  'regalo': 'obsequio, presente, dádiva',
+  'melón': 'sandía, fruto',
+  'loco': 'demente, insensato, chiflado',
+  'ponderativo': 'elogioso, encomiástico, alabador',
+  'ponderar': 'elogiar, alabar, ensalzar',
+  'tapón': 'corcho, cierre, obturador',
+  'taparote': 'tapa, cubierta, cierre',
+  'tapa': 'cubierta, tapadera, cierre',
+  'tapar': 'cubrir, ocultar, cerrar',
+  'noticia': 'novedad, aviso, informe',
+  'ciática': 'lumbalgia, lumbago, neuralgia',
+  'carea': 'pastorea, guía, confronta',
+  'carear': 'confrontar, enfrentar, pastorear',
+  'riojano': 'logroñés, calagurritano',
+  'casa': 'vivienda, hogar, morada',
+  'perro': 'can, sabueso, chucho',
+  'gato': 'felino, minino, micho',
+  'roca': 'piedra, peña, peñasco',
+  'sapo': 'batracio, anfibio',
+  'rana': 'batracio, anfibio',
+  'brasa': 'ascua, rescoldo, tizón',
+  'pomo': 'tirador, picaporte, manilla',
+  'mono': 'simio, primate, macaco',
+  'mona': 'bonita, linda, graciosa',
+  'jota': 'baile, danza, copla',
+  'coche': 'automóvil, auto, vehículo',
+  'carro': 'carruaje, vehículo, automóvil',
+  'pato': 'ánade, ave',
+  'taza': 'pocillo, cuenco, tazón',
+  'vaso': 'copa, recipiente, cubilete',
+  'copa': 'cáliz, vaso, trofeo',
+  'lupa': 'lente, cristal, aumento',
+  'vaca': 'res, bovino, vacuno',
+  'toro': 'astado, morlaco, res',
+  'zorro': 'raposo, vulpeja, astuto',
+  'lobo': 'cánido, fiera',
+  'oso': 'plantígrado, úrsido',
+  'llave': 'ganzúa, clave, cerradura',
+  'rápido': 'veloz, ágil, ligero',
+  'lento': 'pausado, calmoso, tardío',
+  'mesa': 'tablero, escritorio, pupitre',
+  'silla': 'asiento, banqueta, taburete',
+  'sillón': 'butaca, poltrona, asiento',
+  'sofá': 'diván, canapé, tresillo',
+  'cama': 'lecho, catre, litera',
+  'puerta': 'portón, entrada, acceso',
+  'ventana': 'ventanal, mirador, abertura',
+  'techo': 'tejado, cubierta, bóveda',
+  'suelo': 'piso, pavimento, terreno',
+  'pared': 'muro, tabique, tapia',
+  'muro': 'pared, muralla, tapia',
+  'torre': 'atalaya, campanario, bastión',
+  'puente': 'viaducto, pasarela, paso',
+  'calle': 'vía, avenida, calzada',
+  'plaza': 'explanada, glorieta, foro',
+  'parque': 'jardín, alameda, arboleda',
+  'jardín': 'vergel, parque, huerto',
+  'flor': 'capullo, brote, corola',
+  'rosa': 'rosal, flor, rosado',
+  'árbol': 'tronco, arboleda, planta',
+  'hoja': 'folio, lámina, follaje',
+  'rama': 'gajo, vástago, brote',
+  'raíz': 'origen, base, cepa',
+  'fruto': 'producto, cosecha, resultado',
+  'fruta': 'fruto, postre, cosecha',
+  'manzana': 'poma, fruta',
+  'plátano': 'banana, cambur',
+  'limón': 'cítrico, lima',
+  'fresa': 'frutilla, fresón',
+  'vino': 'caldo, tinto, mosto',
+  'agua': 'líquido, lluvia, caudal',
+  'fuego': 'llama, lumbre, hoguera',
+  'tierra': 'suelo, terreno, mundo',
+  'aire': 'viento, brisa, atmósfera',
+  'viento': 'brisa, vendaval, ráfaga',
+  'lluvia': 'aguacero, chubasco, precipitación',
+  'nieve': 'nevada, escarcha, ventisca',
+  'nube': 'nubarrón, bruma, celaje',
+  'cielo': 'firmamento, bóveda, paraíso',
+  'sol': 'astro, luz, claridad',
+  'luna': 'satélite, astro, espejo',
+  'estrella': 'astro, lucero, constelación',
+  'mar': 'océano, piélago, oleaje',
+  'río': 'caudal, corriente, arroyo',
+  'lago': 'laguna, estanque, embalse',
+  'isla': 'islote, ínsula, cayo',
+  'monte': 'montaña, cerro, sierra',
+  'montaña': 'monte, cumbre, pico',
+  'valle': 'vega, hondonada, cañada',
+  'playa': 'costa, litoral, arenal',
+  'arena': 'arenal, grava, ruedo',
+  'piedra': 'roca, guijarro, canto',
+  'oro': 'metal, caudal, riqueza',
+  'plata': 'metal, argento, dinero',
+  'hierro': 'metal, fierro, acero',
+  'acero': 'metal, temple, hoja',
+  'libro': 'volumen, ejemplar, obra',
+  'papel': 'folio, hoja, pliego',
+  'carta': 'misiva, epístola, naipe',
+  'sobre': 'cubierta, envase, encima',
+  'lápiz': 'lapicero, grafito, creyón',
+  'pluma': 'estilográfica, bolígrafo, plumaje',
+  'reloj': 'cronómetro, despertador, minutero',
+  'tiempo': 'plazo, época, clima',
+  'día': 'jornada, fecha, claridad',
+  'noche': 'oscuridad, velada, madrugada',
+  'tarde': 'vespertino, retrasado, lento',
+  'mañana': 'alborada, amanecer, futuro',
+  'mano': 'palma, puño, zarpa',
+  'pie': 'base, pata, extremidad',
+  'cabeza': 'cráneo, mente, líder',
+  'cara': 'rostro, semblante, faz',
+  'rostro': 'cara, faz, semblante',
+  'ojo': 'vista, mirada, cuidado',
+  'boca': 'fauces, abertura, entrada',
+  'diente': 'pieza, muela, colmillo',
+  'lengua': 'idioma, habla, lenguaje',
+  'nariz': 'olfato, hocico, napia',
+  'pelo': 'cabello, melena, vello',
+  'cuello': 'garganta, pescuezo, nuca',
+  'pecho': 'tórax, busto, seno',
+  'espalda': 'dorso, lomo, retaguardia',
+  'corazón': 'víscera, centro, afecto',
+  'piel': 'cutis, dermis, pellejo',
+  'voz': 'sonido, tono, vocablo',
+  'canto': 'canción, melodía, borde',
+  'música': 'melodía, armonía, son',
+  'nota': 'apunte, calificación, aviso',
+  'tono': 'timbre, matiz, entonación',
+  'ruido': 'estruendo, alboroto, bullicio',
+  'silencio': 'calma, mutismo, quietud',
+  'luz': 'claridad, brillo, resplandor',
+  'sombra': 'penumbra, oscuridad, silueta',
+  'color': 'tono, matiz, tinte',
+  'rojo': 'carmesí, encarnado, bermellón',
+  'azul': 'celeste, añil, turquesa',
+  'verde': 'esmeralda, verdoso, inmaduro',
+  'amarillo': 'dorado, ocre, pálido',
+  'blanco': 'albo, níveo, claro',
+  'negro': 'oscuro, azabache, sombrío',
+  'gris': 'ceniciento, plomizo, nublado',
+  'ropa': 'vestimenta, atuendo, prendas',
+  'camisa': 'blusa, prenda, camisola',
+  'zapato': 'calzado, bota, zapatilla',
+  'bota': 'calzado, botín, odre',
+  'sombrero': 'gorro, pamela, visera',
+  'gorra': 'visera, boina, sombrero',
+  'anillo': 'sortija, alianza, aro',
+  'joya': 'alhaja, gema, presea',
+  'bolsa': 'saco, bolso, talega',
+  'saco': 'costal, bolsa, chaqueta',
+  'caja': 'estuche, arcón, envase',
+  'bote': 'frasco, barca, salto',
+  'barco': 'navío, buque, embarcación',
+  'nave': 'barco, buque, aeronave',
+  'vela': 'cirio, candela, lona',
+  'tren': 'ferrocarril, convoy, metro',
+  'avión': 'aeronave, aeroplano, reactor',
+  'vuelo': 'travesía, trayecto, planeo',
+  'ave': 'pájaro, volátil',
+  'pájaro': 'ave, pajarillo',
+  'nido': 'guarida, refugio, madriguera',
+  'pez': 'pescado, alevín',
+  'red': 'malla, trampa, entramado',
+  'hilo': 'hebra, fibra, cordel',
+  'tela': 'tejido, paño, lienzo',
+  'pan': 'hogaza, bollo, sustento',
+  'sopa': 'caldo, potaje, consomé',
+  'caldo': 'consomé, sopa, jugo',
+  'pollo': 'ave, polluelo, cría',
+  'sal': 'condimento, gracia, salero',
+  'miel': 'néctar, almíbar, dulzura',
+  'caballo': 'corcel, potro, equino',
+  'burro': 'asno, borrico, pollino',
+  'oveja': 'cordero, borrego, res',
+  'cerdo': 'puerco, cochino, marrano',
+  'león': 'felino, fiera',
+  'ratón': 'roedor, laucha',
+  'conejo': 'liebre, gazapo',
+  'amigo': 'compañero, camarada, colega',
+  'vecino': 'habitante, residente, próximo',
+  'niño': 'chico, crío, infante',
+  'niña': 'chica, cría, muchacha',
+  'padre': 'papá, progenitor, patriarca',
+  'madre': 'mamá, progenitora, matriz',
+  'hijo': 'descendiente, vástago, retoño',
+  'hermano': 'fraterno, pariente, compañero',
+  'rey': 'monarca, soberano, emperador',
+  'reina': 'soberana, monarca, emperatriz',
+  'corona': 'diadema, tiara, guirnalda',
+  'trono': 'solio, sede, asiento',
+  'juego': 'partida, pasatiempo, diversión',
+  'meta': 'objetivo, fin, destino',
+  'premio': 'galardón, recompensa, trofeo',
+  'récord': 'marca, plusmarca, tope',
+  'fácil': 'sencillo, simple, asequible',
+  'difícil': 'complicado, arduo, complejo',
+  'dócil': 'obediente, manso, sumiso',
+  'jocoso': 'gracioso, chistoso, divertido',
+  'alegre': 'contento, feliz, jubiloso',
+  'triste': 'apenado, afligido, melancólico',
+  'fuerte': 'robusto, vigoroso, resistente',
+  'débil': 'frágil, endeble, flojo',
+  'grande': 'amplio, enorme, extenso',
+  'pequeño': 'chico, diminuto, menudo',
+  'alto': 'elevado, erguido, superior',
+  'bajo': 'corto, pequeño, inferior',
+  'bueno': 'bondadoso, benévolo, óptimo',
+  'malo': 'perverso, nocivo, pésimo',
+  'nuevo': 'reciente, flamante, moderno',
+  'viejo': 'antiguo, anciano, añejo',
+  'claro': 'luminoso, nítido, evidente',
+  'oscuro': 'sombrío, tenebroso, opaco',
+  'dulce': 'azucarado, suave, agradable',
+  'amargo': 'agrio, áspero, penoso',
+  'caliente': 'cálido, ardiente, templado',
+  'frío': 'helado, gélido, fresco',
+  'lleno': 'repleto, colmado, completo',
+  'vacío': 'hueco, desierto, desocupado',
+  'limpio': 'aseado, pulcro, inmaculado',
+  'sucio': 'manchado, impuro, mugriento',
+  'rico': 'adinerado, acaudalado, sabroso',
+  'pobre': 'humilde, modesto, escaso',
+  'sabio': 'erudito, docto, prudente',
+  'tonto': 'necio, bobo, ingenuo',
+  'listo': 'inteligente, astuto, preparado',
+  'valiente': 'audaz, intrépido, osado',
+  'cobarde': 'miedoso, temeroso, pusilánime',
+  'libre': 'independiente, suelto, exento',
+  'preso': 'recluso, cautivo, detenido',
+  'cierto': 'verdadero, seguro, exacto',
+  'falso': 'engañoso, fingido, inexacto',
+  'noto': 'percibo, advierto, siento',
+  'tope': 'límite, extremo, máximo',
+  'taco': 'cuña, bloque, bocado',
+  'amor': 'cariño, afecto, ternura',
+  'odio': 'rencor, aversión, antipatía',
+  'miedo': 'temor, pavor, susto',
+  'paz': 'calma, sosiego, concordia',
+  'guerra': 'conflicto, contienda, batalla',
+  'vida': 'existencia, vitalidad, ser',
+  'muerte': 'fallecimiento, deceso, ocaso',
+  'sueño': 'descanso, ilusión, anhelo',
+  'verdad': 'certeza, realidad, franqueza',
+  'mentira': 'engaño, falsedad, embuste',
+  'fuerza': 'vigor, potencia, energía',
+  'valor': 'coraje, audacia, precio',
+  'suerte': 'fortuna, azar, destino',
+  'trabajo': 'labor, empleo, faena',
+  'dinero': 'capital, efectivo, moneda',
+  'viaje': 'travesía, trayecto, excursión',
+  'fiesta': 'celebración, festejo, verbena',
+  'comida': 'alimento, sustento, banquete',
+  'bebida': 'brebaje, refresco, trago',
+  'dolor': 'molestia, padecimiento, pesar',
+  'salud': 'bienestar, vigor, sanidad',
+  'idea': 'pensamiento, noción, ocurrencia',
+  'duda': 'incertidumbre, vacilación, recelo',
+  'error': 'fallo, equivocación, yerro',
+  'cambio': 'mudanza, trueque, variación',
+  'inicio': 'comienzo, principio, arranque',
+  'final': 'término, conclusión, desenlace',
+  'orden': 'armonía, mandato, disposición',
+  'caos': 'desorden, confusión, barullo',
+  'ayuda': 'auxilio, socorro, apoyo',
+  'peligro': 'riesgo, amenaza, apuro',
+  'secreto': 'misterio, sigilo, reserva',
+  'historia': 'relato, crónica, narración',
+  'cuento': 'fábula, narración, relato',
+  'arma': 'defensa, artefacto, instrumento',
+  'golpe': 'impacto, porrazo, choque',
+  'salto': 'brinco, bote, impulso',
+  'paso': 'pisada, avance, tramo',
+  'grito': 'alarido, chillido, clamor',
+  'risa': 'carcajada, sonrisa, júbilo',
+  'llanto': 'sollozo, gemido, lágrimas'
 };
 
-// Raíces léxicas españolas para resolver derivados o conjugaciones offline con significado real
-const RAICES_SIGNIFICADO = [
-  ['tap', 'Cubrir, tapar o poner una cubierta sobre algo.'],
-  ['cas', 'Relacionado con la vivienda, hogar o edificio.'],
-  ['cam', 'Relacionado con el camino, marcha o lecho.'],
-  ['carr', 'Relacionado con vehículos de ruedas o transporte.'],
-  ['libr', 'Relacionado con los libros o la libertad.'],
-  ['agu', 'Relacionado con el agua o líquidos.'],
-  ['fueg', 'Relacionado con el fuego, calor o ardor.'],
-  ['tierr', 'Relacionado con la tierra, suelo o terreno.'],
-  ['vient', 'Relacionado con el viento o el aire.'],
-  ['mar', 'Relacionado con el mar o la navegación.'],
-  ['sol', 'Relacionado con el sol, brillo o claridad.'],
-  ['lun', 'Relacionado con la luna o sus fases.'],
-  ['flor', 'Relacionado con las flores o el brote vegetal.'],
-  ['arb', 'Relacionado con los árboles o la arboleda.'],
-  ['frut', 'Relacionado con los frutos o plantas comestibles.'],
-  ['perr', 'Relacionado con los perros o cánidos.'],
-  ['gat', 'Relacionado con los gatos o felinos.'],
-  ['caball', 'Relacionado con los caballos o la equitación.'],
-  ['pajar', 'Relacionado con los pájaros o aves pequeñas.'],
-  ['pec', 'Relacionado con los peces o la pesca.'],
-  ['com', 'Acción de comer, alimentarse o compartir.'],
-  ['beb', 'Acción de beber o ingerir líquidos.'],
-  ['dorm', 'Acción de dormir, descansar o reposar.'],
-  ['corr', 'Acción de correr, fluir o desplazarse rápido.'],
-  ['salt', 'Acción de saltar, brincar o elevarse.'],
-  ['habl', 'Acción de hablar, conversar o expresarse.'],
-  ['cant', 'Acción de cantar o emitir sonidos melodiosos.'],
-  ['bail', 'Acción de bailar o moverse con ritmo.'],
-  ['jug', 'Acción de jugar, recrearse o competir.'],
-  ['trabaj', 'Acción de trabajar, esforzarse o laborar.'],
-  ['am', 'Sentimiento de afecto, cariño o estima.'],
-  ['pens', 'Acción de pensar, meditar o razonar.'],
-  ['viv', 'Tener vida, habitar o existir.'],
-  ['mir', 'Fijar la vista con atención en algo.'],
-  ['escuch', 'Prestar atención a lo que se oye.'],
-  ['toc', 'Palpar, rozar o hacer sonar un instrumento.'],
-  ['pint', 'Representar con colores o cubrir con pintura.'],
-  ['escrib', 'Representar palabras o ideas con letras.'],
-  ['viaj', 'Trasladarse de un lugar a otro lejano.'],
-  ['cort', 'Dividir o separar algo con un filo.'],
-  ['abr', 'Descubrir o dar paso a lo cerrado.'],
-  ['cerr', 'Asegurar o impedir el paso de algo.'],
-  ['sub', 'Ir o pasar de abajo hacia arriba.'],
-  ['baj', 'Ir de un lugar alto a otro más bajo.'],
-  ['entr', 'Pasar de fuera hacia dentro.'],
-  ['sal', 'Pasar de dentro hacia fuera o condimentar.'],
-  ['pon', 'Colocar o situar algo en un lugar.'],
-  ['quit', 'Apartar, retirar o separar algo.'],
-  ['busc', 'Hacer diligencias para hallar algo.'],
-  ['hall', 'Encontrar o descubrir lo que se busca.'],
-  ['llev', 'Transportar o conducir algo consigo.'],
-  ['tra', 'Conducir o trasladar algo hacia aquí.'],
-  ['compr', 'Adquirir algo a cambio de dinero.'],
-  ['vend', 'Traspasar la propiedad de algo por un precio.'],
-  ['pag', 'Dar el dinero que se debe por algo.'],
-  ['gan', 'Obtener victoria, beneficio o premio.'],
-  ['perd', 'Dejar de tener algo o no vencer.'],
-  ['romp', 'Quebrar o partir algo en pedazos.'],
-  ['un', 'Juntar o combinar dos o más cosas.'],
-  ['limp', 'Quitar la suciedad o las manchas.'],
-  ['lav', 'Limpiar algo con agua u otro líquido.'],
-  ['vest', 'Cubrir o adornar el cuerpo con ropa.'],
-  ['calz', 'Cubrir el pie con zapatos o botas.']
-];
+const SOLO_LETRAS = /^[a-záéíóúüñ]+$/;
+const SINONIMO_LIMPIO = /^[a-záéíóúüñ]{3,22}$/;
 
-function recortarSignificadoBreve(texto) {
-  if (!texto) return "";
-  let limpio = texto
-    .replace(/\{\{plm\|([^}|]+)(?:\|[^}]*)?\}\}/gi, '$1')
-    .replace(/\{\{(?:l\+|l|m|f|sinónimo|sinonimo)\|es\|([^}|]+)(?:\|[^}]*)?\}\}/gi, '$1')
-    .replace(/\{\{[^}]*\}\}/g, '')
-    .replace(/\[\[([^\]|]+\|)?([^\]]+)\]\]/g, '$2')
-    .replace(/\[.*?\]/g, '')
-    .replace(/\(.*?\)/g, '')
-    .replace(/<[^>]+>/g, '')
-    .replace(/'''|''/g, '')
-    .replace(/^[\s:;.,-–—•*#0-9]+/, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-  if (!limpio) return "";
-
-  let frase = limpio.split(/[.;:]/)[0].trim();
-  const palabras = frase.split(/\s+/).filter(Boolean);
-  if (palabras.length > 9) {
-    frase = palabras.slice(0, 9).join(' ').replace(/[,;:]$/, '');
-  }
-  if (frase.length < 4) return "";
-  frase = frase.charAt(0).toUpperCase() + frase.slice(1);
-  return frase.endsWith('.') ? frase : (frase + '.');
-}
-
-function obtenerCandidatosRaiz(p) {
+// Obtener posibles formas singulares válidas en español a partir de un plural
+function obtenerSingularesDePlural(p) {
   const candidatos = [];
-  const agregar = (w) => {
-    if (w && w.length >= 3 && !candidatos.includes(w)) candidatos.push(w);
-  };
-
-  const sufijos = [
-    'arías', 'erías', 'irías', 'ábamos', 'asteis', 'isteis',
-    'mente', 'ísimo', 'ísima', 'ísimos', 'ísimas',
-    'arote', 'arota', 'etazo', 'etón', 'etona', 'ecito', 'ecita', 'ecillo', 'ecilla',
-    'ote', 'ota', 'otes', 'otas', 'azo', 'aza', 'azos', 'azas',
-    'ón', 'on', 'ona', 'ones', 'onas', 'ito', 'ita', 'itos', 'itas',
-    'illo', 'illa', 'illos', 'illas', 'uco', 'uca', 'ejo', 'eja',
-    'tivo', 'tiva', 'tivos', 'tivas', 'ivo', 'iva', 'ivos', 'ivas',
-    'dor', 'dora', 'dores', 'doras', 'ble', 'bles', 'oso', 'osa', 'osos', 'osas',
-    'ero', 'era', 'eros', 'eras', 'ista', 'istas', 'dad', 'tad',
-    'ando', 'iendo', 'ado', 'ada', 'ados', 'adas', 'ido', 'ida', 'idos', 'idas',
-    'es', 'as', 'os', 'a', 'o', 's'
-  ];
-
-  for (const suf of sufijos) {
-    if (p.endsWith(suf) && p.length - suf.length >= 3) {
-      const base = p.slice(0, p.length - suf.length);
-      agregar(base);
-      agregar(base + 'a');
-      agregar(base + 'o');
-      agregar(base + 'e');
-      agregar(base + 'ar');
-      agregar(base + 'er');
-      agregar(base + 'ir');
+  const add = (word, regla) => {
+    if (word && word.length >= 2 && !candidatos.some(c => c.word === word)) {
+      candidatos.push({ word, regla });
     }
+  };
+  if (p.endsWith('ces') && p.length >= 4) {
+    add(p.slice(0, -3) + 'z', 'ces');
+  }
+  if (p.endsWith('es') && p.length >= 4) {
+    add(p.slice(0, -2), 'es');
+  }
+  if (p.endsWith('s') && p.length >= 3) {
+    add(p.slice(0, -1), 's');
   }
   return candidatos;
 }
 
-async function consultarWikcionarioHTML(termino) {
+// Consulta EXCLUSIVA de la sección de Sinónimos en Español en Wikcionario (nunca notas al pie ↑ ni otros idiomas)
+async function consultarSinonimosWikcionario(termino) {
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 3200);
-    const url = 'https://es.wiktionary.org/w/api.php?action=parse&page=' + encodeURIComponent(termino) + '&prop=text&format=json&origin=*';
+    const url = 'https://es.wiktionary.org/w/api.php?action=query&prop=revisions&rvprop=content&rvslots=main&titles=' + encodeURIComponent(termino) + '&format=json&origin=*';
     const res = await fetch(url, { signal: controller.signal });
     clearTimeout(timer);
-    if (!res.ok) return "";
+    if (!res.ok) return [];
     const data = await res.json();
-    const html = data && data.parse && data.parse.text && data.parse.text['*'];
-    if (!html) return "";
+    const pages = (data && data.query && data.query.pages) ? data.query.pages : {};
+    const page = Object.values(pages)[0];
+    if (!page || page.missing !== undefined) return [];
+    const raw = (page.revisions && page.revisions[0] && page.revisions[0].slots && page.revisions[0].slots.main)
+      ? page.revisions[0].slots.main['*']
+      : (page.revisions && page.revisions[0] ? page.revisions[0]['*'] : "");
+    if (!raw) return [];
 
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    doc.querySelectorAll('.reference, .mw-editsection, style, script, ul, table').forEach(el => el.remove());
+    // Aislar estrictamente la sección de Español ({{lengua|es}})
+    const matchEs = raw.match(/==\s*\{\{lengua\|es\}\}\s*==/i);
+    if (!matchEs) return [];
+    const inicioEs = matchEs.index + matchEs[0].length;
+    const resto = raw.slice(inicioEs);
+    const sigLengua = resto.search(/==\s*\{\{lengua\|/i);
+    const seccionEs = sigLengua >= 0 ? resto.slice(0, sigLengua) : resto;
 
-    const candidatos = doc.querySelectorAll('dl > dd, ol > li');
-    for (const nodo of candidatos) {
-      const txt = (nodo.textContent || "").trim();
-      if (!txt || txt.length < 5) continue;
-      if (/^(Forma del|Plural de|Femenino de|Masculino de|Participio de|Gerundio de|Véase)/i.test(txt)) continue;
-      const breve = recortarSignificadoBreve(txt);
-      if (breve && breve.length >= 5) return breve;
-    }
-  } catch (e) {}
-  return "";
-}
-
-// Buscador de lema en Wikcionario cuando la palabra exacta es una variante o derivado
-async function buscarLemaEnWikcionario(termino) {
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 2800);
-    const url = 'https://es.wiktionary.org/w/api.php?action=query&list=search&srsearch=' + encodeURIComponent(termino) + '&srlimit=3&format=json&origin=*';
-    const res = await fetch(url, { signal: controller.signal });
-    clearTimeout(timer);
-    if (!res.ok) return "";
-    const data = await res.json();
-    const resultados = (data && data.query && data.query.search) ? data.query.search : [];
-    for (const item of resultados) {
-      if (item && item.title && !item.title.includes(':')) {
-        const def = await consultarWikcionarioHTML(item.title);
-        if (def) return def;
-      }
-    }
-  } catch (e) {}
-  return "";
-}
-
-async function consultarSinonimosDatamuse(termino) {
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 2800);
-    const url = 'https://api.datamuse.com/words?ml=' + encodeURIComponent(termino) + '&v=es&max=10';
-    const res = await fetch(url, { signal: controller.signal });
-    clearTimeout(timer);
-    if (!res.ok) return "";
-    const data = await res.json();
-    if (!Array.isArray(data) || data.length === 0) return "";
+    const encontrados = [];
     const tSin = SinTildes(termino);
-    const sinonimos = data
-      .map(item => (item && item.word ? item.word.toLowerCase().trim() : ""))
-      .filter(w => w && w.length >= 3 && SOLO_LETRAS.test(w) && SinTildes(w) !== tSin)
-      .slice(0, 3);
-    if (sinonimos.length > 0) {
-      const lista = sinonimos.join(', ');
-      return 'Sinónimos: ' + lista.charAt(0).toUpperCase() + lista.slice(1) + '.';
-    }
-  } catch (e) {}
-  return "";
-}
+    const agregarSin = (cand) => {
+      const w = (cand || "").toLowerCase().replace(/\[\[|\]\]|'''|''/g, '').trim();
+      if (!w || !SINONIMO_LIMPIO.test(w)) return;
+      if (SinTildes(w) === tSin) return;
+      if (!encontrados.includes(w)) encontrados.push(w);
+    };
 
-async function obtenerSignificadoPalabra(palabra) {
-  const p = (palabra || "").toLowerCase().trim();
-  if (!p) return "Sin palabra activa.";
-
-  // 1. Diccionario local directo o por raíz inmediata
-  if (DEFINICIONES_LOCALES[p]) return DEFINICIONES_LOCALES[p];
-  const pSin = SinTildes(p);
-  if (DEFINICIONES_LOCALES[pSin]) return DEFINICIONES_LOCALES[pSin];
-
-  const candidatosRaiz = obtenerCandidatosRaiz(p);
-  for (const cand of candidatosRaiz) {
-    if (DEFINICIONES_LOCALES[cand]) return DEFINICIONES_LOCALES[cand];
-    const candSin = SinTildes(cand);
-    if (DEFINICIONES_LOCALES[candSin]) return DEFINICIONES_LOCALES[candSin];
-  }
-
-  // 2. Consulta directa a Wikcionario en español
-  let def = await consultarWikcionarioHTML(p);
-  if (def) return def;
-
-  // 3. Consulta por raíces candidatas en Wikcionario
-  for (const cand of candidatosRaiz.slice(0, 4)) {
-    def = await consultarWikcionarioHTML(cand);
-    if (def) return def;
-  }
-
-  // 4. Búsqueda abierta de lema en Wikcionario
-  def = await buscarLemaEnWikcionario(p);
-  if (def) return def;
-
-  // 5. Consulta de sinónimos reales en español (Datamuse)
-  const sin = await consultarSinonimosDatamuse(p);
-  if (sin) return sin;
-  for (const cand of candidatosRaiz.slice(0, 3)) {
-    const sinRaiz = await consultarSinonimosDatamuse(cand);
-    if (sinRaiz) return sinRaiz;
-  }
-
-  // 6. Respaldo en Wikipedia en español
-  try {
-    const urlWiki = 'https://es.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(p);
-    const res2 = await fetch(urlWiki);
-    if (res2.ok) {
-      const data2 = await res2.json();
-      if (data2 && data2.extract) {
-        const breveWiki = recortarSignificadoBreve(data2.extract);
-        if (breveWiki.length > 6) return breveWiki;
+    // 1) Plantillas {{sinónimo|...}} o {{sinónimos|...}}
+    const regexTpl = /\{\{sin[óo]nimos?\|([^}]+)\}\}/gi;
+    let m;
+    while ((m = regexTpl.exec(seccionEs)) !== null) {
+      const partes = m[1].split('|');
+      for (const parte of partes) {
+        if (parte.includes('=')) continue;
+        const limpio = parte.trim().toLowerCase();
+        if (limpio === 'es' || limpio === 'leng') continue;
+        agregarSin(limpio);
       }
     }
-  } catch (e) {}
 
-  // 7. Motor offline de raíces léxicas españolas
-  for (const [raiz, desc] of RAICES_SIGNIFICADO) {
-    if (pSin.startsWith(raiz)) return desc;
-  }
-  for (const clave of Object.keys(DEFINICIONES_LOCALES)) {
-    if (clave.length >= 4 && pSin.startsWith(SinTildes(clave).slice(0, 4))) {
-      return DEFINICIONES_LOCALES[clave];
+    // 2) Líneas explícitas de Sinónimos: [[palabra1]], [[palabra2]]
+    const regexLin = /Sin[óo]nimos?\s*:?\s*([^\n]+)/gi;
+    while ((m = regexLin.exec(seccionEs)) !== null) {
+      const linea = m[1];
+      if (/↑|DEX|Diccionario|http/i.test(linea)) continue;
+      const enlaces = linea.match(/\[\[([^\]|#]+)(?:\|[^\]]+)?\]\]/g);
+      if (enlaces) {
+        for (const en of enlaces) {
+          const inner = en.replace(/^\[\[|\]\]$/g, '').split('|')[0];
+          agregarSin(inner);
+        }
+      }
     }
+
+    return encontrados.slice(0, 4);
+  } catch (e) {
+    return [];
+  }
+}
+
+// Consulta de sinónimos reales en español vía Datamuse (rel_syn prioritario, luego ml)
+async function consultarSinonimosDatamuse(termino) {
+  const tSin = SinTildes(termino);
+  const endpoints = [
+    'https://api.datamuse.com/words?rel_syn=' + encodeURIComponent(termino) + '&v=es&max=8',
+    'https://api.datamuse.com/words?ml=' + encodeURIComponent(termino) + '&v=es&max=10'
+  ];
+
+  for (const url of endpoints) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 2800);
+      const res = await fetch(url, { signal: controller.signal });
+      clearTimeout(timer);
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (!Array.isArray(data) || data.length === 0) continue;
+
+      const lista = [];
+      for (const item of data) {
+        const w = (item && item.word) ? item.word.toLowerCase().trim() : "";
+        if (!w || !SINONIMO_LIMPIO.test(w)) continue;
+        if (SinTildes(w) === tSin) continue;
+        if (!lista.includes(w)) lista.push(w);
+        if (lista.length >= 4) break;
+      }
+      if (lista.length > 0) return lista;
+    } catch (e) {}
+  }
+  return [];
+}
+
+// Devuelve ÚNICAMENTE sinónimos reales separados por coma (o "" si no hay ninguno)
+async function obtenerSinonimosPalabra(palabra) {
+  const p = (palabra || "").toLowerCase().trim();
+  if (!p) return "";
+  const pSin = SinTildes(p);
+
+  // 1. Diccionario local de sinónimos (directo o desde singular si es plural)
+  if (SINONIMOS_LOCALES[p]) return SINONIMOS_LOCALES[p];
+  if (SINONIMOS_LOCALES[pSin]) return SINONIMOS_LOCALES[pSin];
+
+  const singulares = obtenerSingularesDePlural(p);
+  for (const { word: sing } of singulares) {
+    if (SINONIMOS_LOCALES[sing]) return SINONIMOS_LOCALES[sing];
+    const singSin = SinTildes(sing);
+    if (SINONIMOS_LOCALES[singSin]) return SINONIMOS_LOCALES[singSin];
   }
 
-  // 8. Análisis morfológico descriptivo real (sin frases vacías de "Término de la RAE")
-  if (/(ar|er|ir)$/.test(p)) return 'Acción de ' + p + ' o llevarla a cabo.';
-  if (/(ando|iendo)$/.test(p)) return 'Ejecutando en este momento la acción (' + p + ').';
-  if (/(ado|ada|ido|ida)$/.test(p)) return 'Que posee la cualidad o efecto de ' + (candidatosRaiz[0] || p) + '.';
-  if (/(ción|cion|sión|sion)$/.test(p)) return 'Proceso, acción y resultado de ' + (candidatosRaiz[0] || p) + '.';
-  if (/(dor|dora)$/.test(p)) return 'Que realiza o produce la acción de ' + (candidatosRaiz[0] || p) + '.';
-  if (/(oso|osa|ivo|iva|ble)$/.test(p)) return 'Que muestra cualidad o tendencia hacia ' + (candidatosRaiz[0] || p) + '.';
+  // 2. Sección exclusiva de Sinónimos en Español de Wikcionario
+  let syns = await consultarSinonimosWikcionario(p);
+  if (syns.length > 0) return syns.join(', ');
 
-  return 'Elemento, cualidad o acción vinculada con ' + (candidatosRaiz[0] || p) + '.';
+  for (const { word: sing } of singulares) {
+    syns = await consultarSinonimosWikcionario(sing);
+    if (syns.length > 0) return syns.join(', ');
+  }
+
+  // 3. Sinónimos reales en español desde Datamuse
+  syns = await consultarSinonimosDatamuse(p);
+  if (syns.length > 0) return syns.join(', ');
+
+  for (const { word: sing } of singulares) {
+    syns = await consultarSinonimosDatamuse(sing);
+    if (syns.length > 0) return syns.join(', ');
+  }
+
+  // Si no existen sinónimos reales, devolver cadena vacía (nunca definiciones ni texto inventado)
+  return "";
 }
 
 // ---------- Traductor Fonético Completo de Voz ----------
@@ -1089,7 +970,6 @@ function normalizarTokenVoz(token, silabaObjNorm) {
   return limpio;
 }
 
-const SOLO_LETRAS = /^[a-záéíóúüñ]+$/;
 const diccionarioEmojis = {
   'brasa': '🔥', 'sapo': '🐸', 'pomo': '🚪', 'mono': '🐵',
   'camino': '🛤️', 'planeta': '🌍', 'tesoro': '💎', 'castillo': '🏰',
@@ -1104,7 +984,7 @@ const coletillas = [
   "A ver qué se me ocurre...", "Interesante..."
 ];
 
-// ---------- 2. Síntesis de Voz con Pausa Estricta del Micrófono (No se escucha a sí misma) ----------
+// ---------- Síntesis de Voz con Pausa Estricta del Micrófono ----------
 function pausarReconocimientoMientrasHabla() {
   isListening = false;
   if (window.AndroidVoice) {
@@ -1125,7 +1005,6 @@ function hablar(texto, callback) {
   hablando = true;
   ignorarVozHasta = Date.now() + 15000;
 
-  // Apagar micrófono inmediatamente antes de emitir cualquier sonido
   pausarReconocimientoMientrasHabla();
 
   let terminado = false;
@@ -1141,7 +1020,6 @@ function hablar(texto, callback) {
     terminado = true;
     clearTimeout(timer);
     if (cancelarHablaPrevia === cancelar) cancelarHablaPrevia = null;
-    // Margen antieco de 850 ms tras terminar de hablar antes de aceptar voz
     ignorarVozHasta = Date.now() + 850;
     setTimeout(() => {
       hablando = false;
@@ -1180,24 +1058,74 @@ function hablar(texto, callback) {
   }
 }
 
-function SinTildes(str) {
-  return str.replace(/ñ/g, "\u0001").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\u0001/g, "ñ");
+// ---------- Validación en Diccionario RAE (CON SOPORTE COMPLETO DE PLURALES) ----------
+function buscarEnDiccionarioLocal(palabra) {
+  if (!setDiccionarioRAE) return false;
+  if (setDiccionarioRAE.has(palabra)) return palabra;
+  const pSin = SinTildes(palabra);
+  if (mapSinTildesRAE && mapSinTildesRAE.has(pSin)) {
+    return mapSinTildesRAE.get(pSin);
+  }
+  return false;
+}
+
+function construirPluralCorrecto(palabraUsuario, singularRAE, regla) {
+  // Si el usuario o el dictado de voz ya incluyó tilde (ej. "jóvenes", "árboles"), respetarla
+  if (/[áéíóú]/.test(palabraUsuario)) return palabraUsuario;
+
+  if (regla === 'ces') {
+    return singularRAE.slice(0, -1) + 'ces';
+  }
+  if (regla === 'es') {
+    // Palabras agudas acabadas en vocal con tilde + n/s pierden la tilde en plural (melón -> melones, tapón -> tapones)
+    if (/[áéíóú][ns]$/.test(singularRAE)) {
+      return SinTildes(singularRAE) + 'es';
+    }
+    return singularRAE + 'es';
+  }
+  return singularRAE + 's';
 }
 
 async function verificarPalabraEnServidor(palabra) {
   await cargarDiccionarioRAE();
   const p = palabra.toLowerCase().trim();
+  if (!p) return false;
+
   if (setDiccionarioRAE) {
-    if (setDiccionarioRAE.has(p)) return p;
-    const pSin = SinTildes(p);
-    const encontrada = arrayDiccionarioRAE.find(w => SinTildes(w) === pSin);
-    return encontrada || false;
+    // 1. Coincidencia directa (incluye palabras ya registradas en plural)
+    const directa = buscarEnDiccionarioLocal(p);
+    if (directa) return directa;
+
+    // 2. Comprobación de plurales válidos en español (-s, -es, -ces)
+    const singulares = obtenerSingularesDePlural(p);
+    for (const { word: cand, regla } of singulares) {
+      const sing = buscarEnDiccionarioLocal(cand);
+      if (!sing) continue;
+
+      if (regla === 'ces' && sing.endsWith('z')) {
+        return construirPluralCorrecto(p, sing, 'ces');
+      }
+      if (regla === 'es' && /[bcdfghjklmnñpqrstvwxyíú]$/.test(sing)) {
+        return construirPluralCorrecto(p, sing, 'es');
+      }
+      if (regla === 's' && /[aeiouáéíóúbcdfgklmnpt]$/.test(sing)) {
+        return construirPluralCorrecto(p, sing, 's');
+      }
+    }
+    return false;
   }
+
+  // Respaldo online si el JSON local no cargara
   try {
-    const res = await fetch('https://api.datamuse.com/words?sp=' + encodeURIComponent(p) + '&max=10&v=es');
-    const data = await res.json();
-    const ok = data.some(item => item.word.toLowerCase() === p);
-    return ok ? p : false;
+    const pruebas = [p, ...obtenerSingularesDePlural(p).map(c => c.word)];
+    for (const cand of pruebas) {
+      const res = await fetch('https://api.datamuse.com/words?sp=' + encodeURIComponent(cand) + '&max=10&v=es');
+      const data = await res.json();
+      if (data.some(item => SinTildes(item.word.toLowerCase()) === SinTildes(cand))) {
+        return p;
+      }
+    }
+    return false;
   } catch (e) {
     return p;
   }
@@ -1212,7 +1140,7 @@ async function obtenerPalabrasCandidatasRAE(prefijoNormalizado) {
       const silabas = silabear(p);
       return silabas.length >= 2 && normalizarSilaba(silabas[0]) === prefijoNormalizado;
     });
-    const conocidas = todas.filter(p => DEFINICIONES_LOCALES[p] || DEFINICIONES_LOCALES[SinTildes(p)]);
+    const conocidas = todas.filter(p => SINONIMOS_LOCALES[p] || SINONIMOS_LOCALES[SinTildes(p)]);
     if (conocidas.length > 0 && Math.random() < 0.85) return conocidas;
     const comunes = todas.filter(p => p.length >= 4 && p.length <= 7);
     if (comunes.length > 0) return comunes;
@@ -1364,13 +1292,12 @@ window.reiniciarMismaPartida = function() {
   actualizarMarcadoresUI();
   mantenerPantallaActivaTotal();
 
-  // Mantenemos micDeseado = true pero NO abrimos el micro hasta que termine de hablar en iniciarJuegoTablero
   micDeseado = true;
   pausarReconocimientoMientrasHabla();
   iniciarJuegoTablero(true);
 };
 
-function agregarPalabraUI(palabra, silabas, esInicial = false, indiceColor = 0, etiqueta = "", definicion = "") {
+function agregarPalabraUI(palabra, silabas, esInicial = false, indiceColor = 0, etiqueta = "", sinonimos = "") {
   const wrapObj = document.createElement('div');
   wrapObj.className = "flex flex-col items-center animate-[flotar_3s_ease-in-out_infinite] w-full relative my-2";
 
@@ -1408,43 +1335,49 @@ function agregarPalabraUI(palabra, silabas, esInicial = false, indiceColor = 0, 
     wrapObj.appendChild(tag);
   }
 
-  const defContainer = document.createElement('div');
-  defContainer.className = "definicion-palabra-slot w-11/12 max-w-xs";
-  if (definicion) {
-    defContainer.innerHTML = '<div class="mt-1.5 bg-amber-50 border-2 border-[#a67c52] text-[#5c3a21] text-xs font-bold rounded-xl px-3 py-2 shadow text-center">📖 <strong>' + palabra.toUpperCase() + ':</strong> ' + definicion + '</div>';
+  const synContainer = document.createElement('div');
+  synContainer.className = "sinonimos-palabra-slot w-11/12 max-w-xs";
+  if (sinonimos) {
+    synContainer.innerHTML = '<div class="mt-1.5 bg-amber-50 border-2 border-[#a67c52] text-[#5c3a21] text-xs font-bold rounded-xl px-3 py-2 shadow text-center">🔄 <strong>Sinónimos de ' + palabra.toUpperCase() + ':</strong> ' + sinonimos + '</div>';
   }
-  wrapObj.appendChild(defContainer);
+  wrapObj.appendChild(synContainer);
 
   gameBoard.appendChild(wrapObj);
   gameBoard.scrollTop = gameBoard.scrollHeight;
 }
 
-function mostrarDefinicionEnUltimaPalabraUI(palabra, definicion) {
-  const slots = gameBoard.querySelectorAll('.definicion-palabra-slot');
+function mostrarSinonimosEnUltimaPalabraUI(palabra, sinonimos) {
+  const slots = gameBoard.querySelectorAll('.sinonimos-palabra-slot');
   if (slots.length > 0) {
     const ultimoSlot = slots[slots.length - 1];
-    ultimoSlot.innerHTML = '<div class="mt-1.5 bg-amber-50 border-2 border-[#a67c52] text-[#5c3a21] text-xs font-bold rounded-xl px-3 py-2 shadow text-center">📖 <strong>' + palabra.toUpperCase() + ':</strong> ' + definicion + '</div>';
+    const texto = sinonimos
+      ? ('🔄 <strong>Sinónimos de ' + palabra.toUpperCase() + ':</strong> ' + sinonimos)
+      : ('🔄 <strong>' + palabra.toUpperCase() + ':</strong> Sin sinónimos registrados.');
+    ultimoSlot.innerHTML = '<div class="mt-1.5 bg-amber-50 border-2 border-[#a67c52] text-[#5c3a21] text-xs font-bold rounded-xl px-3 py-2 shadow text-center">' + texto + '</div>';
     gameBoard.scrollTop = gameBoard.scrollHeight;
   }
 }
 
-async function explicarUltimaPalabra() {
+async function responderSinonimosUltimaPalabra() {
   if (historialPalabras.length === 0 || juegoTerminado) return;
   const ultima = historialPalabras[historialPalabras.length - 1];
   bloquearInputs(true);
-  actualizarInterfazTurno('📖 Significado de "' + ultima + '"...', "bg-amber-600");
+  actualizarInterfazTurno('🔄 Buscando sinónimos de "' + ultima + '"...', "bg-amber-600");
 
-  const significado = await obtenerSignificadoPalabra(ultima);
-  mostrarDefinicionEnUltimaPalabraUI(ultima, significado);
+  const sinonimos = await obtenerSinonimosPalabra(ultima);
+  mostrarSinonimosEnUltimaPalabraUI(ultima, sinonimos);
 
-  hablar(ultima + ": " + significado + " Sigue el turno de " + nombres[jugadorActual] + ", empieza por " + silabaParaVoz(silabaObjetivo) + ".", () => {
+  const locucion = sinonimos
+    ? ("Sinónimos de " + ultima + ": " + sinonimos + ". Sigue el turno de " + nombres[jugadorActual] + ", empieza por " + silabaParaVoz(silabaObjetivo) + ".")
+    : ("No he encontrado sinónimos para " + ultima + ". Sigue el turno de " + nombres[jugadorActual] + ", empieza por " + silabaParaVoz(silabaObjetivo) + ".");
+
+  hablar(locucion, () => {
     mostrarTurnoHumano();
     bloquearInputs(false);
     arrancarRecon();
   });
 }
 
-// ---------- Arranque del Juego: El micrófono NO se activa hasta que la máquina termina de hablar ----------
 window.arranqueVinculado = function(modo) {
   window.cerrarPortada();
   try {
@@ -1483,7 +1416,6 @@ window.arranqueVinculado = function(modo) {
 
   mantenerPantallaActivaTotal();
 
-  // Marcamos que queremos usar el micrófono, pero lo mantenemos en pausa mientras la máquina saluda
   micDeseado = true;
   pausarReconocimientoMientrasHabla();
   iniciarJuegoTablero(false);
@@ -1512,7 +1444,6 @@ function iniciarJuegoTablero(esReinicio = false) {
     ? ("¡Vamos otra vez! Primera palabra: " + palabraInicial + ".")
     : ("¡Hola " + listaSaludo + "! Primera palabra: " + palabraInicial + ".");
 
-  // El micrófono se activa ÚNICAMENTE dentro del callback cuando hablar() ha concluido del todo
   hablar(fraseInicio, () => {
     mostrarTurnoHumano();
     bloquearInputs(false);
@@ -1547,7 +1478,7 @@ window.meRindo = async function() {
     ? "¡Gana la máquina!"
     : (nombres.length === 2 ? ("¡Gana " + nombres[1 - jugadorActual] + "!") : ("¡Fin de la partida por rendición de " + rindiente + "!"));
 
-  actualizarInterfazTurno("Consultando RAE y significado...", "bg-red-500");
+  actualizarInterfazTurno("Consultando RAE...", "bg-red-500");
 
   hablar(rindiente + " se rinde. Buscando una palabra válida...", async () => {
     const prefijo = normalizarSilaba(silabaObjetivo);
@@ -1556,15 +1487,16 @@ window.meRindo = async function() {
     if (candidatas.length > 0) {
       const elegida = candidatas[Math.floor(Math.random() * candidatas.length)];
       const silabasElegida = silabear(elegida);
-      const significado = await obtenerSignificadoPalabra(elegida);
+      const sinonimos = await obtenerSinonimosPalabra(elegida);
 
       historialPalabras.push(elegida);
       silabaObjetivo = silabasElegida[silabasElegida.length - 1];
-      agregarPalabraUI(elegida, silabasElegida, false, 1, "💡 Esta valía (RAE)", significado);
+      agregarPalabraUI(elegida, silabasElegida, false, 1, "💡 Esta valía (RAE)", sinonimos);
       actualizarInterfazTurno("🏆 " + textoGanador, "bg-green-600");
 
       const msgRecord = recordSuperadoEnPartida ? (" ¡Nuevo récord de " + recordPalabras + " palabras!") : "";
-      hablar("Podrías haber dicho: " + elegida + ". " + significado + " " + textoGanador + msgRecord + " Di otra vez para reiniciar.", mostrarFinJuego);
+      const parteSyn = sinonimos ? (" Sinónimos: " + sinonimos + ".") : "";
+      hablar("Podrías haber dicho: " + elegida + "." + parteSyn + " " + textoGanador + msgRecord + " Di otra vez para reiniciar.", mostrarFinJuego);
     } else {
       actualizarInterfazTurno("🤝 Empate técnico", "bg-gray-600");
       hablar("No existía ninguna palabra en la RAE con la sílaba " + silabaParaVoz(silabaObjetivo) + ". ¡Empate técnico! Di otra vez para reiniciar.", mostrarFinJuego);
@@ -1572,9 +1504,9 @@ window.meRindo = async function() {
   });
 };
 
-function esPreguntaDeSignificado(texto) {
+function esPreguntaDeSinonimos(texto) {
   const limpio = SinTildes((texto || "").toLowerCase().trim());
-  return /(que significa|eso que es|que es eso|cual es su significado|cual es el significado|que quiere decir|significado)/.test(limpio);
+  return /(que significa|eso que es|que es eso|cual es su significado|cual es el significado|que quiere decir|significado|sinonimo|sinonimos)/.test(limpio);
 }
 
 window.procesarEntrada = async function(texto, esMaquina = false) {
@@ -1584,9 +1516,9 @@ window.procesarEntrada = async function(texto, esMaquina = false) {
   const textoBruto = (texto || "").trim();
   if (!textoBruto) return;
 
-  if (!esMaquina && esPreguntaDeSignificado(textoBruto)) {
+  if (!esMaquina && esPreguntaDeSinonimos(textoBruto)) {
     textInput.value = "";
-    await explicarUltimaPalabra();
+    await responderSinonimosUltimaPalabra();
     return;
   }
 
@@ -1693,7 +1625,6 @@ function uiMic(encendido) {
 }
 
 function procesarFraseVoz(rawInput) {
-  // Ignorar cualquier entrada si la máquina está hablando o en periodo antieco
   if (modoActual === "" || hablando || Date.now() < ignorarVozHasta) return;
   const alternativas = (rawInput || "").split('|').map(s => s.trim().toLowerCase()).filter(Boolean);
   if (alternativas.length === 0) return;
@@ -1719,8 +1650,8 @@ function procesarFraseVoz(rawInput) {
   }
 
   for (const alt of alternativas) {
-    if (esPreguntaDeSignificado(alt)) {
-      explicarUltimaPalabra();
+    if (esPreguntaDeSinonimos(alt)) {
+      responderSinonimosUltimaPalabra();
       return;
     }
   }
@@ -1734,7 +1665,7 @@ function procesarFraseVoz(rawInput) {
 
   const sObj = normalizarSilaba(silabaObjetivo);
 
-  // Filtro adicional contra eco accidental del saludo inicial ("hola")
+  // Filtro adicional contra eco accidental del saludo inicial
   if (historialPalabras.length === 1 && sObj !== 'o' && sObj !== 'ho') {
     const limpioInicial = normalizarTokenVoz(alternativas[0].split(/\s+/)[0], sObj);
     if (limpioInicial === 'hola' || limpioInicial === 'primera') return;
