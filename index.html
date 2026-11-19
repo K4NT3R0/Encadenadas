@@ -102,13 +102,13 @@ input { -webkit-user-select: text; user-select: text; }
     </div>
 
     <button type="button" id="btn-pve-menu" onclick="window.arranqueVinculado('pve')" class="w-full bg-white border-4 border-orange-500 rounded-xl py-2.5 px-4 mb-2.5 text-lg font-extrabold text-blue-600 shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
-      <span id="txt-pve">👤 Jugador 1 vs 🤖 Máquina (RAE)</span>
+      <span id="txt-pve">👤 Jugador 1 vs 🤖 Máquina</span>
     </button>
     <button type="button" id="btn-pvp-menu" onclick="window.arranqueVinculado('pvp')" class="w-full bg-white border-4 border-blue-500 rounded-xl py-2.5 px-4 text-lg font-extrabold text-orange-600 shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
       <span id="txt-pvp">👥 Jugador 1 vs Jugador 2</span>
     </button>
     <p class="mt-3 text-xs font-bold text-[#5c3a21] text-center">
-      Manos libres: di tu palabra (los plurales pasan a singular), «¿qué significa?» (sinónimos), «me rindo» o «otra vez» al terminar.
+      Manos libres: di tu palabra (plurales pasan a singular), «¿qué significa?», «me rindo» o «otra vez» al terminar.
     </p>
   </div>
 </div>
@@ -205,7 +205,7 @@ window.actualizarTextoBotones = function() {
   var n2 = (inp2 && inp2.value.trim()) ? inp2.value.trim() : "Jugador 2";
   var tPve = document.getElementById('txt-pve');
   var tPvp = document.getElementById('txt-pvp');
-  if (tPve) tPve.textContent = "👤 " + n1 + " vs 🤖 Máquina (RAE)";
+  if (tPve) tPve.textContent = "👤 " + n1 + " vs 🤖 Máquina";
   if (tPvp) {
     if (window.numJugadores === 2) {
       tPvp.textContent = "👤 " + n1 + " vs 👤 " + n2;
@@ -235,7 +235,7 @@ window.cargarDatosMenu = function() {
 window.cargarDatosMenu();
 </script>
 
-<!-- SCRIPT 2: MOTOR PRINCIPAL, PLURAL -> SINGULAR, SOLO SINÓNIMOS, WAKELOCK Y VOZ -->
+<!-- SCRIPT 2: MOTOR PRINCIPAL CON DOBLE DICCIONARIO (BÁSICO + RAE), PLURAL -> SINGULAR, WAKELOCK Y VOZ -->
 <script>
 const gameBoard = document.getElementById('game-board');
 const micBtn = document.getElementById('mic-btn');
@@ -283,7 +283,7 @@ const COLORES_JUGADORES = [
   { bg: "bg-pink-600", border: "border-pink-500", text: "text-pink-700", sil: "text-pink-500" }
 ];
 
-// ---------- Función silabaParaVoz(): lectura corrida sin deletrear y "tó" en español ----------
+// ---------- Pronunciación natural de sílabas (sin deletrear y "tó" en español) ----------
 const FONETICA_SILABAS_VOZ = {
   'to': 'tó', 'do': 'dó', 'no': 'nó', 'so': 'só', 'go': 'gó', 'lo': 'ló',
   'po': 'pó', 'ro': 'ró', 'co': 'có', 'mo': 'mó', 'bo': 'bó', 'vo': 'vó',
@@ -298,8 +298,6 @@ const FONETICA_SILABAS_VOZ = {
   'me': 'mé', 'te': 'té', 'se': 'sé', 'de': 'dé', 'le': 'lé', 'pe': 'pé',
   're': 'ré', 'ce': 'zé', 'fe': 'fé', 'ge': 'jé', 'je': 'jé', 've': 'vé',
   'be': 'bé', 'ne': 'né', 'que': 'ké', 'gue': 'gué', 'che': 'ché', 'lle': 'llé',
-  'ces': 'zés', 'ges': 'jés', 'les': 'lés', 'mes': 'més', 'nes': 'nés',
-  'pes': 'pés', 'res': 'rés', 'ses': 'sés', 'tes': 'tés', 'ves': 'vés',
   'mi': 'mí', 'ti': 'tí', 'si': 'sí', 'di': 'dí', 'li': 'lí', 'pi': 'pí',
   'ri': 'rí', 'ci': 'zí', 'fi': 'fí', 'gi': 'jí', 'ji': 'jí', 'vi': 'ví',
   'bi': 'bí', 'ni': 'ní', 'qui': 'kí', 'gui': 'guí',
@@ -308,8 +306,6 @@ const FONETICA_SILABAS_VOZ = {
   'da': 'dá', 'na': 'ná', 'ra': 'rá', 'bra': 'brá', 'pla': 'plá', 'cla': 'clá',
   'tra': 'trá', 'pra': 'prá', 'cra': 'crá', 'dra': 'drá', 'fra': 'frá', 'gra': 'grá',
   'bla': 'blá', 'fla': 'flá', 'gla': 'glá', 'cha': 'chá', 'lla': 'llá', 'ña': 'ñá',
-  'tas': 'tás', 'sas': 'sás', 'las': 'lás', 'mas': 'más', 'nas': 'nás',
-  'pas': 'pás', 'ras': 'rás', 'cas': 'cás', 'das': 'dás', 'bas': 'bás',
   'tu': 'tú', 'su': 'sú', 'lu': 'lú', 'pu': 'pú', 'ru': 'rú', 'cu': 'cú',
   'mu': 'mú', 'bu': 'bú', 'vu': 'vú', 'fu': 'fú', 'gu': 'gú', 'ju': 'jú',
   'in': 'ín', 'on': 'ón', 'an': 'án', 'en': 'én', 'un': 'ún',
@@ -462,7 +458,31 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-// ---------- Diccionario Castellano Local (RAE) con índice rápido ----------
+// ---------- DOBLE DICCIONARIO: Básico (definiciones claras offline) + Grande (RAE) ----------
+const BASICO_RESPALDO = {
+  'palabra': 'Unidad del lenguaje con significado propio usada al hablar o escribir.',
+  'camino': 'Vía o senda por donde se va de un lugar a otro.',
+  'verano': 'Estación más calurosa del año, entre la primavera y el otoño.',
+  'planeta': 'Cuerpo celeste grande que gira alrededor de una estrella.',
+  'tesoro': 'Conjunto de monedas, joyas u objetos muy valiosos guardados.',
+  'espejo': 'Cristal pulido que refleja la imagen de lo que está delante.',
+  'castillo': 'Edificio antiguo fortificado con murallas y torres.',
+  'naranja': 'Fruta cítrica redonda de color anaranjado y pulpa jugosa.',
+  'pelota': 'Bola elástica usada en numerosos juegos y deportes.',
+  'regalo': 'Obsequio que se entrega a alguien por afecto o celebración.',
+  'perro': 'Animal de compañía de la familia de los cánidos.',
+  'brasa': 'Carbón o leña encendida sin llama.',
+  'sapo': 'Anfibio sin cola, robusto y de piel rugosa.',
+  'pomo': 'Tirador redondo que sirve para abrir una puerta.',
+  'mono': 'Animal mamífero primate, ágil y de cola larga.'
+};
+
+let diccionarioBasico = { ...BASICO_RESPALDO };
+let arrayBasico = Object.keys(BASICO_RESPALDO);
+let mapSinTildesBasico = new Map();
+let basicoCargado = false;
+let cargandoBasico = null;
+
 let setDiccionarioRAE = null;
 let arrayDiccionarioRAE = null;
 let mapSinTildesRAE = null;
@@ -470,6 +490,39 @@ let cargandoDiccionario = null;
 
 function SinTildes(str) {
   return (str || "").replace(/ñ/g, "\u0001").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\u0001/g, "ñ");
+}
+
+function indexarBasico(obj) {
+  diccionarioBasico = obj;
+  arrayBasico = Object.keys(obj);
+  mapSinTildesBasico = new Map();
+  for (let i = 0; i < arrayBasico.length; i++) {
+    const w = arrayBasico[i];
+    const s = SinTildes(w);
+    if (!mapSinTildesBasico.has(s)) mapSinTildesBasico.set(s, w);
+  }
+}
+indexarBasico(diccionarioBasico);
+
+async function cargarDiccionarioBasico() {
+  if (basicoCargado) return true;
+  if (cargandoBasico) return cargandoBasico;
+  cargandoBasico = (async () => {
+    try {
+      const res = await fetch('diccionario_basico.json');
+      if (!res.ok) throw new Error('No basic dict');
+      const data = await res.json();
+      if (data && typeof data === 'object') {
+        indexarBasico({ ...BASICO_RESPALDO, ...data });
+        basicoCargado = true;
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  })();
+  return cargandoBasico;
 }
 
 async function cargarDiccionarioRAE() {
@@ -495,296 +548,11 @@ async function cargarDiccionarioRAE() {
   })();
   return cargandoDiccionario;
 }
-setTimeout(cargarDiccionarioRAE, 500);
 
-// ---------- SOLO SINÓNIMOS (Sin definiciones ni textos genéricos) ----------
-const SINONIMOS_LOCALES = {
-  'palabra': 'término, vocablo, voz',
-  'camino': 'senda, vía, ruta',
-  'verano': 'estío, canícula',
-  'planeta': 'astro, mundo, esfera',
-  'tesoro': 'fortuna, riqueza, caudal',
-  'espejo': 'cristal, luna, reflejo',
-  'castillo': 'fortaleza, alcázar, ciudadela',
-  'naranja': 'cítrico, anaranjado',
-  'pelota': 'balón, bola, esfera',
-  'regalo': 'obsequio, presente, dádiva',
-  'melón': 'sandía, fruto',
-  'loco': 'demente, insensato, chiflado',
-  'ponderativo': 'elogioso, encomiástico, alabador',
-  'ponderar': 'elogiar, alabar, ensalzar',
-  'tapón': 'corcho, cierre, obturador',
-  'taparote': 'tapa, cubierta, cierre',
-  'tapa': 'cubierta, tapadera, cierre',
-  'tapar': 'cubrir, ocultar, cerrar',
-  'noticia': 'novedad, aviso, informe',
-  'ciática': 'lumbalgia, lumbago, neuralgia',
-  'carea': 'pastorea, guía, confronta',
-  'carear': 'confrontar, enfrentar, pastorear',
-  'riojano': 'logroñés, calagurritano',
-  'casa': 'vivienda, hogar, morada',
-  'perro': 'can, sabueso, chucho',
-  'gato': 'felino, minino, micho',
-  'roca': 'piedra, peña, peñasco',
-  'sapo': 'batracio, anfibio',
-  'rana': 'batracio, anfibio',
-  'brasa': 'ascua, rescoldo, tizón',
-  'pomo': 'tirador, picaporte, manilla',
-  'mono': 'simio, primate, macaco',
-  'mona': 'bonita, linda, graciosa',
-  'jota': 'baile, danza, copla',
-  'coche': 'automóvil, auto, vehículo',
-  'carro': 'carruaje, vehículo, automóvil',
-  'pato': 'ánade, ave',
-  'taza': 'pocillo, cuenco, tazón',
-  'vaso': 'copa, recipiente, cubilete',
-  'copa': 'cáliz, vaso, trofeo',
-  'lupa': 'lente, cristal, aumento',
-  'vaca': 'res, bovino, vacuno',
-  'toro': 'astado, morlaco, res',
-  'zorro': 'raposo, vulpeja, astuto',
-  'lobo': 'cánido, fiera',
-  'oso': 'plantígrado, úrsido',
-  'llave': 'ganzúa, clave, cerradura',
-  'rápido': 'veloz, ágil, ligero',
-  'lento': 'pausado, calmoso, tardío',
-  'mesa': 'tablero, escritorio, pupitre',
-  'silla': 'asiento, banqueta, taburete',
-  'sillón': 'butaca, poltrona, asiento',
-  'sofá': 'diván, canapé, tresillo',
-  'cama': 'lecho, catre, litera',
-  'puerta': 'portón, entrada, acceso',
-  'ventana': 'ventanal, mirador, abertura',
-  'techo': 'tejado, cubierta, bóveda',
-  'suelo': 'piso, pavimento, terreno',
-  'pared': 'muro, tabique, tapia',
-  'muro': 'pared, muralla, tapia',
-  'torre': 'atalaya, campanario, bastión',
-  'puente': 'viaducto, pasarela, paso',
-  'calle': 'vía, avenida, calzada',
-  'plaza': 'explanada, glorieta, foro',
-  'parque': 'jardín, alameda, arboleda',
-  'jardín': 'vergel, parque, huerto',
-  'flor': 'capullo, brote, corola',
-  'rosa': 'rosal, flor, rosado',
-  'árbol': 'tronco, arboleda, planta',
-  'hoja': 'folio, lámina, follaje',
-  'rama': 'gajo, vástago, brote',
-  'raíz': 'origen, base, cepa',
-  'fruto': 'producto, cosecha, resultado',
-  'fruta': 'fruto, postre, cosecha',
-  'manzana': 'poma, fruta',
-  'plátano': 'banana, cambur',
-  'limón': 'cítrico, lima',
-  'fresa': 'frutilla, fresón',
-  'vino': 'caldo, tinto, mosto',
-  'agua': 'líquido, lluvia, caudal',
-  'fuego': 'llama, lumbre, hoguera',
-  'tierra': 'suelo, terreno, mundo',
-  'aire': 'viento, brisa, atmósfera',
-  'viento': 'brisa, vendaval, ráfaga',
-  'lluvia': 'aguacero, chubasco, precipitación',
-  'nieve': 'nevada, escarcha, ventisca',
-  'nube': 'nubarrón, bruma, celaje',
-  'cielo': 'firmamento, bóveda, paraíso',
-  'sol': 'astro, luz, claridad',
-  'luna': 'satélite, astro, espejo',
-  'estrella': 'astro, lucero, constelación',
-  'mar': 'océano, piélago, oleaje',
-  'río': 'caudal, corriente, arroyo',
-  'lago': 'laguna, estanque, embalse',
-  'isla': 'islote, ínsula, cayo',
-  'monte': 'montaña, cerro, sierra',
-  'montaña': 'monte, cumbre, pico',
-  'valle': 'vega, hondonada, cañada',
-  'playa': 'costa, litoral, arenal',
-  'arena': 'arenal, grava, ruedo',
-  'piedra': 'roca, guijarro, canto',
-  'oro': 'metal, caudal, riqueza',
-  'plata': 'metal, argento, dinero',
-  'hierro': 'metal, fierro, acero',
-  'acero': 'metal, temple, hoja',
-  'libro': 'volumen, ejemplar, obra',
-  'papel': 'folio, hoja, pliego',
-  'carta': 'misiva, epístola, naipe',
-  'sobre': 'cubierta, envase, encima',
-  'lápiz': 'lapicero, grafito, creyón',
-  'pluma': 'estilográfica, bolígrafo, plumaje',
-  'reloj': 'cronómetro, despertador, minutero',
-  'tiempo': 'plazo, época, clima',
-  'día': 'jornada, fecha, claridad',
-  'noche': 'oscuridad, velada, madrugada',
-  'tarde': 'vespertino, retrasado, lento',
-  'mañana': 'alborada, amanecer, futuro',
-  'mano': 'palma, puño, zarpa',
-  'pie': 'base, pata, extremidad',
-  'cabeza': 'cráneo, mente, líder',
-  'cara': 'rostro, semblante, faz',
-  'rostro': 'cara, faz, semblante',
-  'ojo': 'vista, mirada, cuidado',
-  'boca': 'fauces, abertura, entrada',
-  'diente': 'pieza, muela, colmillo',
-  'lengua': 'idioma, habla, lenguaje',
-  'nariz': 'olfato, hocico, napia',
-  'pelo': 'cabello, melena, vello',
-  'cuello': 'garganta, pescuezo, nuca',
-  'pecho': 'tórax, busto, seno',
-  'espalda': 'dorso, lomo, retaguardia',
-  'corazón': 'víscera, centro, afecto',
-  'piel': 'cutis, dermis, pellejo',
-  'voz': 'sonido, tono, vocablo',
-  'canto': 'canción, melodía, borde',
-  'música': 'melodía, armonía, son',
-  'nota': 'apunte, calificación, aviso',
-  'tono': 'timbre, matiz, entonación',
-  'ruido': 'estruendo, alboroto, bullicio',
-  'silencio': 'calma, mutismo, quietud',
-  'luz': 'claridad, brillo, resplandor',
-  'sombra': 'penumbra, oscuridad, silueta',
-  'color': 'tono, matiz, tinte',
-  'rojo': 'carmesí, encarnado, bermellón',
-  'azul': 'celeste, añil, turquesa',
-  'verde': 'esmeralda, verdoso, inmaduro',
-  'amarillo': 'dorado, ocre, pálido',
-  'blanco': 'albo, níveo, claro',
-  'negro': 'oscuro, azabache, sombrío',
-  'gris': 'ceniciento, plomizo, nublado',
-  'ropa': 'vestimenta, atuendo, prendas',
-  'camisa': 'blusa, prenda, camisola',
-  'zapato': 'calzado, bota, zapatilla',
-  'bota': 'calzado, botín, odre',
-  'sombrero': 'gorro, pamela, visera',
-  'gorra': 'visera, boina, sombrero',
-  'anillo': 'sortija, alianza, aro',
-  'joya': 'alhaja, gema, presea',
-  'bolsa': 'saco, bolso, talega',
-  'saco': 'costal, bolsa, chaqueta',
-  'caja': 'estuche, arcón, envase',
-  'bote': 'frasco, barca, salto',
-  'barco': 'navío, buque, embarcación',
-  'nave': 'barco, buque, aeronave',
-  'vela': 'cirio, candela, lona',
-  'tren': 'ferrocarril, convoy, metro',
-  'avión': 'aeronave, aeroplano, reactor',
-  'vuelo': 'travesía, trayecto, planeo',
-  'ave': 'pájaro, volátil',
-  'pájaro': 'ave, pajarillo',
-  'nido': 'guarida, refugio, madriguera',
-  'pez': 'pescado, alevín',
-  'red': 'malla, trampa, entramado',
-  'hilo': 'hebra, fibra, cordel',
-  'tela': 'tejido, paño, lienzo',
-  'pan': 'hogaza, bollo, sustento',
-  'sopa': 'caldo, potaje, consomé',
-  'caldo': 'consomé, sopa, jugo',
-  'pollo': 'ave, polluelo, cría',
-  'sal': 'condimento, gracia, salero',
-  'miel': 'néctar, almíbar, dulzura',
-  'caballo': 'corcel, potro, equino',
-  'burro': 'asno, borrico, pollino',
-  'oveja': 'cordero, borrego, res',
-  'cerdo': 'puerco, cochino, marrano',
-  'león': 'felino, fiera',
-  'ratón': 'roedor, laucha',
-  'conejo': 'liebre, gazapo',
-  'amigo': 'compañero, camarada, colega',
-  'vecino': 'habitante, residente, próximo',
-  'niño': 'chico, crío, infante',
-  'niña': 'chica, cría, muchacha',
-  'padre': 'papá, progenitor, patriarca',
-  'madre': 'mamá, progenitora, matriz',
-  'hijo': 'descendiente, vástago, retoño',
-  'hermano': 'fraterno, pariente, compañero',
-  'rey': 'monarca, soberano, emperador',
-  'reina': 'soberana, monarca, emperatriz',
-  'corona': 'diadema, tiara, guirnalda',
-  'trono': 'solio, sede, asiento',
-  'juego': 'partida, pasatiempo, diversión',
-  'meta': 'objetivo, fin, destino',
-  'premio': 'galardón, recompensa, trofeo',
-  'récord': 'marca, plusmarca, tope',
-  'fácil': 'sencillo, simple, asequible',
-  'difícil': 'complicado, arduo, complejo',
-  'dócil': 'obediente, manso, sumiso',
-  'jocoso': 'gracioso, chistoso, divertido',
-  'alegre': 'contento, feliz, jubiloso',
-  'triste': 'apenado, afligido, melancólico',
-  'fuerte': 'robusto, vigoroso, resistente',
-  'débil': 'frágil, endeble, flojo',
-  'grande': 'amplio, enorme, extenso',
-  'pequeño': 'chico, diminuto, menudo',
-  'alto': 'elevado, erguido, superior',
-  'bajo': 'corto, pequeño, inferior',
-  'bueno': 'bondadoso, benévolo, óptimo',
-  'malo': 'perverso, nocivo, pésimo',
-  'nuevo': 'reciente, flamante, moderno',
-  'viejo': 'antiguo, anciano, añejo',
-  'claro': 'luminoso, nítido, evidente',
-  'oscuro': 'sombrío, tenebroso, opaco',
-  'dulce': 'azucarado, suave, agradable',
-  'amargo': 'agrio, áspero, penoso',
-  'caliente': 'cálido, ardiente, templado',
-  'frío': 'helado, gélido, fresco',
-  'lleno': 'repleto, colmado, completo',
-  'vacío': 'hueco, desierto, desocupado',
-  'limpio': 'aseado, pulcro, inmaculado',
-  'sucio': 'manchado, impuro, mugriento',
-  'rico': 'adinerado, acaudalado, sabroso',
-  'pobre': 'humilde, modesto, escaso',
-  'sabio': 'erudito, docto, prudente',
-  'tonto': 'necio, bobo, ingenuo',
-  'listo': 'inteligente, astuto, preparado',
-  'valiente': 'audaz, intrépido, osado',
-  'cobarde': 'miedoso, temeroso, pusilánime',
-  'libre': 'independiente, suelto, exento',
-  'preso': 'recluso, cautivo, detenido',
-  'cierto': 'verdadero, seguro, exacto',
-  'falso': 'engañoso, fingido, inexacto',
-  'noto': 'percibo, advierto, siento',
-  'tope': 'límite, extremo, máximo',
-  'taco': 'cuña, bloque, bocado',
-  'amor': 'cariño, afecto, ternura',
-  'odio': 'rencor, aversión, antipatía',
-  'miedo': 'temor, pavor, susto',
-  'paz': 'calma, sosiego, concordia',
-  'guerra': 'conflicto, contienda, batalla',
-  'vida': 'existencia, vitalidad, ser',
-  'muerte': 'fallecimiento, deceso, ocaso',
-  'sueño': 'descanso, ilusión, anhelo',
-  'verdad': 'certeza, realidad, franqueza',
-  'mentira': 'engaño, falsedad, embuste',
-  'fuerza': 'vigor, potencia, energía',
-  'valor': 'coraje, audacia, precio',
-  'suerte': 'fortuna, azar, destino',
-  'trabajo': 'labor, empleo, faena',
-  'dinero': 'capital, efectivo, moneda',
-  'viaje': 'travesía, trayecto, excursión',
-  'fiesta': 'celebración, festejo, verbena',
-  'comida': 'alimento, sustento, banquete',
-  'bebida': 'brebaje, refresco, trago',
-  'dolor': 'molestia, padecimiento, pesar',
-  'salud': 'bienestar, vigor, sanidad',
-  'idea': 'pensamiento, noción, ocurrencia',
-  'duda': 'incertidumbre, vacilación, recelo',
-  'error': 'fallo, equivocación, yerro',
-  'cambio': 'mudanza, trueque, variación',
-  'inicio': 'comienzo, principio, arranque',
-  'final': 'término, conclusión, desenlace',
-  'orden': 'armonía, mandato, disposición',
-  'caos': 'desorden, confusión, barullo',
-  'ayuda': 'auxilio, socorro, apoyo',
-  'peligro': 'riesgo, amenaza, apuro',
-  'secreto': 'misterio, sigilo, reserva',
-  'historia': 'relato, crónica, narración',
-  'cuento': 'fábula, narración, relato',
-  'arma': 'defensa, artefacto, instrumento',
-  'golpe': 'impacto, porrazo, choque',
-  'salto': 'brinco, bote, impulso',
-  'paso': 'pisada, avance, tramo',
-  'grito': 'alarido, chillido, clamor',
-  'risa': 'carcajada, sonrisa, júbilo',
-  'llanto': 'sollozo, gemido, lágrimas'
-};
+setTimeout(() => {
+  cargarDiccionarioBasico();
+  cargarDiccionarioRAE();
+}, 300);
 
 const SOLO_LETRAS = /^[a-záéíóúüñ]+$/;
 const SINONIMO_LIMPIO = /^[a-záéíóúüñ]{3,22}$/;
@@ -807,7 +575,6 @@ const EXCEPCIONES_NO_PLURAL = new Set([
   'detras', 'atras', 'quizas', 'mientras', 'apenas', 'mas', 'nosotros', 'vosotros'
 ]);
 
-// Obtener posibles formas singulares válidas en español a partir de un plural
 function obtenerSingularesDePlural(p) {
   const candidatos = [];
   const add = (word, regla) => {
@@ -830,13 +597,28 @@ function obtenerSingularesDePlural(p) {
   return candidatos;
 }
 
-// Convierte un plural en español a su singular del diccionario (si procede)
+function buscarEnDiccionarioLocal(palabra) {
+  const p = (palabra || "").toLowerCase().trim();
+  if (!p) return false;
+  const pSin = SinTildes(p);
+
+  if (diccionarioBasico[p]) return p;
+  if (mapSinTildesBasico.has(pSin)) return mapSinTildesBasico.get(pSin);
+
+  if (setDiccionarioRAE) {
+    if (setDiccionarioRAE.has(p)) return p;
+    if (mapSinTildesRAE && mapSinTildesRAE.has(pSin)) {
+      return mapSinTildesRAE.get(pSin);
+    }
+  }
+  return false;
+}
+
 function convertirPluralASingularLocal(palabra) {
   const p = (palabra || "").toLowerCase().trim();
   if (!p || !p.endsWith('s') || p.length < 3) return null;
   const pSin = SinTildes(p);
   if (EXCEPCIONES_NO_PLURAL.has(p) || EXCEPCIONES_NO_PLURAL.has(pSin)) return null;
-  if (!setDiccionarioRAE) return null;
 
   const singulares = obtenerSingularesDePlural(p);
   for (const { word: cand, regla } of singulares) {
@@ -850,11 +632,27 @@ function convertirPluralASingularLocal(palabra) {
   return null;
 }
 
-// Consulta EXCLUSIVA de la sección de Sinónimos en Español en Wikcionario
+// ---------- Consulta de Definición (Básico Offline) + Respaldo de Sinónimos ----------
+function buscarDefinicionEnBasico(palabra) {
+  const p = (palabra || "").toLowerCase().trim();
+  if (!p) return "";
+  if (diccionarioBasico[p]) return diccionarioBasico[p];
+  const pSin = SinTildes(p);
+  if (mapSinTildesBasico.has(pSin)) return diccionarioBasico[mapSinTildesBasico.get(pSin)];
+
+  const singulares = obtenerSingularesDePlural(p);
+  for (const { word: sing } of singulares) {
+    if (diccionarioBasico[sing]) return diccionarioBasico[sing];
+    const singSin = SinTildes(sing);
+    if (mapSinTildesBasico.has(singSin)) return diccionarioBasico[mapSinTildesBasico.get(singSin)];
+  }
+  return "";
+}
+
 async function consultarSinonimosWikcionario(termino) {
   try {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 3200);
+    const timer = setTimeout(() => controller.abort(), 3000);
     const url = 'https://es.wiktionary.org/w/api.php?action=query&prop=revisions&rvprop=content&rvslots=main&titles=' + encodeURIComponent(termino) + '&format=json&origin=*';
     const res = await fetch(url, { signal: controller.signal });
     clearTimeout(timer);
@@ -887,8 +685,7 @@ async function consultarSinonimosWikcionario(termino) {
     const regexTpl = /\{\{sin[óo]nimos?\|([^}]+)\}\}/gi;
     let m;
     while ((m = regexTpl.exec(seccionEs)) !== null) {
-      const partes = m[1].split('|');
-      for (const parte of partes) {
+      for (const parte of m[1].split('|')) {
         if (parte.includes('=')) continue;
         const limpio = parte.trim().toLowerCase();
         if (limpio === 'es' || limpio === 'leng') continue;
@@ -903,12 +700,10 @@ async function consultarSinonimosWikcionario(termino) {
       const enlaces = linea.match(/\[\[([^\]|#]+)(?:\|[^\]]+)?\]\]/g);
       if (enlaces) {
         for (const en of enlaces) {
-          const inner = en.replace(/^\[\[|\]\]$/g, '').split('|')[0];
-          agregarSin(inner);
+          agregarSin(en.replace(/^\[\[|\]\]$/g, '').split('|')[0]);
         }
       }
     }
-
     return encontrados.slice(0, 4);
   } catch (e) {
     return [];
@@ -925,7 +720,7 @@ async function consultarSinonimosDatamuse(termino) {
   for (const url of endpoints) {
     try {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 2800);
+      const timer = setTimeout(() => controller.abort(), 2600);
       const res = await fetch(url, { signal: controller.signal });
       clearTimeout(timer);
       if (!res.ok) continue;
@@ -946,38 +741,25 @@ async function consultarSinonimosDatamuse(termino) {
   return [];
 }
 
-async function obtenerSinonimosPalabra(palabra) {
+async function obtenerExplicacionPalabra(palabra) {
+  await cargarDiccionarioBasico();
   const p = (palabra || "").toLowerCase().trim();
-  if (!p) return "";
-  const pSin = SinTildes(p);
+  if (!p) return { tipo: 'ninguno', texto: '' };
 
-  if (SINONIMOS_LOCALES[p]) return SINONIMOS_LOCALES[p];
-  if (SINONIMOS_LOCALES[pSin]) return SINONIMOS_LOCALES[pSin];
-
-  const singulares = obtenerSingularesDePlural(p);
-  for (const { word: sing } of singulares) {
-    if (SINONIMOS_LOCALES[sing]) return SINONIMOS_LOCALES[sing];
-    const singSin = SinTildes(sing);
-    if (SINONIMOS_LOCALES[singSin]) return SINONIMOS_LOCALES[singSin];
+  // 1. Prioridad total: definición clara y breve del diccionario básico offline
+  const defBasica = buscarDefinicionEnBasico(p);
+  if (defBasica) {
+    return { tipo: 'definicion', texto: defBasica };
   }
 
+  // 2. Respaldo para palabras avanzadas (fuera del básico): buscar solo sinónimos reales
   let syns = await consultarSinonimosWikcionario(p);
-  if (syns.length > 0) return syns.join(', ');
-
-  for (const { word: sing } of singulares) {
-    syns = await consultarSinonimosWikcionario(sing);
-    if (syns.length > 0) return syns.join(', ');
-  }
+  if (syns.length > 0) return { tipo: 'sinonimos', texto: syns.join(', ') };
 
   syns = await consultarSinonimosDatamuse(p);
-  if (syns.length > 0) return syns.join(', ');
+  if (syns.length > 0) return { tipo: 'sinonimos', texto: syns.join(', ') };
 
-  for (const { word: sing } of singulares) {
-    syns = await consultarSinonimosDatamuse(sing);
-    if (syns.length > 0) return syns.join(', ');
-  }
-
-  return "";
+  return { tipo: 'ninguno', texto: '' };
 }
 
 // ---------- Traductor Fonético Completo de Voz ----------
@@ -1107,35 +889,23 @@ function hablar(texto, callback) {
   }
 }
 
-// ---------- Validación en Diccionario RAE (PLURALES -> SINGULAR AUTOMÁTICO) ----------
-function buscarEnDiccionarioLocal(palabra) {
-  if (!setDiccionarioRAE) return false;
-  if (setDiccionarioRAE.has(palabra)) return palabra;
-  const pSin = SinTildes(palabra);
-  if (mapSinTildesRAE && mapSinTildesRAE.has(pSin)) {
-    return mapSinTildesRAE.get(pSin);
-  }
-  return false;
-}
-
+// ---------- Validación de jugadores (Básico + RAE grande, plurales -> singular) ----------
 async function verificarPalabraEnServidor(palabra) {
-  await cargarDiccionarioRAE();
+  await Promise.all([cargarDiccionarioBasico(), cargarDiccionarioRAE()]);
   const p = palabra.toLowerCase().trim();
   if (!p) return false;
 
-  if (setDiccionarioRAE) {
-    // 1. Si el jugador dijo un plural válido, devolver directamente su SINGULAR
-    const singularDetectado = convertirPluralASingularLocal(p);
-    if (singularDetectado) return singularDetectado;
+  // 1. Si el jugador dijo un plural válido, devolver directamente su SINGULAR
+  const singularDetectado = convertirPluralASingularLocal(p);
+  if (singularDetectado) return singularDetectado;
 
-    // 2. Si no es plural (o su singular no existe), validar coincidencia directa en diccionario
-    const directa = buscarEnDiccionarioLocal(p);
-    if (directa) return directa;
+  // 2. Coincidencia directa en diccionario básico o diccionario grande RAE
+  const directa = buscarEnDiccionarioLocal(p);
+  if (directa) return directa;
 
-    return false;
-  }
+  if (setDiccionarioRAE) return false;
 
-  // Respaldo online si el JSON local no cargara
+  // Respaldo online si ninguno de los diccionarios grandes cargó
   try {
     const singulares = EXCEPCIONES_NO_PLURAL.has(SinTildes(p)) ? [] : obtenerSingularesDePlural(p).map(c => c.word);
     for (const cand of [...singulares, p]) {
@@ -1150,22 +920,30 @@ async function verificarPalabraEnServidor(palabra) {
   }
 }
 
-async function obtenerPalabrasCandidatasRAE(prefijoNormalizado) {
-  await cargarDiccionarioRAE();
+// ---------- Selección de la máquina: PRIORIZA diccionario_basico.json ----------
+async function obtenerPalabrasCandidatasMaquina(prefijoNormalizado) {
+  await Promise.all([cargarDiccionarioBasico(), cargarDiccionarioRAE()]);
+
+  // 1. Primero buscar palabras cotidianas del diccionario básico (todas con definición limpia offline)
+  const basicas = arrayBasico.filter(p => {
+    if (p.length < 3 || historialPalabras.includes(p)) return false;
+    if (!SOLO_LETRAS.test(p)) return false;
+    const silabas = silabear(p);
+    return silabas.length >= 2 && normalizarSilaba(silabas[0]) === prefijoNormalizado;
+  });
+  if (basicas.length > 0) return basicas;
+
+  // 2. Solo si no queda ninguna básica con esa sílaba, recurrir al diccionario grande (evitando plurales)
   if (arrayDiccionarioRAE) {
     const todas = arrayDiccionarioRAE.filter(p => {
       if (p.length < 3 || historialPalabras.includes(p)) return false;
       if (!SOLO_LETRAS.test(p)) return false;
-      // Evitar que la máquina elija plurales si existe el singular
       if (convertirPluralASingularLocal(p)) return false;
       const silabas = silabear(p);
       return silabas.length >= 2 && normalizarSilaba(silabas[0]) === prefijoNormalizado;
     });
-    const conocidas = todas.filter(p => SINONIMOS_LOCALES[p] || SINONIMOS_LOCALES[SinTildes(p)]);
-    if (conocidas.length > 0 && Math.random() < 0.85) return conocidas;
     const comunes = todas.filter(p => p.length >= 4 && p.length <= 7);
-    if (comunes.length > 0) return comunes;
-    return todas;
+    return comunes.length > 0 ? comunes : todas;
   }
   return [];
 }
@@ -1201,7 +979,7 @@ function silabear(palabra) {
           } else if (isConsonante(next3)) {
             let grupo = next2 + next3;
             if (inseparables.includes(grupo)) {
-              silabas.push(silabaActual); silabaActual = "";
+              silabaActual += next1; silabas.push(silabaActual); silabaActual = ""; i++;
             } else {
               silabaActual += next1 + next2; silabas.push(silabaActual); silabaActual = ""; i += 2;
             }
@@ -1320,7 +1098,15 @@ window.reiniciarMismaPartida = function() {
   iniciarJuegoTablero(true);
 };
 
-function agregarPalabraUI(palabra, silabas, esInicial = false, indiceColor = 0, etiqueta = "", sinonimos = "") {
+function formatearTarjetaExplicacion(palabra, explicacion) {
+  if (!explicacion || !explicacion.texto) return "";
+  if (explicacion.tipo === 'definicion') {
+    return '📖 <strong>' + palabra.toUpperCase() + ':</strong> ' + explicacion.texto;
+  }
+  return '🔄 <strong>Sinónimos de ' + palabra.toUpperCase() + ':</strong> ' + explicacion.texto;
+}
+
+function agregarPalabraUI(palabra, silabas, esInicial = false, indiceColor = 0, etiqueta = "", explicacion = null) {
   const wrapObj = document.createElement('div');
   wrapObj.className = "flex flex-col items-center animate-[flotar_3s_ease-in-out_infinite] w-full relative my-2";
 
@@ -1358,41 +1144,46 @@ function agregarPalabraUI(palabra, silabas, esInicial = false, indiceColor = 0, 
     wrapObj.appendChild(tag);
   }
 
-  const synContainer = document.createElement('div');
-  synContainer.className = "sinonimos-palabra-slot w-11/12 max-w-xs";
-  if (sinonimos) {
-    synContainer.innerHTML = '<div class="mt-1.5 bg-amber-50 border-2 border-[#a67c52] text-[#5c3a21] text-xs font-bold rounded-xl px-3 py-2 shadow text-center">🔄 <strong>Sinónimos de ' + palabra.toUpperCase() + ':</strong> ' + sinonimos + '</div>';
+  const infoContainer = document.createElement('div');
+  infoContainer.className = "info-palabra-slot w-11/12 max-w-xs";
+  const htmlTarjeta = formatearTarjetaExplicacion(palabra, explicacion);
+  if (htmlTarjeta) {
+    infoContainer.innerHTML = '<div class="mt-1.5 bg-amber-50 border-2 border-[#a67c52] text-[#5c3a21] text-xs font-bold rounded-xl px-3 py-2 shadow text-center">' + htmlTarjeta + '</div>';
   }
-  wrapObj.appendChild(synContainer);
+  wrapObj.appendChild(infoContainer);
 
   gameBoard.appendChild(wrapObj);
   gameBoard.scrollTop = gameBoard.scrollHeight;
 }
 
-function mostrarSinonimosEnUltimaPalabraUI(palabra, sinonimos) {
-  const slots = gameBoard.querySelectorAll('.sinonimos-palabra-slot');
+function mostrarExplicacionEnUltimaPalabraUI(palabra, explicacion) {
+  const slots = gameBoard.querySelectorAll('.info-palabra-slot');
   if (slots.length > 0) {
     const ultimoSlot = slots[slots.length - 1];
-    const texto = sinonimos
-      ? ('🔄 <strong>Sinónimos de ' + palabra.toUpperCase() + ':</strong> ' + sinonimos)
-      : ('🔄 <strong>' + palabra.toUpperCase() + ':</strong> Sin sinónimos registrados.');
-    ultimoSlot.innerHTML = '<div class="mt-1.5 bg-amber-50 border-2 border-[#a67c52] text-[#5c3a21] text-xs font-bold rounded-xl px-3 py-2 shadow text-center">' + texto + '</div>';
+    const htmlTarjeta = formatearTarjetaExplicacion(palabra, explicacion)
+      || ('📖 <strong>' + palabra.toUpperCase() + ':</strong> No está en el diccionario básico.');
+    ultimoSlot.innerHTML = '<div class="mt-1.5 bg-amber-50 border-2 border-[#a67c52] text-[#5c3a21] text-xs font-bold rounded-xl px-3 py-2 shadow text-center">' + htmlTarjeta + '</div>';
     gameBoard.scrollTop = gameBoard.scrollHeight;
   }
 }
 
-async function responderSinonimosUltimaPalabra() {
+async function responderSignificadoUltimaPalabra() {
   if (historialPalabras.length === 0 || juegoTerminado || window._anuncioPantallaCompletaActivo) return;
   const ultima = historialPalabras[historialPalabras.length - 1];
   bloquearInputs(true);
-  actualizarInterfazTurno('🔄 Buscando sinónimos de "' + ultima + '"...', "bg-amber-600");
+  actualizarInterfazTurno('📖 Consultando "' + ultima + '"...', "bg-amber-600");
 
-  const sinonimos = await obtenerSinonimosPalabra(ultima);
-  mostrarSinonimosEnUltimaPalabraUI(ultima, sinonimos);
+  const explicacion = await obtenerExplicacionPalabra(ultima);
+  mostrarExplicacionEnUltimaPalabraUI(ultima, explicacion);
 
-  const locucion = sinonimos
-    ? ("Sinónimos de " + ultima + ": " + sinonimos + ". Sigue el turno de " + nombres[jugadorActual] + ", empieza por " + silabaParaVoz(silabaObjetivo) + ".")
-    : ("No he encontrado sinónimos para " + ultima + ". Sigue el turno de " + nombres[jugadorActual] + ", empieza por " + silabaParaVoz(silabaObjetivo) + ".");
+  let locucion = "";
+  if (explicacion.tipo === 'definicion') {
+    locucion = ultima + ": " + explicacion.texto + " Sigue el turno de " + nombres[jugadorActual] + ", empieza por " + silabaParaVoz(silabaObjetivo) + ".";
+  } else if (explicacion.tipo === 'sinonimos') {
+    locucion = "Sinónimos de " + ultima + ": " + explicacion.texto + ". Sigue el turno de " + nombres[jugadorActual] + ", empieza por " + silabaParaVoz(silabaObjetivo) + ".";
+  } else {
+    locucion = "No tengo guardada la definición de " + ultima + ". Sigue el turno de " + nombres[jugadorActual] + ", empieza por " + silabaParaVoz(silabaObjetivo) + ".";
+  }
 
   hablar(locucion, () => {
     mostrarTurnoHumano();
@@ -1477,17 +1268,17 @@ function iniciarJuegoTablero(esReinicio = false) {
 
 async function juegaMaquina() {
   if (modoActual !== 'pve' || juegoTerminado || window._anuncioPantallaCompletaActivo) return;
-  actualizarInterfazTurno("📚 Buscando en la RAE...", "bg-purple-500");
+  actualizarInterfazTurno("📚 Buscando palabra...", "bg-purple-500");
 
   const prefijo = normalizarSilaba(silabaObjetivo);
-  const candidatas = await obtenerPalabrasCandidatasRAE(prefijo);
+  const candidatas = await obtenerPalabrasCandidatasMaquina(prefijo);
 
   if (candidatas.length > 0) {
     const elegida = candidatas[Math.floor(Math.random() * candidatas.length)];
     await window.procesarEntrada(elegida, true);
   } else {
     actualizarInterfazTurno("¡Victoria de " + nombres[0] + "!", "bg-green-500");
-    hablar("¡No quedan palabras en el diccionario que empiecen por " + silabaParaVoz(silabaObjetivo) + "! ¡Has ganado, " + nombres[0] + "! Di otra vez para jugar de nuevo.", () => {
+    hablar("¡No me quedan palabras que empiecen por " + silabaParaVoz(silabaObjetivo) + "! ¡Has ganado, " + nombres[0] + "! Di otra vez para jugar de nuevo.", () => {
       mostrarFinJuego();
     });
   }
@@ -1502,33 +1293,36 @@ window.meRindo = async function() {
     ? "¡Gana la máquina!"
     : (nombres.length === 2 ? ("¡Gana " + nombres[1 - jugadorActual] + "!") : ("¡Fin de la partida por rendición de " + rindiente + "!"));
 
-  actualizarInterfazTurno("Consultando RAE...", "bg-red-500");
+  actualizarInterfazTurno("Buscando palabra válida...", "bg-red-500");
 
   hablar(rindiente + " se rinde. Buscando una palabra válida...", async () => {
     const prefijo = normalizarSilaba(silabaObjetivo);
-    const candidatas = await obtenerPalabrasCandidatasRAE(prefijo);
+    const candidatas = await obtenerPalabrasCandidatasMaquina(prefijo);
 
     if (candidatas.length > 0) {
       const elegida = candidatas[Math.floor(Math.random() * candidatas.length)];
       const silabasElegida = silabear(elegida);
-      const sinonimos = await obtenerSinonimosPalabra(elegida);
+      const explicacion = await obtenerExplicacionPalabra(elegida);
 
       historialPalabras.push(elegida);
       silabaObjetivo = silabasElegida[silabasElegida.length - 1];
-      agregarPalabraUI(elegida, silabasElegida, false, 1, "💡 Esta valía (RAE)", sinonimos);
+      agregarPalabraUI(elegida, silabasElegida, false, 1, "💡 Esta valía", explicacion);
       actualizarInterfazTurno("🏆 " + textoGanador, "bg-green-600");
 
       const msgRecord = recordSuperadoEnPartida ? (" ¡Nuevo récord de " + recordPalabras + " palabras!") : "";
-      const parteSyn = sinonimos ? (" Sinónimos: " + sinonimos + ".") : "";
-      hablar("Podrías haber dicho: " + elegida + "." + parteSyn + " " + textoGanador + msgRecord + " Di otra vez para reiniciar.", mostrarFinJuego);
+      let parteExp = "";
+      if (explicacion.tipo === 'definicion') parteExp = " " + explicacion.texto;
+      else if (explicacion.tipo === 'sinonimos') parteExp = " Sinónimos: " + explicacion.texto + ".";
+
+      hablar("Podrías haber dicho: " + elegida + "." + parteExp + " " + textoGanador + msgRecord + " Di otra vez para reiniciar.", mostrarFinJuego);
     } else {
       actualizarInterfazTurno("🤝 Empate técnico", "bg-gray-600");
-      hablar("No existía ninguna palabra en la RAE con la sílaba " + silabaParaVoz(silabaObjetivo) + ". ¡Empate técnico! Di otra vez para reiniciar.", mostrarFinJuego);
+      hablar("No existía ninguna palabra con la sílaba " + silabaParaVoz(silabaObjetivo) + ". ¡Empate técnico! Di otra vez para reiniciar.", mostrarFinJuego);
     }
   });
 };
 
-function esPreguntaDeSinonimos(texto) {
+function esPreguntaDeSignificado(texto) {
   const limpio = SinTildes((texto || "").toLowerCase().trim());
   return /(que significa|eso que es|que es eso|cual es su significado|cual es el significado|que quiere decir|significado|sinonimo|sinonimos)/.test(limpio);
 }
@@ -1540,9 +1334,9 @@ window.procesarEntrada = async function(texto, esMaquina = false) {
   const textoBruto = (texto || "").trim();
   if (!textoBruto) return;
 
-  if (!esMaquina && esPreguntaDeSinonimos(textoBruto)) {
+  if (!esMaquina && esPreguntaDeSignificado(textoBruto)) {
     textInput.value = "";
-    await responderSinonimosUltimaPalabra();
+    await responderSignificadoUltimaPalabra();
     return;
   }
 
@@ -1583,20 +1377,19 @@ window.procesarEntrada = async function(texto, esMaquina = false) {
   } else if (esMaquina) {
     jugadaValida = true;
   } else {
-    actualizarInterfazTurno("Consultando RAE...", "bg-yellow-500");
-    const formaRAE = await verificarPalabraEnServidor(palabra);
-    if (formaRAE && typeof formaRAE === 'string') {
-      // Si el usuario dijo un plural, formaRAE ya viene convertida a SINGULAR
-      if (historialPalabras.includes(formaRAE)) {
-        mostrarAlerta("La palabra '" + formaRAE + "' ya se ha usado.");
-        vozError = "La palabra " + formaRAE + " ya se ha usado. Prueba con otra.";
+    actualizarInterfazTurno("Consultando diccionario...", "bg-yellow-500");
+    const formaValida = await verificarPalabraEnServidor(palabra);
+    if (formaValida && typeof formaValida === 'string') {
+      if (historialPalabras.includes(formaValida)) {
+        mostrarAlerta("La palabra '" + formaValida + "' ya se ha usado.");
+        vozError = "La palabra " + formaValida + " ya se ha usado. Prueba con otra.";
       } else {
-        palabra = formaRAE;
+        palabra = formaValida;
         silabasWord = silabear(palabra);
         jugadaValida = true;
       }
     } else {
-      mostrarAlerta("'" + palabra + "' no está en el diccionario RAE.");
+      mostrarAlerta("'" + palabra + "' no está en el diccionario.");
       vozError = palabra + " no viene en el diccionario. Inténtalo otra vez.";
     }
   }
@@ -1680,8 +1473,8 @@ function procesarFraseVoz(rawInput) {
   }
 
   for (const alt of alternativas) {
-    if (esPreguntaDeSinonimos(alt)) {
-      responderSinonimosUltimaPalabra();
+    if (esPreguntaDeSignificado(alt)) {
+      responderSignificadoUltimaPalabra();
       return;
     }
   }
@@ -1695,7 +1488,6 @@ function procesarFraseVoz(rawInput) {
 
   const sObj = normalizarSilaba(silabaObjetivo);
 
-  // Filtro adicional contra eco accidental del saludo inicial
   if (historialPalabras.length === 1 && sObj !== 'o' && sObj !== 'ho') {
     const limpioInicial = normalizarTokenVoz(alternativas[0].split(/\s+/)[0], sObj);
     if (limpioInicial === 'hola' || limpioInicial === 'primera') return;
@@ -1907,7 +1699,6 @@ pedirWakeLock();
         interstitialReady = false;
         window._anuncioPantallaCompletaActivo = false;
         preloadInterstitial();
-        // Esperar 350 ms para que Android devuelva el foco de pantalla y audio antes de iniciar la partida
         setTimeout(() => {
           if (callback) callback();
         }, 350);
@@ -1936,7 +1727,6 @@ pedirWakeLock();
           }));
         }
 
-        // Si por red o fallo de AdMob el anuncio no abre en 4 s, desbloquear partida
         safetyTimer = setTimeout(() => {
           if (!anuncioMostrado) finalizarAnuncio();
         }, 4000);
