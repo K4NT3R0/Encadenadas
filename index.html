@@ -10,7 +10,6 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script>
-// Cierre de portada independiente
 window.cerrarPortada = function() {
   var p = document.getElementById('pantalla-portada');
   if (p) {
@@ -74,18 +73,16 @@ input { -webkit-user-select: text; user-select: text; }
   </button>
 </div>
 
-<!-- MENÚ PRINCIPAL (TÍTULO DE ALTO CONTRASTE Y MÁXIMO 4 JUGADORES) -->
+<!-- MENÚ PRINCIPAL -->
 <div id="modal-menu" role="dialog" aria-modal="true" aria-labelledby="titulo-menu" class="fixed inset-0 z-50 bg-black/60 flex flex-col items-center justify-center p-4 backdrop-blur-sm transition-opacity">
   <div class="madera-textura w-full max-w-sm max-h-[92dvh] overflow-y-auto rounded-3xl p-5 flex flex-col items-center shadow-2xl transform transition-transform scale-100">
     <img src="icon-192.png" onerror="this.onerror=null;this.src='31541.png'" alt="Icono Encadenadas" class="w-16 h-16 rounded-2xl shadow-lg mb-1 border-2 border-[#a67c52]">
     <h1 id="titulo-menu" class="titulo-alto-contraste text-3xl sm:text-4xl my-2 text-center">ENCADENADAS</h1>
 
-    <!-- Récord en el menú -->
     <div class="bg-[#5c3a21] text-amber-300 font-black text-sm px-4 py-1 rounded-full shadow mb-3 border border-[#a67c52]">
       🏆 Récord actual: <span id="menu-record">0</span> palabras
     </div>
 
-    <!-- Selector de número de jugadores (2 a 4) -->
     <label class="text-xs font-extrabold text-[#5c3a21] mb-1 text-center uppercase tracking-wider">Número de jugadores (Máximo 4):</label>
     <div id="selector-num-jugadores" class="grid grid-cols-3 gap-2 w-full mb-3">
       <button type="button" id="btn-num-2" onclick="window.elegirJugadores(2)" class="bg-orange-600 text-white font-black py-2 rounded-xl border-2 border-[#5c3a21] shadow active:scale-95">2 Jugadores</button>
@@ -93,7 +90,6 @@ input { -webkit-user-select: text; user-select: text; }
       <button type="button" id="btn-num-4" onclick="window.elegirJugadores(4)" class="bg-white text-slate-700 font-black py-2 rounded-xl border-2 border-orange-300 shadow active:scale-95">4 Jugadores</button>
     </div>
 
-    <!-- Contenedor dinámico de inputs de Jugador 1 a 4 -->
     <div id="contenedor-inputs-jugadores" class="w-full space-y-2 mb-4 max-h-44 overflow-y-auto pr-1">
       <input type="text" id="input-nombre-1" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 1 (Humano)" autocomplete="off" class="w-full py-1.5 px-3 rounded-xl text-center font-bold text-base text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
       <input type="text" id="input-nombre-2" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 2" autocomplete="off" class="w-full py-1.5 px-3 rounded-xl text-center font-bold text-base text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
@@ -113,7 +109,7 @@ input { -webkit-user-select: text; user-select: text; }
   </div>
 </div>
 
-<!-- CABECERA DEL JUEGO CON BOTÓN HOME 🏠 Y TÍTULO DE ALTO CONTRASTE -->
+<!-- CABECERA -->
 <header class="z-10 w-full max-w-md flex flex-col items-center mt-1 relative">
   <div class="madera-textura text-center py-2 px-4 rounded-2xl w-full relative shadow-lg flex flex-col items-center">
     <button id="btn-home" type="button" onclick="window.irAlMenuHome()" aria-label="Volver al menú principal" title="Inicio" class="absolute left-3 top-2.5 bg-[#5c3a21] hover:bg-[#3e2716] text-white text-xl w-10 h-10 rounded-xl shadow-md border-2 border-[#a67c52] flex items-center justify-center active:scale-90 transition-transform">
@@ -235,7 +231,7 @@ window.cargarDatosMenu = function() {
 window.cargarDatosMenu();
 </script>
 
-<!-- SCRIPT 2: MOTOR PRINCIPAL CON DOBLE DICCIONARIO (BÁSICO + RAE), PLURAL -> SINGULAR, WAKELOCK Y VOZ -->
+<!-- SCRIPT 2: MOTOR PRINCIPAL, DICCIONARIO AMPLIADO + VALIDACIÓN ONLINE Y CASCADA DE SIGNIFICADOS -->
 <script>
 const gameBoard = document.getElementById('game-board');
 const micBtn = document.getElementById('mic-btn');
@@ -355,20 +351,17 @@ function incrementarContadorPalabras() {
   actualizarMarcadoresUI();
 }
 
-// ---------- TRIPLE SISTEMA ANTIBLOQUEO DE PANTALLA (SIEMPRE ENCENDIDA) ----------
+// ---------- TRIPLE SISTEMA ANTIBLOQUEO DE PANTALLA ----------
 async function pedirWakeLock() {
   try {
     if ('wakeLock' in navigator && !wakeLock && document.visibilityState === 'visible') {
       wakeLock = await navigator.wakeLock.request('screen');
       wakeLock.addEventListener('release', () => {
         wakeLock = null;
-        if (document.visibilityState === 'visible') {
-          setTimeout(pedirWakeLock, 500);
-        }
+        if (document.visibilityState === 'visible') setTimeout(pedirWakeLock, 500);
       });
     }
   } catch (e) { wakeLock = null; }
-
   try {
     if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.KeepAwake) {
       window.Capacitor.Plugins.KeepAwake.keepAwake();
@@ -383,8 +376,7 @@ function activarVideoNoSleep() {
       return;
     }
     const canvas = document.createElement('canvas');
-    canvas.width = 2;
-    canvas.height = 2;
+    canvas.width = 2; canvas.height = 2;
     const ctx = canvas.getContext('2d');
     setInterval(() => {
       if (ctx) {
@@ -392,20 +384,11 @@ function activarVideoNoSleep() {
         ctx.fillRect(0, 0, 2, 2);
       }
     }, 1000);
-
     if (typeof canvas.captureStream === 'function') {
       const v = document.createElement('video');
-      v.setAttribute('playsinline', '');
-      v.setAttribute('muted', '');
-      v.muted = true;
-      v.loop = true;
-      v.style.position = 'fixed';
-      v.style.top = '-10px';
-      v.style.left = '-10px';
-      v.style.width = '1px';
-      v.style.height = '1px';
-      v.style.opacity = '0.01';
-      v.style.pointerEvents = 'none';
+      v.setAttribute('playsinline', ''); v.setAttribute('muted', '');
+      v.muted = true; v.loop = true;
+      v.style.cssText = 'position:fixed;top:-10px;left:-10px;width:1px;height:1px;opacity:0.01;pointer-events:none;';
       v.srcObject = canvas.captureStream(1);
       document.body.appendChild(v);
       v.play().catch(() => {});
@@ -441,9 +424,7 @@ document.addEventListener('click', mantenerPantallaActivaTotal, { passive: true 
 setInterval(() => {
   if (document.visibilityState === 'visible') {
     pedirWakeLock();
-    if (videoWakeLock && videoWakeLock.paused) {
-      videoWakeLock.play().catch(() => {});
-    }
+    if (videoWakeLock && videoWakeLock.paused) videoWakeLock.play().catch(() => {});
   }
 }, 4000);
 
@@ -452,45 +433,722 @@ document.addEventListener('visibilitychange', () => {
     mantenerPantallaActivaTotal();
     if (window._anuncioPantallaCompletaActivo) return;
     try { window.speechSynthesis && window.speechSynthesis.resume(); } catch (e) {}
-    if (micDeseado && !hablando && modoActual !== "") {
-      setTimeout(arrancarRecon, 350);
-    }
+    if (micDeseado && !hablando && modoActual !== "") setTimeout(arrancarRecon, 350);
   }
 });
 
-// ---------- DOBLE DICCIONARIO: Básico (definiciones claras offline) + Grande (RAE) ----------
-const BASICO_RESPALDO = {
-  'palabra': 'Unidad del lenguaje con significado propio usada al hablar o escribir.',
-  'camino': 'Vía o senda por donde se va de un lugar a otro.',
-  'verano': 'Estación más calurosa del año, entre la primavera y el otoño.',
-  'planeta': 'Cuerpo celeste grande que gira alrededor de una estrella.',
-  'tesoro': 'Conjunto de monedas, joyas u objetos muy valiosos guardados.',
-  'espejo': 'Cristal pulido que refleja la imagen de lo que está delante.',
-  'castillo': 'Edificio antiguo fortificado con murallas y torres.',
-  'naranja': 'Fruta cítrica redonda de color anaranjado y pulpa jugosa.',
-  'pelota': 'Bola elástica usada en numerosos juegos y deportes.',
-  'regalo': 'Obsequio que se entrega a alguien por afecto o celebración.',
-  'perro': 'Animal de compañía de la familia de los cánidos.',
-  'brasa': 'Carbón o leña encendida sin llama.',
-  'sapo': 'Anfibio sin cola, robusto y de piel rugosa.',
-  'pomo': 'Tirador redondo que sirve para abrir una puerta.',
-  'mono': 'Animal mamífero primate, ágil y de cola larga.'
+// ---------- DICCIONARIO BÁSICO INTEGRADO (100% OFFLINE) + FUSIÓN CON diccionario_basico.json Y diccionario.json ----------
+const DICCIONARIO_BASICO_INTEGRADO = {
+  "abeja": "Insecto volador que produce miel y cera.",
+  "abrigo": "Prenda gruesa que protege del frío.",
+  "aceite": "Líquido graso obtenido de aceitunas o semillas.",
+  "acero": "Metal muy duro y resistente hecho de hierro y carbono.",
+  "agua": "Líquido transparente indispensable para la vida.",
+  "águila": "Ave rapaz grande de vista muy aguda.",
+  "aguja": "Barrita fina y puntiaguda usada para coser.",
+  "aire": "Mezcla de gases que respiramos en la atmósfera.",
+  "ajedrez": "Juego de mesa y estrategia sobre un tablero de cuadros.",
+  "ajo": "Bulbo blanco de olor y sabor fuertes usado en la cocina.",
+  "ala": "Extremidad que utilizan aves y aviones para volar.",
+  "alegre": "Que siente o muestra alegría y buen humor.",
+  "alfombra": "Tejido grueso que se coloca en el suelo.",
+  "algodón": "Fibra blanca y suave usada para fabricar telas.",
+  "almohada": "Cojín blando donde se apoya la cabeza al dormir.",
+  "alto": "Que tiene mucha estatura o está muy elevado.",
+  "amarillo": "Color vivo como el del limón o el oro.",
+  "amigo": "Persona con la que se tiene afecto y confianza.",
+  "amor": "Sentimiento profundo de cariño hacia alguien o algo.",
+  "ancla": "Pieza pesada de hierro que sujeta un barco al fondo del mar.",
+  "anillo": "Aro pequeño que se lleva en el dedo.",
+  "animal": "Ser vivo que se mueve y se alimenta por sí mismo.",
+  "antena": "Varilla metálica para recibir o enviar señales.",
+  "año": "Periodo de doce meses que tarda la Tierra en rodear el Sol.",
+  "araña": "Animal pequeño de ocho patas que teje telarañas.",
+  "árbol": "Planta grande de tronco leñoso con ramas y hojas.",
+  "arco": "Curva en forma de puente o arma para lanzar flechas.",
+  "arena": "Conjunto de granos muy finos de piedra en playas y desiertos.",
+  "arma": "Instrumento destinado a atacar o defenderse.",
+  "armario": "Mueble con puertas para guardar ropa u objetos.",
+  "aroma": "Olor agradable que desprenden flores o comidas.",
+  "arroz": "Cereal de grano blanco muy usado en la cocina.",
+  "arte": "Actividad creativa como la pintura, música o escultura.",
+  "atún": "Pez marino grande muy apreciado en la cocina.",
+  "avenida": "Calle ancha y larga, a menudo con árboles.",
+  "avión": "Vehículo con alas y motores que vuela por el cielo.",
+  "ayuda": "Apoyo o auxilio que se presta a alguien.",
+  "azúcar": "Sustancia blanca y cristalina de sabor muy dulce.",
+  "azul": "Color del cielo despejado y del mar.",
+  "baile": "Movimiento del cuerpo siguiendo el ritmo de la música.",
+  "bajo": "De poca altura o situado en la parte inferior.",
+  "balcón": "Plataforma con barandilla que sobresale de una fachada.",
+  "ballena": "Mamífero marino gigantesco que vive en los océanos.",
+  "balón": "Pelota grande llena de aire usada en deportes.",
+  "banco": "Asiento alargado para varias personas o entidad de dinero.",
+  "bandera": "Tela de colores que representa a un país o grupo.",
+  "barba": "Pelo que crece en la barbilla y las mejillas.",
+  "barco": "Embarcación que navega por el mar o los ríos.",
+  "barro": "Mezcla blanda de tierra y agua.",
+  "bastón": "Palo que sirve de apoyo al caminar.",
+  "basura": "Residuos o cosas que ya no sirven y se tiran.",
+  "baúl": "Caja grande con tapa para guardar ropa o recuerdos.",
+  "bebé": "Niño muy pequeño, recién nacido o de pocos meses.",
+  "bebida": "Líquido que se toma para calmar la sed.",
+  "beso": "Gesto de cariño que se da con los labios.",
+  "bicicleta": "Vehículo de dos ruedas movido a pedales.",
+  "bigote": "Pelo que crece encima del labio superior.",
+  "billete": "Papel moneda o entrada para viajar o ver un espectáculo.",
+  "binario": "Sistema compuesto de dos elementos, como unos y ceros.",
+  "blanco": "Color claro como la nieve o la leche.",
+  "blusa": "Prenda ligera que cubre la parte superior del cuerpo.",
+  "boca": "Abertura de la cara por donde comemos y hablamos.",
+  "boda": "Ceremonia en la que dos personas se casan.",
+  "bola": "Cuerpo redondo en forma de esfera.",
+  "bolsa": "Recipiente flexible de tela, papel o plástico para llevar cosas.",
+  "bombero": "Persona encargada de apagar incendios y hacer rescates.",
+  "bosque": "Terreno extenso poblado de muchos árboles.",
+  "bota": "Calzado que cubre el pie y parte de la pierna.",
+  "bote": "Recipiente pequeño, barco ligero o salto de una pelota.",
+  "botella": "Recipiente de cuello estrecho para guardar líquidos.",
+  "botón": "Pieza pequeña para abrochar la ropa o activar un aparato.",
+  "brasa": "Carbón o leña encendida sin llama.",
+  "brazo": "Extremidad superior desde el hombro hasta la mano.",
+  "brisa": "Viento suave y agradable.",
+  "brocha": "Pincel grueso usado para pintar paredes.",
+  "broma": "Dicho o acción graciosa para hacer reír.",
+  "bruja": "Personaje de cuento con poderes mágicos.",
+  "brújula": "Instrumento con aguja imantada que señala el norte.",
+  "bueno": "Que tiene calidad, utilidad o bondad.",
+  "bufanda": "Prenda larga que se enrolla al cuello contra el frío.",
+  "búho": "Ave nocturna de ojos grandes y vuelo silencioso.",
+  "burro": "Animal doméstico de carga de orejas largas.",
+  "buzón": "Caja con ranura donde se depositan las cartas.",
+  "caballo": "Animal mamífero grande y veloz usado para montar.",
+  "cabeza": "Parte superior del cuerpo donde está el cerebro.",
+  "cabra": "Animal mamífero ágil con cuernos que da leche.",
+  "cadena": "Serie de eslabones metálicos enlazados entre sí.",
+  "café": "Bebida aromática y oscura hecha con granos tostados.",
+  "caja": "Recipiente rígido con tapa para guardar objetos.",
+  "caldo": "Líquido sabroso obtenido al cocer alimentos en agua.",
+  "caliente": "Que tiene temperatura elevada o desprende calor.",
+  "caliza": "Roca sedimentaria blanquecina rica en carbonato de calcio.",
+  "calle": "Vía pública entre edificios de una ciudad o pueblo.",
+  "cama": "Mueble con colchón donde descansamos y dormimos.",
+  "cámara": "Aparato para hacer fotografías o grabar vídeos.",
+  "camello": "Animal grande del desierto con jorobas en el lomo.",
+  "camino": "Vía o senda por donde se va de un lugar a otro.",
+  "camión": "Vehículo grande y potente para transportar mercancías.",
+  "camisa": "Prenda con cuello, mangas y botones para el torso.",
+  "campana": "Instrumento metálico hueco que suena al golpearlo.",
+  "campo": "Terreno extenso fuera de la ciudad dedicado a la naturaleza o cultivos.",
+  "canción": "Composición musical con letra pensada para cantar.",
+  "candado": "Cerradura portátil con un arco metálico de seguridad.",
+  "cangrejo": "Crustáceo de caparazón duro y dos pinzas delanteras.",
+  "canto": "Acción de cantar con la voz o borde de un objeto.",
+  "cañón": "Arma grande de artillería o paso profundo entre montañas.",
+  "capa": "Prenda larga sin mangas que se lleva sobre los hombros.",
+  "cara": "Parte delantera de la cabeza, el rostro.",
+  "caracol": "Molusco pequeño y lento que lleva concha en espiral.",
+  "carbón": "Mineral negro que se quema para producir calor.",
+  "carne": "Parte muscular de los animales usada como alimento.",
+  "carro": "Vehículo con ruedas tirado por animales o automóvil.",
+  "carta": "Mensaje escrito enviado a alguien o naipe de baraja.",
+  "cartera": "Accesorio pequeño para guardar dinero y tarjetas.",
+  "casa": "Edificio o vivienda construida para habitar.",
+  "cascada": "Caída de agua desde gran altura en un río.",
+  "casco": "Pieza rígida que protege la cabeza contra golpes.",
+  "castillo": "Edificio antiguo fortificado con murallas y torres.",
+  "cebolla": "Hortaliza redonda en capas muy usada en la cocina.",
+  "cebra": "Animal africano parecido al caballo con rayas blancas y negras.",
+  "cena": "Comida principal que se toma por la noche.",
+  "ceniza": "Polvo gris que queda después de quemar madera o carbón.",
+  "cepillo": "Utensilio con cerdas para limpiar dientes, pelo o superficies.",
+  "cera": "Sustancia moldeable con la que se hacen velas y panales.",
+  "cerdo": "Animal doméstico de cuerpo robusto y hocico chato.",
+  "cereza": "Fruta pequeña, redonda, roja y dulce con hueso.",
+  "cero": "Número que representa la ausencia de cantidad.",
+  "cerro": "Elevación natural del terreno más baja que una montaña.",
+  "cesta": "Recipiente tejido de mimbre con asa para llevar cosas.",
+  "chaleco": "Prenda sin mangas que cubre pecho y espalda.",
+  "chaqueta": "Prenda con mangas abierta por delante para abrigar.",
+  "charco": "Pequeña acumulación de agua en el suelo tras llover.",
+  "chimenea": "Conducto por donde sale el humo de un fuego o estufa.",
+  "chiste": "Historia corta y graciosa contada para hacer reír.",
+  "chocolate": "Alimento dulce hecho con cacao y azúcar.",
+  "ciática": "Dolor intenso a lo largo del nervio ciático, desde la espalda a la pierna.",
+  "cielo": "Espacio azul y abierto que vemos sobre la Tierra.",
+  "ciencia": "Conjunto de conocimientos obtenidos mediante estudio y observación.",
+  "ciervo": "Mamífero ágil de bosque con astas ramificadas.",
+  "cima": "Punto más alto de una montaña.",
+  "cine": "Sala o arte dedicado a proyectar películas.",
+  "cinta": "Tira larga y estrecha de tela, papel o plástico.",
+  "cinturón": "Tira de cuero o tela que sujeta el pantalón.",
+  "círculo": "Figura geométrica redonda y plana.",
+  "cisne": "Ave acuática blanca y elegante de cuello largo.",
+  "ciudad": "Población grande con muchos edificios y habitantes.",
+  "claro": "Que tiene mucha luz o resulta fácil de entender.",
+  "clavo": "Pieza metálica fina con punta que se clava con martillo.",
+  "clima": "Condiciones atmosféricas habituales de una región.",
+  "cobre": "Metal rojizo excelente conductor de electricidad.",
+  "coche": "Vehículo de cuatro ruedas con motor para carretera.",
+  "cocina": "Habitación de la casa donde se preparan las comidas.",
+  "coco": "Fruto tropical redondo de cáscara dura y pulpa blanca.",
+  "cocodrilo": "Reptil grande de ríos con mandíbula muy potente.",
+  "codo": "Articulación que une el brazo con el antebrazo.",
+  "cohete": "Vehículo impulsado a gran velocidad que viaja al espacio.",
+  "cojín": "Almohadón blando que se coloca sobre sofás o sillas.",
+  "cola": "Extremidad trasera de muchos animales o fila de personas.",
+  "colina": "Elevación suave y moderada del terreno.",
+  "collar": "Adorno que se lleva rodeando el cuello.",
+  "color": "Impresión visual que produce la luz, como el rojo o el azul.",
+  "cometa": "Juguete que vuela con el viento o astro luminoso con cola.",
+  "comida": "Alimento que se prepara y se toma para nutrirse.",
+  "conejo": "Mamífero pequeño de orejas largas que vive en madrigueras.",
+  "copa": "Vaso con pie para beber o trofeo deportivo.",
+  "corazón": "Órgano vital que bombea la sangre por todo el cuerpo.",
+  "corbata": "Tira de tela que se anuda alrededor del cuello de la camisa.",
+  "cordero": "Cría joven de la oveja.",
+  "corona": "Aro de metal precioso que llevan los reyes.",
+  "cortina": "Tela que cuelga en una ventana para tapar la luz.",
+  "costa": "Orilla de la tierra que limita con el mar.",
+  "crema": "Sustancia suave y espesa usada en cocina o para la piel.",
+  "cristal": "Vidrio transparente usado en ventanas, vasos o lentes.",
+  "cruz": "Figura formada por dos líneas que se cortan en ángulo recto.",
+  "cuaderno": "Conjunto de hojas de papel unidas para escribir o dibujar.",
+  "cuadro": "Pintura o fotografía enmarcada que se cuelga en la pared.",
+  "cuchara": "Cubierto con pala cóncava para tomar sopas o líquidos.",
+  "cuchillo": "Utensilio con hoja afilada para cortar alimentos.",
+  "cuello": "Parte del cuerpo que une la cabeza con el tronco.",
+  "cuento": "Narración breve de hechos imaginarios.",
+  "cuerda": "Conjunto de hilos trenzados que sirve para atar.",
+  "cuerpo": "Conjunto de órganos y partes físicas de un ser vivo.",
+  "cueva": "Cavidad natural abierta en la roca o la montaña.",
+  "cuna": "Cama pequeña con barandillas donde duermen los bebés.",
+  "dado": "Cubo con puntos del uno al seis usado en juegos de azar.",
+  "dama": "Mujer distinguida o pieza principal del ajedrez.",
+  "danza": "Arte de bailar siguiendo un ritmo y una coreografía.",
+  "débil": "Que tiene poca fuerza o resistencia.",
+  "dedo": "Cada una de las cinco partes alargadas de la mano o pie.",
+  "delfín": "Mamífero marino muy inteligente que salta sobre las olas.",
+  "deporte": "Actividad física con reglas practicada por salud o competición.",
+  "derbi": "Partido deportivo entre dos equipos rivales de la misma ciudad o región.",
+  "desierto": "Región muy seca y arenosa donde apenas llueve.",
+  "día": "Tiempo de veinticuatro horas o horas de luz solar.",
+  "diamante": "Piedra preciosa transparente, brillante y extremadamente dura.",
+  "diente": "Pieza dura y blanca de la boca que sirve para masticar.",
+  "difícil": "Que requiere mucho esfuerzo, habilidad o trabajo.",
+  "dinero": "Monedas y billetes usados para comprar y pagar.",
+  "disco": "Objeto circular plano usado para guardar música o datos.",
+  "dócil": "Suave, obediente y fácil de guiar.",
+  "doctor": "Médico que cuida la salud y trata enfermedades.",
+  "dolor": "Sensación molesta o de sufrimiento físico o emocional.",
+  "domingo": "Séptimo y último día de la semana.",
+  "dragón": "Criatura fantástica alada que echa fuego por la boca.",
+  "ducha": "Chorro de agua en forma de lluvia para asearse.",
+  "duende": "Ser mágico y pequeño propio de cuentos y leyendas.",
+  "dulce": "De sabor suave y agradable como el azúcar o la miel.",
+  "duna": "Montaña de arena formada por el viento en desiertos y playas.",
+  "eco": "Repetición de un sonido que rebota en una superficie lejana.",
+  "edificio": "Construcción grande con varias plantas para vivir o trabajar.",
+  "elefante": "Mamífero terrestre gigantesco con trompa larga y colmillos.",
+  "ensalada": "Plato frío de hortalizas frescas aliñadas.",
+  "escalera": "Serie de peldaños que sirve para subir o bajar.",
+  "escoba": "Utensilio con palo y cerdas para barrer el suelo.",
+  "escudo": "Arma defensiva o emblema de una ciudad o equipo.",
+  "escuela": "Centro educativo donde aprenden los niños y jóvenes.",
+  "espalda": "Parte trasera del tronco humano.",
+  "espejo": "Cristal pulido que refleja la imagen de lo que está delante.",
+  "espuma": "Conjunto de burbujas ligeras formadas en un líquido.",
+  "esquina": "Ángulo exterior donde se juntan dos paredes o calles.",
+  "estación": "Cada una de las cuatro épocas del año o parada de trenes.",
+  "estatua": "Escultura que representa una figura humana o animal.",
+  "estrella": "Astro luminoso que brilla con luz propia en el cielo.",
+  "estuche": "Caja o bolsa pequeña para guardar lápices o gafas.",
+  "fábrica": "Lugar con máquinas donde se elaboran productos.",
+  "fácil": "Sencillo, que se hace sin esfuerzo ni complicación.",
+  "falda": "Prenda que cuelga desde la cintura hacia abajo.",
+  "falso": "Que no es verdadero o imita algo real.",
+  "familia": "Grupo de personas unidas por lazos de parentesco o afecto.",
+  "fantasma": "Aparición imaginaria o espíritu de historias de misterio.",
+  "faro": "Torre alta con luz potente en la costa para guiar barcos.",
+  "fecha": "Indicación exacta del día, mes y año.",
+  "feria": "Fiesta popular con puestos, atracciones y música.",
+  "ficha": "Pieza pequeña usada en juegos de mesa.",
+  "fiesta": "Reunión alegre para celebrar un acontecimiento.",
+  "flauta": "Instrumento musical de viento en forma de tubo.",
+  "flecha": "Varilla con punta que se dispara con un arco.",
+  "flor": "Parte colorida y aromática de muchas plantas.",
+  "foca": "Mamífero marino con aletas que vive en aguas frías.",
+  "foco": "Lámpara potente que concentra la luz en un punto.",
+  "fogata": "Fuego encendido al aire libre con leña o ramas.",
+  "fresa": "Fruta roja, pequeña, dulce y aromática.",
+  "frío": "Que tiene temperatura baja o ausencia de calor.",
+  "fruta": "Fruto comestible de plantas y árboles.",
+  "fruto": "Parte de la planta que guarda las semillas.",
+  "fuego": "Calor y llama producidos cuando arde un material.",
+  "fuente": "Manantial natural o construcción de la que brota agua.",
+  "fuerte": "Que tiene mucha fuerza, vigor o resistencia.",
+  "fuerza": "Capacidad física para mover, levantar o resistir algo.",
+  "fútbol": "Deporte de equipo que consiste en meter goles con los pies.",
+  "futuro": "Tiempo que todavía está por llegar.",
+  "gafas": "Lentes con montura usadas delante de los ojos para ver mejor.",
+  "galleta": "Pasta dulce horneada, fina y crujiente.",
+  "gallina": "Ave doméstica de corral que pone huevos.",
+  "gallo": "Ave doméstica macho de cresta roja que canta al amanecer.",
+  "gancho": "Pieza curvada que sirve para colgar o sujetar cosas.",
+  "garaje": "Local cerrado donde se guardan coches y vehículos.",
+  "garganta": "Parte interior del cuello por donde pasan aire y comida.",
+  "gato": "Animal mamífero felino doméstico, ágil y maullador.",
+  "gaviota": "Ave marina blanca y gris habitual en las costas.",
+  "genio": "Persona de inteligencia extraordinaria o ser mágico de cuento.",
+  "gigante": "Persona o criatura de tamaño descomunal.",
+  "girasol": "Planta alta de gran flor amarilla que gira hacia el sol.",
+  "globo": "Bolsa ligera llena de aire o gas que flota.",
+  "golpe": "Impacto fuerte que da un cuerpo contra otro.",
+  "goma": "Material elástico o utensilio para borrar lápiz.",
+  "gorila": "Primate muy grande, fuerte y peludo de África.",
+  "gorra": "Prenda ligera con visera para cubrir la cabeza.",
+  "gota": "Pequeña porción redonda de cualquier líquido.",
+  "grande": "Que supera en tamaño o importancia a lo habitual.",
+  "granja": "Finca rural donde se crían animales y se cultiva la tierra.",
+  "grifo": "Llave que abre o cierra el paso del agua.",
+  "grillo": "Insecto saltador que produce un canto agudo por la noche.",
+  "gris": "Color intermedio entre el blanco y el negro.",
+  "grito": "Voz muy fuerte dada por susto, enfado o emoción.",
+  "grúa": "Máquina grande con brazo articulado para levantar cargas.",
+  "guante": "Prenda que cubre la mano y los dedos.",
+  "guerra": "Enfrentamiento armado entre países o bandos.",
+  "guitarra": "Instrumento musical de madera con seis cuerdas.",
+  "gusano": "Animal pequeño de cuerpo blando, alargado y sin patas.",
+  "hada": "Ser fantástico con alas y poderes mágicos de los cuentos.",
+  "harina": "Polvo fino obtenido al moler trigo u otros cereales.",
+  "helado": "Postre muy frío y cremoso de leche o fruta.",
+  "hermano": "Persona que comparte los mismos padres que otra.",
+  "hielo": "Agua congelada en estado sólido por el frío.",
+  "hierro": "Metal gris, duro y muy usado en herramientas.",
+  "hijo": "Persona descendiente directa de su padre o madre.",
+  "hilo": "Hebra larga y fina que sirve para coser o tejer.",
+  "historia": "Relato de sucesos pasados o narración inventada.",
+  "hoja": "Lámina verde de las plantas o folio de papel.",
+  "hombre": "Ser humano adulto de sexo masculino.",
+  "hombro": "Parte superior del tronco donde nace el brazo.",
+  "hora": "Unidad de tiempo equivalente a sesenta minutos.",
+  "hormiga": "Insecto pequeño y trabajador que vive en colonias.",
+  "horno": "Aparato cerrado que calienta a alta temperatura para cocinar.",
+  "hueso": "Pieza dura y rígida que forma el esqueleto.",
+  "huevo": "Cuerpo ovalado con cáscara que ponen las aves.",
+  "humo": "Nube gris que desprende el fuego al quemar algo.",
+  "idea": "Pensamiento u ocurrencia que nace en la mente.",
+  "isla": "Porción de tierra rodeada de agua por todas partes.",
+  "jabón": "Producto espumoso usado con agua para lavar.",
+  "jaleo": "Alboroto, ruido, bullicio o animación festiva.",
+  "jamón": "Pata curada del cerdo muy apreciada en la gastronomía.",
+  "jardín": "Terreno donde se cultivan flores y plantas ornamentales.",
+  "jarra": "Recipiente con asa y pico usado para servir líquidos.",
+  "jaula": "Recinto con barrotes para alojar pájaros u otros animales.",
+  "jefe": "Persona que dirige un equipo, empresa o actividad.",
+  "jersey": "Prenda de punto abrigada para cubrir el torso.",
+  "jinete": "Persona que monta a caballo.",
+  "jirafa": "Mamífero africano de cuello larguísimo y piel manchada.",
+  "jocoso": "Gracioso, divertido o que hace reír.",
+  "jota": "Baile y canto tradicional muy popular en España.",
+  "joya": "Objeto de adorno valioso hecho de metal y piedras preciosas.",
+  "juego": "Actividad divertida sometida a reglas.",
+  "jueves": "Cuarto día de la semana.",
+  "juez": "Persona con autoridad para impartir justicia o arbitrar.",
+  "juguete": "Objeto diseñado para que jueguen los niños.",
+  "jungla": "Selva espesa y tropical llena de vegetación y fauna.",
+  "labio": "Cada uno de los dos bordes carnosos de la boca.",
+  "ladrillo": "Bloque rectangular de barro cocido usado para construir.",
+  "lago": "Gran masa de agua dulce rodeada de tierra.",
+  "lágrima": "Gota líquida que brota de los ojos al llorar.",
+  "lámpara": "Aparato eléctrico que da luz en una habitación.",
+  "lana": "Pelo suave de las ovejas con el que se teje ropa.",
+  "lancha": "Embarcación pequeña y rápida de motor o remos.",
+  "lápiz": "Utensilio de madera con mina de grafito para escribir.",
+  "lata": "Envase metálico hermético para conservar alimentos o bebidas.",
+  "lazo": "Cinta atada con un nudo decorativo.",
+  "leche": "Líquido blanco y nutritivo que producen las vacas.",
+  "lechuga": "Hortaliza de hojas verdes muy usada en ensaladas.",
+  "lengua": "Órgano muscular de la boca o idioma de un pueblo.",
+  "lento": "Que se mueve o sucede con poca velocidad.",
+  "leña": "Trozos de madera cortada para hacer fuego.",
+  "león": "Gran felino africano de melena llamado rey de la selva.",
+  "letra": "Cada uno de los signos gráficos que forman el alfabeto.",
+  "libre": "Que puede actuar por sí mismo sin ataduras.",
+  "libro": "Conjunto de páginas impresas y encuadernadas para leer.",
+  "limón": "Fruto cítrico amarillo de zumo muy ácido.",
+  "limpio": "Que no tiene manchas, polvo ni suciedad.",
+  "linterna": "Lámpara portátil de pilas que proyecta un haz de luz.",
+  "listo": "Persona inteligente o preparada para empezar.",
+  "llama": "Lengua de luz y calor del fuego o mamífero andino.",
+  "llave": "Pieza metálica dentada que sirve para abrir cerraduras.",
+  "lleno": "Que está completamente ocupado.",
+  "lluvia": "Agua que cae de las nubes en forma de gotas.",
+  "lobo": "Mamífero salvaje parecido al perro que vive en manadas.",
+  "loca": "Mujer que ha perdido la razón o actúa de forma imprudente.",
+  "loco": "Que ha perdido la razón o actúa de forma imprudente.",
+  "loro": "Ave tropical de plumas vistosas capaz de imitar palabras.",
+  "lucha": "Combate o esfuerzo intenso para conseguir algo.",
+  "luna": "Satélite natural que gira alrededor de la Tierra.",
+  "lunes": "Primer día laborable de la semana.",
+  "lupa": "Lente de aumento con mango para ver detalles pequeños.",
+  "luz": "Claridad que ilumina los objetos y permite ver.",
+  "maceta": "Recipiente con tierra para cultivar plantas.",
+  "madera": "Material sólido obtenido del tronco de los árboles.",
+  "madre": "Mujer que ha tenido o cría a uno o más hijos.",
+  "maestro": "Persona que enseña en una escuela o domina un oficio.",
+  "magia": "Arte de hacer trucos sorprendentes o prodigios.",
+  "maíz": "Planta de mazorca con granos amarillos nutritivos.",
+  "maleta": "Caja o bolsa con asa para llevar ropa en un viaje.",
+  "malo": "Que resulta dañino, negativo o de poca calidad.",
+  "mancha": "Marca sucia o de distinto color sobre una superficie.",
+  "mango": "Fruta tropical dulce o parte por donde se agarra un utensilio.",
+  "mano": "Parte final del brazo humano formada por palma y cinco dedos.",
+  "manta": "Pieza grande y gruesa de tela para abrigarse.",
+  "manzana": "Fruta redonda, crujiente y jugosa del manzano.",
+  "mañana": "Primera parte del día o el día siguiente al de hoy.",
+  "mapa": "Dibujo plano que representa territorios, países o caminos.",
+  "máquina": "Aparato con piezas móviles diseñado para hacer un trabajo.",
+  "mar": "Gran extensión de agua salada que cubre parte del planeta.",
+  "mariposa": "Insecto de alas grandes y muy coloridas.",
+  "martes": "Segundo día de la semana.",
+  "martillo": "Herramienta con cabeza pesada para golpear y clavar.",
+  "máscara": "Careta que cubre la cara en fiestas o teatro.",
+  "mascota": "Animal doméstico de compañía que vive con una familia.",
+  "medalla": "Pieza metálica redonda entregada como premio.",
+  "médico": "Profesional que estudia, previene y cura enfermedades.",
+  "melón": "Fruto grande y veraniego de pulpa dulce y muy jugosa.",
+  "memoria": "Capacidad de la mente para recordar hechos y datos.",
+  "mensaje": "Aviso o información enviada a otra persona.",
+  "mercado": "Lugar público con puestos donde se compran alimentos.",
+  "mes": "Cada una de las doce divisiones del año.",
+  "mesa": "Mueble con un tablero liso sostenido por patas.",
+  "meta": "Línea de llegada en una carrera u objetivo por alcanzar.",
+  "metal": "Material duro y brillante como el hierro, oro o cobre.",
+  "metro": "Unidad básica de longitud o tren subterráneo.",
+  "miedo": "Sensación de alarma o temor ante un peligro.",
+  "miel": "Sustancia dulce y espesa que fabrican las abejas.",
+  "minuto": "Unidad de tiempo formada por sesenta segundos.",
+  "mochila": "Bolsa con correas que se lleva a la espalda.",
+  "molino": "Construcción con aspas para moler grano.",
+  "moneda": "Pieza metálica redonda usada como dinero.",
+  "mono": "Animal mamífero primate, ágil y de cola larga.",
+  "montaña": "Gran elevación natural del terreno con cumbre.",
+  "monte": "Terreno elevado cubierto de árboles o matorrales.",
+  "mosca": "Insecto volador común de dos alas.",
+  "moto": "Vehículo de dos ruedas impulsado por motor.",
+  "motor": "Máquina que transforma energía para producir movimiento.",
+  "mueble": "Objeto funcional de la casa como mesa, cama o armario.",
+  "muelle": "Espiral metálica elástica o zona del puerto para barcos.",
+  "mundo": "Planeta Tierra y el conjunto de personas que lo habitan.",
+  "muñeca": "Juguete con forma humana o articulación entre brazo y mano.",
+  "muro": "Pared gruesa y sólida de piedra o ladrillo.",
+  "museo": "Edificio donde se conservan y muestran obras de arte.",
+  "música": "Arte de combinar sonidos y silencios con ritmo y melodía.",
+  "naranja": "Fruta cítrica redonda de color anaranjado y pulpa jugosa.",
+  "nariz": "Órgano en el centro de la cara para oler y respirar.",
+  "nata": "Crema espesa y blanca obtenida de la leche.",
+  "nave": "Barco grande, vehículo espacial o amplio edificio.",
+  "negro": "Color completamente oscuro como el carbón o la noche.",
+  "nevera": "Electrodoméstico que mantiene fríos los alimentos.",
+  "nido": "Refugio de ramitas que construyen las aves.",
+  "niebla": "Nube baja junto al suelo que dificulta la visión.",
+  "nieve": "Agua helada en copos blancos caída de las nubes.",
+  "niña": "Persona femenina en la etapa de la infancia.",
+  "niño": "Persona en la etapa de la infancia.",
+  "noche": "Parte del día sin luz solar.",
+  "nombre": "Palabra que sirve para identificar personas, animales o cosas.",
+  "norte": "Punto cardinal opuesto al sur.",
+  "nota": "Sonido musical, apunte escrito o calificación escolar.",
+  "noticia": "Información sobre un hecho reciente de interés.",
+  "nube": "Masa visible de vapor suspendida en el cielo.",
+  "nudo": "Enlace apretado de una cuerda o cordón.",
+  "nuevo": "Recién hecho, comprado o sin estrenar.",
+  "nuez": "Fruto seco de cáscara dura y semilla comestible.",
+  "número": "Signo matemático que expresa cantidad o posición.",
+  "nutria": "Mamífero acuático ágil de pelaje impermeable.",
+  "ojo": "Órgano de la vista situado en la cara.",
+  "ola": "Onda de agua que se levanta y avanza en el mar.",
+  "oreja": "Parte externa del oído a los lados de la cabeza.",
+  "oro": "Metal precioso amarillo, brillante y muy valioso.",
+  "oscuro": "Que carece de luz o claridad.",
+  "oso": "Mamífero grande y corpulento de pelaje denso.",
+  "oveja": "Animal mamífero doméstico cubierto de lana.",
+  "padre": "Hombre que ha tenido o cría a uno o más hijos.",
+  "paella": "Plato tradicional español de arroz cocinado en sartén ancha.",
+  "página": "Cada una de las dos caras de una hoja de libro.",
+  "país": "Territorio con población, fronteras y gobierno propios.",
+  "pájaro": "Ave pequeña con plumas que vuela.",
+  "pala": "Herramienta plana con mango para cavar o recoger tierra.",
+  "palabra": "Unidad del lenguaje con significado propio.",
+  "palacio": "Edificio grande y lujoso donde viven reyes o gobernantes.",
+  "palmera": "Árbol tropical de tronco alto y grandes hojas en la copa.",
+  "palo": "Trozo alargado de madera.",
+  "paloma": "Ave de vuelo suave considerada símbolo de la paz.",
+  "pan": "Alimento básico horneado hecho con harina y agua.",
+  "panda": "Oso blanco y negro de China que come bambú.",
+  "pantalla": "Superficie luminosa de un móvil, televisor u ordenador.",
+  "pantalón": "Prenda que cubre desde la cintura hasta los tobillos.",
+  "pantera": "Felino salvaje grande, ágil y de pelaje oscuro.",
+  "pañuelo": "Trozo cuadrado de tela o papel para sonarse o adornarse.",
+  "papel": "Lámina fina fabricada con fibras vegetales para escribir.",
+  "paquete": "Bulto envuelto y cerrado que contiene objetos.",
+  "paraguas": "Utensilio plegable de tela y varillas contra la lluvia.",
+  "pared": "Muro vertical que cierra o divide una habitación.",
+  "parque": "Jardín público amplio con árboles y caminos.",
+  "paso": "Movimiento de un pie hacia delante al caminar.",
+  "pastel": "Dulce horneado y relleno propio de celebraciones.",
+  "pata": "Extremidad de un animal o apoyo de un mueble.",
+  "patata": "Tubérculo comestible muy usado frito, cocido o en tortilla.",
+  "patio": "Espacio abierto y rodeado de paredes dentro de una casa.",
+  "pato": "Ave acuática de pico plano y patas palmeadas.",
+  "payaso": "Artista cómico de circo maquillado para hacer reír.",
+  "paz": "Estado de calma, armonía y ausencia de guerra.",
+  "pecho": "Parte delantera superior del tronco humano.",
+  "peligro": "Situación en la que existe riesgo de sufrir un daño.",
+  "pelo": "Cabello o filamento fino que crece en la piel.",
+  "pelota": "Bola elástica usada en numerosos juegos y deportes.",
+  "pequeño": "De tamaño reducido o de corta edad.",
+  "pera": "Fruta dulce y jugosa más estrecha por arriba.",
+  "perla": "Esfera pequeña y nacarada formada dentro de ostras.",
+  "perro": "Animal de compañía de la familia de los cánidos.",
+  "persona": "Ser humano individual.",
+  "pez": "Animal acuático con escamas y aletas que respira bajo el agua.",
+  "piano": "Instrumento musical grande con teclas blancas y negras.",
+  "pico": "Boca dura de las aves o cumbre puntiaguda de montaña.",
+  "pie": "Extremidad inferior del cuerpo sobre la que caminamos.",
+  "piedra": "Trozo duro y compacto de roca mineral.",
+  "piel": "Tejido exterior que recubre y protege todo el cuerpo.",
+  "pierna": "Extremidad inferior que va desde la cadera hasta el pie.",
+  "pijama": "Ropa cómoda que se lleva para dormir.",
+  "pimiento": "Hortaliza hueca verde, roja o amarilla usada en cocina.",
+  "pincel": "Palito con pelos en la punta que sirve para pintar.",
+  "pingüino": "Ave marina blanca y negra que no vuela pero nada muy bien.",
+  "pino": "Árbol alto de hojas en aguja que da piñas.",
+  "pintura": "Líquido con color para pintar o cuadro ya pintado.",
+  "piña": "Fruta tropical dulce de cáscara rugosa o fruto del pino.",
+  "pirámide": "Monumento antiguo de base cuadrada y caras triangulares.",
+  "pirata": "Marinero aventurero que asaltaba barcos en historias antiguas.",
+  "piscina": "Estanque grande lleno de agua pensado para nadar.",
+  "piso": "Suelo de una habitación o vivienda en un edificio.",
+  "pizarra": "Tablero de clase sobre el que se escribe con tiza.",
+  "planeta": "Cuerpo celeste grande que gira alrededor de una estrella.",
+  "planta": "Ser vivo vegetal que crece fijo en la tierra.",
+  "plata": "Metal precioso brillante de color blanco grisáceo.",
+  "plátano": "Fruta alargada, blanda y dulce de piel amarilla.",
+  "plato": "Recipiente redondo y plano donde se sirve la comida.",
+  "playa": "Orilla arenosa junto al mar o a un gran lago.",
+  "plaza": "Espacio público abierto rodeado de edificios.",
+  "pluma": "Pieza ligera que cubre a las aves o instrumento para escribir.",
+  "pobre": "Que tiene pocos recursos económicos o resulta escaso.",
+  "poder": "Capacidad o fuerza para hacer algo, o autoridad.",
+  "pollo": "Cría de gallina muy habitual en la alimentación.",
+  "pomo": "Tirador redondo que sirve para abrir una puerta.",
+  "pozo": "Agujero profundo excavado en la tierra para sacar agua.",
+  "prado": "Terreno llano cubierto de hierba verde y fresca.",
+  "premio": "Recompensa o trofeo entregado por un logro.",
+  "puente": "Construcción elevada para cruzar sobre un río o carretera.",
+  "puerta": "Abertura con hoja móvil que permite entrar y salir.",
+  "puerto": "Lugar resguardado en la costa donde atracan barcos.",
+  "pulpo": "Animal marino inteligente con cabeza blanda y ocho tentáculos.",
+  "pulsera": "Adorno circular llevado alrededor de la muñeca.",
+  "punto": "Señal redonda diminuta o unidad de puntuación.",
+  "puño": "Mano cerrada con fuerza.",
+  "queso": "Alimento sólido y sabroso hecho con leche cuajada.",
+  "radio": "Aparato que recibe emisoras de sonido.",
+  "raíz": "Parte subterránea de las plantas que absorbe agua.",
+  "rama": "Brote leñoso que nace del tronco de un árbol.",
+  "rana": "Anfibio saltador de piel lisa que vive cerca del agua.",
+  "rápido": "Que se mueve o actúa a gran velocidad.",
+  "raqueta": "Pala con red tensa usada para jugar al tenis.",
+  "rata": "Roedor mediano de cola larga y gran agilidad.",
+  "ratón": "Roedor pequeño de cola larga o dispositivo de ordenador.",
+  "rayo": "Descarga eléctrica luminosa durante una tormenta.",
+  "receta": "Lista de ingredientes y pasos para preparar una comida.",
+  "récord": "Mejor marca o resultado máximo conseguido.",
+  "red": "Malla de hilos cruzados para pescar o atrapar balones.",
+  "regalo": "Obsequio entregado a alguien por afecto o celebración.",
+  "regla": "Tira graduada para medir o norma de un juego.",
+  "reina": "Mujer que gobierna un reino o pieza poderosa del ajedrez.",
+  "reloj": "Instrumento que mide el tiempo y muestra la hora.",
+  "remo": "Pala alargada de madera usada para impulsar una barca.",
+  "rey": "Monarca que gobierna un reino.",
+  "rico": "Que tiene mucho dinero o un sabor delicioso.",
+  "río": "Corriente natural y continua de agua que llega al mar.",
+  "risa": "Expresión alegre con sonido cuando algo hace gracia.",
+  "ritmo": "Sucesión regular de sonidos o movimientos en la música.",
+  "robot": "Máquina programable capaz de realizar tareas automáticamente.",
+  "roca": "Material mineral sólido, duro y grande de la tierra.",
+  "rodilla": "Articulación intermedia que permite doblar la pierna.",
+  "rojo": "Color intenso y llamativo como el de la fresa o el fuego.",
+  "ropa": "Conjunto de prendas de tela con las que nos vestimos.",
+  "rosa": "Flor perfumada del rosal o color rojo suave.",
+  "rostro": "Cara de una persona.",
+  "rueda": "Pieza circular que gira sobre un eje para mover vehículos.",
+  "ruido": "Sonido fuerte, confuso o molesto.",
+  "ruta": "Camino o itinerario trazado para hacer un viaje.",
+  "sábado": "Sexto día de la semana.",
+  "sábana": "Tela fina y grande que cubre el colchón de la cama.",
+  "sabio": "Persona que posee muchos conocimientos y prudencia.",
+  "saco": "Bolsa grande y resistente de tela para guardar grano o cosas.",
+  "sal": "Sustancia blanca cristalina usada para sazonar comidas.",
+  "sala": "Habitación amplia dentro de una casa o edificio.",
+  "salmón": "Pez de carne rosada que remonta los ríos.",
+  "salsa": "Mezcla líquida o cremosa que acompaña un plato.",
+  "salto": "Impulso que despega el cuerpo del suelo por el aire.",
+  "salud": "Estado de bienestar físico y mental sin enfermedades.",
+  "sandía": "Fruta grande de verano, verde por fuera y roja por dentro.",
+  "sangre": "Líquido rojo que circula por venas y arterias.",
+  "sapo": "Anfibio sin cola, robusto y de piel rugosa.",
+  "sardina": "Pez marino pequeño y plateado muy común en cocina.",
+  "sartén": "Utensilio plano con mango que sirve para freír.",
+  "secreto": "Información reservada que no se cuenta a los demás.",
+  "seda": "Hilo muy fino, brillante y suave producido por gusanos.",
+  "sello": "Estampilla postal o utensilio con tinta para marcar.",
+  "selva": "Bosque tropical muy denso, húmedo y lleno de vida.",
+  "semáforo": "Señal luminosa de tráfico con luces roja, ámbar y verde.",
+  "semana": "Periodo de siete días seguidos.",
+  "semilla": "Grano pequeño del que nace una nueva planta.",
+  "senda": "Camino estrecho abierto en el campo para caminar.",
+  "serpiente": "Reptil alargado sin patas que se desplaza reptando.",
+  "sierra": "Herramienta dentada para cortar madera o cadena montañosa.",
+  "siesta": "Descanso corto que se duerme después de comer.",
+  "silbato": "Instrumento pequeño que produce un sonido agudo al soplar.",
+  "silencio": "Ausencia total de ruidos o voces.",
+  "silla": "Asiento con patas y respaldo para una persona.",
+  "sillón": "Asiento amplio y mullido con apoyabrazos.",
+  "sobre": "Cubierta de papel donde se introduce una carta.",
+  "sofá": "Asiento largo y acolchado donde caben varias personas.",
+  "sol": "Estrella luminosa que da luz y calor a la Tierra.",
+  "soldado": "Persona que sirve en un ejército.",
+  "solo": "Sin compañía, único o sin añadir nada más.",
+  "sombra": "Zona oscura donde un cuerpo impide el paso de la luz.",
+  "sombrero": "Prenda con copa y ala que protege la cabeza del sol.",
+  "sonido": "Vibración que percibimos a través del oído.",
+  "sonrisa": "Gesto amable y alegre de la boca.",
+  "sopa": "Plato caliente de caldo con pasta, arroz o verduras.",
+  "sorpresa": "Impresión inesperada o regalo que no se esperaba.",
+  "sucio": "Que tiene manchas, polvo o falta de limpieza.",
+  "suelo": "Superficie inferior por donde pisamos y caminamos.",
+  "sueño": "Ganas de dormir, descanso nocturno o gran deseo.",
+  "suerte": "Casualidad favorable o buena fortuna.",
+  "sur": "Punto cardinal opuesto al norte.",
+  "susto": "Sobresalto breve causado por algo inesperado.",
+  "tabla": "Pieza plana y alargada de madera o cuadro de datos.",
+  "taco": "Pieza corta de madera o tortilla mexicana rellena.",
+  "tambor": "Instrumento musical de percusión con parche tenso.",
+  "tapa": "Pieza que cierra un recipiente o ración pequeña de comida.",
+  "tapón": "Pieza de corcho o plástico que cierra una botella.",
+  "tarde": "Parte del día entre el mediodía y el anochecer.",
+  "tarea": "Trabajo o deber que hay que realizar.",
+  "tarjeta": "Lámina pequeña de cartón o plástico para pagar o felicitar.",
+  "tarta": "Pastel grande y decorado habitual en cumpleaños.",
+  "taza": "Recipiente pequeño con asa para beber café, té o leche.",
+  "teatro": "Edificio o arte donde se representan obras ante el público.",
+  "techo": "Parte superior que cubre y cierra una habitación.",
+  "teclado": "Conjunto de teclas para escribir o tocar música.",
+  "tejado": "Cubierta inclinada exterior que protege una casa de la lluvia.",
+  "tela": "Tejido formado por muchos hilos entrecruzados.",
+  "teléfono": "Aparato que permite hablar y comunicarse a distancia.",
+  "tesoro": "Conjunto de monedas, joyas u objetos muy valiosos guardados.",
+  "tiempo": "Duración de las cosas o estado atmosférico de un lugar.",
+  "tienda": "Comercio donde se venden productos o carpa de acampada.",
+  "tierra": "Planeta que habitamos o suelo fértil para plantas.",
+  "tigre": "Gran felino salvaje asiático de pelaje naranja con rayas negras.",
+  "tijera": "Herramienta de dos hojas afiladas cruzadas para cortar.",
+  "timbre": "Dispositivo eléctrico que suena para avisar a la puerta.",
+  "tinta": "Líquido de color usado para escribir o imprimir.",
+  "tiza": "Barrita blanca de yeso usada para escribir en la pizarra.",
+  "toalla": "Pieza de tela absorbente para secarse después de lavarse.",
+  "tobillo": "Articulación que une la pierna con el pie.",
+  "tobogán": "Rampa lisa de parque por la que se deslizan los niños.",
+  "tomate": "Fruto rojo y jugoso muy usado en ensaladas y salsas.",
+  "tono": "Altura de un sonido o matiz de un color.",
+  "tonto": "Falto de ingenio o que hace cosas sin pensar.",
+  "tope": "Límite máximo o pieza donde se detiene algo.",
+  "topo": "Mamífero pequeño casi ciego que excava túneles bajo tierra.",
+  "tormenta": "Fenómeno atmosférico con lluvia fuerte, rayos y truenos.",
+  "tornillo": "Pieza metálica con rosca para unir dos objetos.",
+  "toro": "Animal bovino macho, grande y con cuernos.",
+  "torre": "Edificio mucho más alto que ancho.",
+  "tortilla": "Plato cocinado en sartén con huevos batidos y patata.",
+  "tortuga": "Reptil tranquilo de paso lento con caparazón duro.",
+  "tos": "Expulsión brusca de aire por la boca para despejar la garganta.",
+  "trabajo": "Actividad física o mental realizada a cambio de un salario o fin.",
+  "tractor": "Vehículo agrícola potente con ruedas grandes.",
+  "traje": "Conjunto elegante de chaqueta y pantalón o falda.",
+  "trampa": "Mecanismo para cazar o engaño en un juego.",
+  "trébol": "Planta pequeña de tres hojas símbolo de buena suerte.",
+  "tren": "Medio de transporte formado por vagones sobre raíles.",
+  "trigo": "Cereal dorado del que se obtiene la harina para el pan.",
+  "trineo": "Vehículo con patines para deslizarse sobre la nieve.",
+  "triste": "Que siente pena, melancolía o falta de alegría.",
+  "trofeo": "Objeto o copa entregada al ganador de una competición.",
+  "trompa": "Instrumento musical de viento o nariz larga del elefante.",
+  "trompeta": "Instrumento musical metálico de viento de sonido brillante.",
+  "tronco": "Tallo grueso y leñoso de un árbol.",
+  "trono": "Asiento lujoso donde se sienta un rey o reina.",
+  "trucha": "Pez de río muy apreciado por su sabor.",
+  "truco": "Habilidad ingeniosa o ilusión de magia.",
+  "trueno": "Estruendo fuerte en el cielo tras un rayo.",
+  "tubo": "Pieza hueca y cilíndrica por donde pasan líquidos o gases.",
+  "tuerca": "Pieza metálica roscada que se enrosca en un tornillo.",
+  "tulipán": "Flor primaveral en forma de copa y colores vivos.",
+  "túnel": "Paso subterráneo abierto a través de una montaña o ciudad.",
+  "turrón": "Dulce navideño elaborado con almendra y miel.",
+  "uña": "Lámina dura que protege la punta de los dedos.",
+  "uva": "Fruto pequeño y dulce en racimos usado para hacer vino.",
+  "vaca": "Animal mamífero doméstico que proporciona leche.",
+  "vacío": "Que no contiene nada en su interior.",
+  "valiente": "Que afronta el peligro con valor y sin miedo.",
+  "valle": "Terreno llano situado entre montañas.",
+  "vapor": "Gas blanco en el que se convierte el agua al hervir.",
+  "vaso": "Recipiente cilíndrico para beber.",
+  "vecino": "Persona que vive en la misma casa, edificio o barrio.",
+  "vela": "Cilindro de cera con mecha que da luz o lona de barco.",
+  "velero": "Barco que navega impulsado por el viento en sus velas.",
+  "vena": "Conducto por donde regresa la sangre al corazón.",
+  "veneno": "Sustancia tóxica capaz de causar daño grave.",
+  "ventana": "Abertura con cristal en la pared para que entren luz y aire.",
+  "verano": "Estación más calurosa del año.",
+  "verdad": "Aquello que coincide con la realidad y no es mentira.",
+  "verde": "Color fresco como el de la hierba y las hojas.",
+  "vestido": "Prenda femenina de una sola pieza que cubre el cuerpo.",
+  "viaje": "Desplazamiento de un lugar a otro lejano.",
+  "vida": "Existencia y actividad propia de los seres vivos.",
+  "vidrio": "Material duro, frágil y transparente usado en botellas y ventanas.",
+  "viejo": "Que tiene mucha edad o lleva mucho tiempo hecho.",
+  "viento": "Corriente de aire que se mueve en la atmósfera.",
+  "viernes": "Quinto día de la semana.",
+  "vino": "Bebida obtenida de la fermentación del zumo de uva.",
+  "violín": "Instrumento musical pequeño de cuatro cuerdas tocado con arco.",
+  "vista": "Sentido corporal con el que percibimos colores y formas.",
+  "volante": "Rueda que gira el conductor para dirigir un coche.",
+  "volcán": "Montaña con abertura por donde salen lava y cenizas.",
+  "voz": "Sonido producido al hablar o cantar.",
+  "vuelo": "Acción de desplazarse por el aire.",
+  "zanahoria": "Raíz comestible alargada de color naranja muy saludable.",
+  "zapato": "Calzado que cubre y protege el pie al caminar.",
+  "zona": "Área o sector determinado de un territorio.",
+  "zorro": "Mamífero cánido silvestre, ágil, astuto y de cola peluda.",
+  "zumo": "Líquido natural que se extrae al exprimir frutas."
 };
 
-let diccionarioBasico = { ...BASICO_RESPALDO };
-let arrayBasico = Object.keys(BASICO_RESPALDO);
+const MAPA_TILDES = { 'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u', 'ü': 'u' };
+function SinTildes(str) {
+  return (str || "").toLowerCase().replace(/[áéíóúü]/g, c => MAPA_TILDES[c]);
+}
+
+let diccionarioBasico = { ...DICCIONARIO_BASICO_INTEGRADO };
+let arrayBasico = Object.keys(diccionarioBasico);
 let mapSinTildesBasico = new Map();
-let basicoCargado = false;
+let basicoExternoIntentado = false;
 let cargandoBasico = null;
 
 let setDiccionarioRAE = null;
 let arrayDiccionarioRAE = null;
 let mapSinTildesRAE = null;
 let cargandoDiccionario = null;
-
-function SinTildes(str) {
-  return (str || "").replace(/ñ/g, "\u0001").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\u0001/g, "ñ");
-}
 
 function indexarBasico(obj) {
   diccionarioBasico = obj;
@@ -505,22 +1163,20 @@ function indexarBasico(obj) {
 indexarBasico(diccionarioBasico);
 
 async function cargarDiccionarioBasico() {
-  if (basicoCargado) return true;
+  if (basicoExternoIntentado) return true;
   if (cargandoBasico) return cargandoBasico;
   cargandoBasico = (async () => {
     try {
       const res = await fetch('diccionario_basico.json');
-      if (!res.ok) throw new Error('No basic dict');
-      const data = await res.json();
-      if (data && typeof data === 'object') {
-        indexarBasico({ ...BASICO_RESPALDO, ...data });
-        basicoCargado = true;
-        return true;
+      if (res.ok) {
+        const data = await res.json();
+        if (data && typeof data === 'object') {
+          indexarBasico({ ...DICCIONARIO_BASICO_INTEGRADO, ...data });
+        }
       }
-      return false;
-    } catch (e) {
-      return false;
-    }
+    } catch (e) {}
+    basicoExternoIntentado = true;
+    return true;
   })();
   return cargandoBasico;
 }
@@ -552,12 +1208,11 @@ async function cargarDiccionarioRAE() {
 setTimeout(() => {
   cargarDiccionarioBasico();
   cargarDiccionarioRAE();
-}, 300);
+}, 250);
 
 const SOLO_LETRAS = /^[a-záéíóúüñ]+$/;
 const SINONIMO_LIMPIO = /^[a-záéíóúüñ]{3,22}$/;
 
-// Palabras que terminan en -s de forma natural y NO deben convertirse a singular
 const EXCEPCIONES_NO_PLURAL = new Set([
   'lunes', 'martes', 'miercoles', 'jueves', 'viernes',
   'paraguas', 'pararrayos', 'sacacorchos', 'abrelatas', 'cumpleanos', 'cumpleaños',
@@ -582,18 +1237,12 @@ function obtenerSingularesDePlural(p) {
       candidatos.push({ word, regla });
     }
   };
-  if (p.endsWith('ces') && p.length >= 4) {
-    add(p.slice(0, -3) + 'z', 'ces');
-  }
+  if (p.endsWith('ces') && p.length >= 4) add(p.slice(0, -3) + 'z', 'ces');
   if (p.endsWith('es') && p.length >= 4) {
     const baseEs = p.slice(0, -2);
-    if (/[bcdfghjklmnñpqrstvwxyíú]$/.test(baseEs)) {
-      add(baseEs, 'es');
-    }
+    if (/[bcdfghjklmnñpqrstvwxyíú]$/.test(baseEs)) add(baseEs, 'es');
   }
-  if (p.endsWith('s') && p.length >= 3) {
-    add(p.slice(0, -1), 's');
-  }
+  if (p.endsWith('s') && p.length >= 3) add(p.slice(0, -1), 's');
   return candidatos;
 }
 
@@ -607,9 +1256,7 @@ function buscarEnDiccionarioLocal(palabra) {
 
   if (setDiccionarioRAE) {
     if (setDiccionarioRAE.has(p)) return p;
-    if (mapSinTildesRAE && mapSinTildesRAE.has(pSin)) {
-      return mapSinTildesRAE.get(pSin);
-    }
+    if (mapSinTildesRAE && mapSinTildesRAE.has(pSin)) return mapSinTildesRAE.get(pSin);
   }
   return false;
 }
@@ -624,7 +1271,6 @@ function convertirPluralASingularLocal(palabra) {
   for (const { word: cand, regla } of singulares) {
     const sing = buscarEnDiccionarioLocal(cand);
     if (!sing) continue;
-
     if (regla === 'ces' && sing.endsWith('z')) return sing;
     if (regla === 'es' && /[bcdfghjklmnñpqrstvwxyíú]$/.test(sing)) return sing;
     if (regla === 's' && /[aeiouáéíóúbcdfgklmnpt]$/.test(sing)) return sing;
@@ -632,7 +1278,39 @@ function convertirPluralASingularLocal(palabra) {
   return null;
 }
 
-// ---------- Consulta de Definición (Básico Offline) + Respaldo de Sinónimos ----------
+// ---------- UTILIDADES DE WIKCIONARIO (SOLO SECCIÓN ESPAÑOL) ----------
+async function obtenerSeccionEspanolWikcionario(termino) {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 3200);
+    const url = 'https://es.wiktionary.org/w/api.php?action=query&prop=revisions&rvprop=content&rvslots=main&titles=' + encodeURIComponent(termino) + '&format=json&origin=*';
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timer);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const pages = (data && data.query && data.query.pages) ? data.query.pages : {};
+    const page = Object.values(pages)[0];
+    if (!page || page.missing !== undefined) return null;
+    const raw = (page.revisions && page.revisions[0] && page.revisions[0].slots && page.revisions[0].slots.main)
+      ? page.revisions[0].slots.main['*']
+      : (page.revisions && page.revisions[0] ? page.revisions[0]['*'] : "");
+    if (!raw) return null;
+
+    const matchEs = raw.match(/==\s*\{\{lengua\|es\}\}\s*==/i);
+    if (!matchEs) return null;
+    const inicioEs = matchEs.index + matchEs[0].length;
+    const resto = raw.slice(inicioEs);
+    const sigLengua = resto.search(/==\s*\{\{lengua\|/i);
+    return {
+      titulo: (page.title || termino).toLowerCase(),
+      seccion: sigLengua >= 0 ? resto.slice(0, sigLengua) : resto
+    };
+  } catch (e) {
+    return null;
+  }
+}
+
+// ---------- CASCADA DE EXPLICACIÓN: 1) Significado básico -> 2) Sinónimos -> 3) Buscar fuera (Wikcionario ES / Wikipedia ES / RAE) ----------
 function buscarDefinicionEnBasico(palabra) {
   const p = (palabra || "").toLowerCase().trim();
   if (!p) return "";
@@ -649,78 +1327,52 @@ function buscarDefinicionEnBasico(palabra) {
   return "";
 }
 
-async function consultarSinonimosWikcionario(termino) {
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 3000);
-    const url = 'https://es.wiktionary.org/w/api.php?action=query&prop=revisions&rvprop=content&rvslots=main&titles=' + encodeURIComponent(termino) + '&format=json&origin=*';
-    const res = await fetch(url, { signal: controller.signal });
-    clearTimeout(timer);
-    if (!res.ok) return [];
-    const data = await res.json();
-    const pages = (data && data.query && data.query.pages) ? data.query.pages : {};
-    const page = Object.values(pages)[0];
-    if (!page || page.missing !== undefined) return [];
-    const raw = (page.revisions && page.revisions[0] && page.revisions[0].slots && page.revisions[0].slots.main)
-      ? page.revisions[0].slots.main['*']
-      : (page.revisions && page.revisions[0] ? page.revisions[0]['*'] : "");
-    if (!raw) return [];
+function extraerSinonimosDeSeccionEs(termino, seccionEs) {
+  if (!seccionEs) return [];
+  const encontrados = [];
+  const tSin = SinTildes(termino);
+  const agregarSin = (cand) => {
+    const w = (cand || "").toLowerCase().replace(/\[\[|\]\]|'''|''/g, '').trim();
+    if (!w || !SINONIMO_LIMPIO.test(w)) return;
+    if (SinTildes(w) === tSin) return;
+    if (!encontrados.includes(w)) encontrados.push(w);
+  };
 
-    const matchEs = raw.match(/==\s*\{\{lengua\|es\}\}\s*==/i);
-    if (!matchEs) return [];
-    const inicioEs = matchEs.index + matchEs[0].length;
-    const resto = raw.slice(inicioEs);
-    const sigLengua = resto.search(/==\s*\{\{lengua\|/i);
-    const seccionEs = sigLengua >= 0 ? resto.slice(0, sigLengua) : resto;
-
-    const encontrados = [];
-    const tSin = SinTildes(termino);
-    const agregarSin = (cand) => {
-      const w = (cand || "").toLowerCase().replace(/\[\[|\]\]|'''|''/g, '').trim();
-      if (!w || !SINONIMO_LIMPIO.test(w)) return;
-      if (SinTildes(w) === tSin) return;
-      if (!encontrados.includes(w)) encontrados.push(w);
-    };
-
-    const regexTpl = /\{\{sin[óo]nimos?\|([^}]+)\}\}/gi;
-    let m;
-    while ((m = regexTpl.exec(seccionEs)) !== null) {
-      for (const parte of m[1].split('|')) {
-        if (parte.includes('=')) continue;
-        const limpio = parte.trim().toLowerCase();
-        if (limpio === 'es' || limpio === 'leng') continue;
-        agregarSin(limpio);
-      }
+  const regexTpl = /\{\{sin[óo]nimos?\|([^}]+)\}\}/gi;
+  let m;
+  while ((m = regexTpl.exec(seccionEs)) !== null) {
+    for (const parte of m[1].split('|')) {
+      if (parte.includes('=')) continue;
+      const limpio = parte.trim().toLowerCase();
+      if (limpio === 'es' || limpio === 'leng') continue;
+      agregarSin(limpio);
     }
-
-    const regexLin = /Sin[óo]nimos?\s*:?\s*([^\n]+)/gi;
-    while ((m = regexLin.exec(seccionEs)) !== null) {
-      const linea = m[1];
-      if (/↑|DEX|Diccionario|http/i.test(linea)) continue;
-      const enlaces = linea.match(/\[\[([^\]|#]+)(?:\|[^\]]+)?\]\]/g);
-      if (enlaces) {
-        for (const en of enlaces) {
-          agregarSin(en.replace(/^\[\[|\]\]$/g, '').split('|')[0]);
-        }
-      }
-    }
-    return encontrados.slice(0, 4);
-  } catch (e) {
-    return [];
   }
+
+  const regexLin = /Sin[óo]nimos?\s*:?\s*([^\n]+)/gi;
+  while ((m = regexLin.exec(seccionEs)) !== null) {
+    const linea = m[1];
+    if (/↑|DEX|Diccionario|http/i.test(linea)) continue;
+    const enlaces = linea.match(/\[\[([^\]|#]+)(?:\|[^\]]+)?\]\]/g);
+    if (enlaces) {
+      for (const en of enlaces) {
+        agregarSin(en.replace(/^\[\[|\]\]$/g, '').split('|')[0]);
+      }
+    }
+  }
+  return encontrados.slice(0, 4);
 }
 
 async function consultarSinonimosDatamuse(termino) {
   const tSin = SinTildes(termino);
   const endpoints = [
     'https://api.datamuse.com/words?rel_syn=' + encodeURIComponent(termino) + '&v=es&max=8',
-    'https://api.datamuse.com/words?ml=' + encodeURIComponent(termino) + '&v=es&max=10'
+    'https://api.datamuse.com/words?ml=' + encodeURIComponent(termino) + '&v=es&max=8'
   ];
-
   for (const url of endpoints) {
     try {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 2600);
+      const timer = setTimeout(() => controller.abort(), 2500);
       const res = await fetch(url, { signal: controller.signal });
       clearTimeout(timer);
       if (!res.ok) continue;
@@ -741,23 +1393,128 @@ async function consultarSinonimosDatamuse(termino) {
   return [];
 }
 
+function limpiarTextoDefinicionExterna(rawLine) {
+  if (!rawLine) return "";
+  let s = rawLine
+    .replace(/<ref[^>]*>[\s\S]*?<\/ref>/gi, '')
+    .replace(/<ref[^>]*\/>/gi, '')
+    .replace(/\{\{(?:plm|ucf|l\+|l)\|es\|([^}|]+)(?:\|[^}]*)?\}\}/gi, '$1')
+    .replace(/\{\{(?:plm|ucf)\|([^}|]+)(?:\|[^}]*)?\}\}/gi, '$1')
+    .replace(/\{\{glosa\|([^}|]+)\}\}/gi, '$1')
+    .replace(/\{\{[^{}]*\}\}/g, '')
+    .replace(/\{\{[^{}]*\}\}/g, '')
+    .replace(/\[\[([^\]|]+\|)?([^\]]+)\]\]/g, '$2')
+    .replace(/<[^>]+>/g, '')
+    .replace(/'''|''/g, '')
+    .replace(/\[[^\]]*\]/g, '')
+    .replace(/^[\s:;.,-–—•*#0-9]+/, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!s || s.length < 8) return "";
+  if (/↑|DEX online|Diccionario de la lengua española|Consultado el|http/i.test(s)) return "";
+
+  // Recortar a la primera frase clara y concisa
+  let frase = s.split(/\.\s+/)[0].trim();
+  const palabras = frase.split(/\s+/).filter(Boolean);
+  if (palabras.length > 18) {
+    frase = palabras.slice(0, 18).join(' ').replace(/[,;:]$/, '');
+  }
+  if (frase.length < 8) return "";
+  frase = frase.charAt(0).toUpperCase() + frase.slice(1);
+  return frase.endsWith('.') ? frase : (frase + '.');
+}
+
+function extraerDefinicionDeSeccionEs(seccionEs) {
+  if (!seccionEs) return { def: "", lemaEnlazado: "" };
+
+  // Cortar antes de referencias, traducciones o notas
+  const corte = seccionEs.search(/===+\s*(?:Referencias|Traducciones|Véase también|Enlaces externos|Información adicional)/i);
+  const cuerpo = corte >= 0 ? seccionEs.slice(0, corte) : seccionEs;
+
+  const lineas = cuerpo.split('\n');
+  let lemaEnlazado = "";
+
+  for (let i = 0; i < lineas.length; i++) {
+    const l = lineas[i].trim();
+    if (/^;[0-9]+/.test(l) || /^#\s+[^*:]/.test(l)) {
+      let contenido = l.replace(/^;[0-9]+[^:]*:/, '').replace(/^#\s+/, '').trim();
+      if (!contenido && i + 1 < lineas.length && lineas[i + 1].trim().startsWith(':')) {
+        contenido = lineas[i + 1].trim().replace(/^:+/, '').trim();
+      }
+
+      // Detectar si es una forma flexionada apuntando a otro lema (ej. {{f.s.p|...}}, {{forma participio|...}})
+      const mForma = contenido.match(/\{\{(?:forma [^|]+|f\.[^|]+)\|([^}|]+)/i);
+      if (mForma && !lemaEnlazado) {
+        lemaEnlazado = mForma[1].trim().toLowerCase();
+        continue;
+      }
+
+      const limpia = limpiarTextoDefinicionExterna(contenido);
+      if (limpia && !/^(Forma del|Femenino de|Plural de|Participio de|Gerundio de)/i.test(limpia)) {
+        return { def: limpia, lemaEnlazado };
+      }
+    }
+  }
+  return { def: "", lemaEnlazado };
+}
+
+async function consultarWikipediaES(termino) {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 2800);
+    const url = 'https://es.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(termino);
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timer);
+    if (!res.ok) return "";
+    const data = await res.json();
+    if (!data || data.type === 'disambiguation' || !data.extract) return "";
+    if (/puede referirse a/i.test(data.extract)) return "";
+    return limpiarTextoDefinicionExterna(data.extract);
+  } catch (e) {
+    return "";
+  }
+}
+
 async function obtenerExplicacionPalabra(palabra) {
   await cargarDiccionarioBasico();
   const p = (palabra || "").toLowerCase().trim();
   if (!p) return { tipo: 'ninguno', texto: '' };
 
-  // 1. Prioridad total: definición clara y breve del diccionario básico offline
+  // 1. SIGNIFICADO en el diccionario básico local (instantáneo y offline)
   const defBasica = buscarDefinicionEnBasico(p);
   if (defBasica) {
     return { tipo: 'definicion', texto: defBasica };
   }
 
-  // 2. Respaldo para palabras avanzadas (fuera del básico): buscar solo sinónimos reales
-  let syns = await consultarSinonimosWikcionario(p);
-  if (syns.length > 0) return { tipo: 'sinonimos', texto: syns.join(', ') };
+  // Consultamos Wikcionario ES una sola vez (sirve tanto para sinónimos como para buscar fuera)
+  const wikData = await obtenerSeccionEspanolWikcionario(p);
 
-  syns = await consultarSinonimosDatamuse(p);
-  if (syns.length > 0) return { tipo: 'sinonimos', texto: syns.join(', ') };
+  // 2. SINÓNIMOS (si no estaba en el diccionario básico)
+  if (wikData) {
+    const synsWik = extraerSinonimosDeSeccionEs(p, wikData.seccion);
+    if (synsWik.length > 0) return { tipo: 'sinonimos', texto: synsWik.join(', ') };
+  }
+  const synsDm = await consultarSinonimosDatamuse(p);
+  if (synsDm.length > 0) return { tipo: 'sinonimos', texto: synsDm.join(', ') };
+
+  // 3. BUSCAR FUERA (Definición real en Wikcionario ES -> Lema base -> Wikipedia ES)
+  if (wikData) {
+    const { def, lemaEnlazado } = extraerDefinicionDeSeccionEs(wikData.seccion);
+    if (def) return { tipo: 'externo', texto: def };
+    if (lemaEnlazado && lemaEnlazado !== p) {
+      const defLemaBasico = buscarDefinicionEnBasico(lemaEnlazado);
+      if (defLemaBasico) return { tipo: 'externo', texto: defLemaBasico };
+      const wikLema = await obtenerSeccionEspanolWikcionario(lemaEnlazado);
+      if (wikLema) {
+        const resLema = extraerDefinicionDeSeccionEs(wikLema.seccion);
+        if (resLema.def) return { tipo: 'externo', texto: resLema.def };
+      }
+    }
+  }
+
+  const defWiki = await consultarWikipediaES(p);
+  if (defWiki) return { tipo: 'externo', texto: defWiki };
 
   return { tipo: 'ninguno', texto: '' };
 }
@@ -812,18 +1569,12 @@ function pausarReconocimientoMientrasHabla(mensajeEstado) {
   }
   micBtn.classList.remove('bg-red-500', 'animate-pulse');
   micBtn.classList.add('bg-blue-500');
-  if (mensajeEstado) {
-    micStatus.textContent = mensajeEstado;
-  } else if (micDeseado) {
-    micStatus.textContent = "🔊 Máquina hablando (micrófono en espera)...";
-  }
+  if (mensajeEstado) micStatus.textContent = mensajeEstado;
+  else if (micDeseado) micStatus.textContent = "🔊 Máquina hablando (micrófono en espera)...";
 }
 
 window.pausarTodoParaAnuncio = function() {
-  if (cancelarHablaPrevia) {
-    cancelarHablaPrevia();
-    cancelarHablaPrevia = null;
-  }
+  if (cancelarHablaPrevia) { cancelarHablaPrevia(); cancelarHablaPrevia = null; }
   hablando = false;
   ignorarVozHasta = Date.now() + 60000;
   pausarReconocimientoMientrasHabla("⏳ Esperando a que termine el anuncio...");
@@ -855,9 +1606,7 @@ function hablar(texto, callback) {
       hablando = false;
       if (window._anuncioPantallaCompletaActivo) return;
       if (callback) callback();
-      if (micDeseado && modoActual !== "" && !esTurnoMaquina) {
-        arrancarRecon();
-      }
+      if (micDeseado && modoActual !== "" && !esTurnoMaquina) arrancarRecon();
     }, 400);
   };
   cancelarHablaPrevia = cancelar;
@@ -865,16 +1614,9 @@ function hablar(texto, callback) {
 
   if (window.AndroidVoice) {
     window._onNativeTtsDone = fin;
-    try {
-      window.AndroidVoice.speak(texto);
-      return;
-    } catch (e) {}
+    try { window.AndroidVoice.speak(texto); return; } catch (e) {}
   }
-
-  if (!('speechSynthesis' in window)) {
-    fin();
-    return;
-  }
+  if (!('speechSynthesis' in window)) { fin(); return; }
   try {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(texto);
@@ -884,47 +1626,78 @@ function hablar(texto, callback) {
     utterance.onend = fin;
     utterance.onerror = fin;
     window.speechSynthesis.speak(utterance);
-  } catch (e) {
-    fin();
+  } catch (e) { fin(); }
+}
+
+// ---------- VALIDACIÓN AMPLIADA: Local (Básico + RAE grande) + Respaldo Online (Wikcionario ES / Datamuse) ----------
+function cachearPalabraValida(w) {
+  if (!w) return;
+  if (setDiccionarioRAE) {
+    setDiccionarioRAE.add(w);
+    if (mapSinTildesRAE && !mapSinTildesRAE.has(SinTildes(w))) {
+      mapSinTildesRAE.set(SinTildes(w), w);
+    }
   }
 }
 
-// ---------- Validación de jugadores (Básico + RAE grande, plurales -> singular) ----------
+async function verificarPalabraOnline(p) {
+  const esExcepcion = EXCEPCIONES_NO_PLURAL.has(p) || EXCEPCIONES_NO_PLURAL.has(SinTildes(p));
+  const singulares = esExcepcion ? [] : obtenerSingularesDePlural(p).map(c => c.word);
+  const candidatos = [...singulares, p];
+
+  // 1) Verificar en Wikcionario Español (solo si existe sección {{lengua|es}})
+  for (const cand of candidatos) {
+    const wik = await obtenerSeccionEspanolWikcionario(cand);
+    if (wik && wik.titulo) {
+      cachearPalabraValida(wik.titulo);
+      return wik.titulo;
+    }
+  }
+
+  // 2) Respaldo rápido en Datamuse Español
+  for (const cand of candidatos) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 2400);
+      const res = await fetch('https://api.datamuse.com/words?sp=' + encodeURIComponent(cand) + '&max=6&v=es', { signal: controller.signal });
+      clearTimeout(timer);
+      if (!res.ok) continue;
+      const data = await res.json();
+      const match = data.find(item => item && item.word && SOLO_LETRAS.test(item.word.toLowerCase()) && SinTildes(item.word.toLowerCase()) === SinTildes(cand));
+      if (match) {
+        const valida = match.word.toLowerCase();
+        cachearPalabraValida(valida);
+        return valida;
+      }
+    } catch (e) {}
+  }
+  return false;
+}
+
 async function verificarPalabraEnServidor(palabra) {
   await Promise.all([cargarDiccionarioBasico(), cargarDiccionarioRAE()]);
   const p = palabra.toLowerCase().trim();
   if (!p) return false;
 
-  // 1. Si el jugador dijo un plural válido, devolver directamente su SINGULAR
+  // 1. Si dijo un plural válido, pasar directamente al SINGULAR
   const singularDetectado = convertirPluralASingularLocal(p);
   if (singularDetectado) return singularDetectado;
 
-  // 2. Coincidencia directa en diccionario básico o diccionario grande RAE
+  // 2. Coincidencia directa en diccionario básico integrado o diccionario grande RAE
   const directa = buscarEnDiccionarioLocal(p);
   if (directa) return directa;
 
-  if (setDiccionarioRAE) return false;
+  // 3. Respaldo ONLINE: jamás rechazar una palabra española real que faltara en el listado local
+  const validaOnline = await verificarPalabraOnline(p);
+  if (validaOnline) return validaOnline;
 
-  // Respaldo online si ninguno de los diccionarios grandes cargó
-  try {
-    const singulares = EXCEPCIONES_NO_PLURAL.has(SinTildes(p)) ? [] : obtenerSingularesDePlural(p).map(c => c.word);
-    for (const cand of [...singulares, p]) {
-      const res = await fetch('https://api.datamuse.com/words?sp=' + encodeURIComponent(cand) + '&max=10&v=es');
-      const data = await res.json();
-      const match = data.find(item => SinTildes(item.word.toLowerCase()) === SinTildes(cand));
-      if (match) return match.word.toLowerCase();
-    }
-    return false;
-  } catch (e) {
-    return p;
-  }
+  return false;
 }
 
-// ---------- Selección de la máquina: PRIORIZA diccionario_basico.json ----------
+// ---------- Selección de la máquina: PRIORIZA diccionario básico integrado ----------
 async function obtenerPalabrasCandidatasMaquina(prefijoNormalizado) {
   await Promise.all([cargarDiccionarioBasico(), cargarDiccionarioRAE()]);
 
-  // 1. Primero buscar palabras cotidianas del diccionario básico (todas con definición limpia offline)
   const basicas = arrayBasico.filter(p => {
     if (p.length < 3 || historialPalabras.includes(p)) return false;
     if (!SOLO_LETRAS.test(p)) return false;
@@ -933,7 +1706,6 @@ async function obtenerPalabrasCandidatasMaquina(prefijoNormalizado) {
   });
   if (basicas.length > 0) return basicas;
 
-  // 2. Solo si no queda ninguna básica con esa sílaba, recurrir al diccionario grande (evitando plurales)
   if (arrayDiccionarioRAE) {
     const todas = arrayDiccionarioRAE.filter(p => {
       if (p.length < 3 || historialPalabras.includes(p)) return false;
@@ -979,7 +1751,7 @@ function silabear(palabra) {
           } else if (isConsonante(next3)) {
             let grupo = next2 + next3;
             if (inseparables.includes(grupo)) {
-              silabaActual += next1; silabas.push(silabaActual); silabaActual = ""; i++;
+              silabas.push(silabaActual); silabaActual = "";
             } else {
               silabaActual += next1 + next2; silabas.push(silabaActual); silabaActual = ""; i += 2;
             }
@@ -1007,13 +1779,7 @@ function silabear(palabra) {
 }
 
 function normalizarSilaba(silaba) {
-  return (silaba || "")
-    .toLowerCase()
-    .replace(/ñ/g, "\u0001")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\u0001/g, "ñ")
-    .replace(/rr/g, "r");
+  return SinTildes(silaba || "").replace(/rr/g, "r");
 }
 
 function mostrarAlerta(mensaje, duracion = 3800) {
@@ -1041,11 +1807,8 @@ function bloquearInputs(bloquear) {
   textInput.disabled = bloquear;
   sendBtn.disabled = bloquear;
   micBtn.disabled = !recon;
-  if (bloquear) {
-    btnRendirse.classList.add('opacity-50', 'pointer-events-none');
-  } else {
-    btnRendirse.classList.remove('opacity-50', 'pointer-events-none');
-  }
+  if (bloquear) btnRendirse.classList.add('opacity-50', 'pointer-events-none');
+  else btnRendirse.classList.remove('opacity-50', 'pointer-events-none');
 }
 
 function mostrarFinJuego() {
@@ -1078,10 +1841,7 @@ window.irAlMenuHome = function() {
 
 window.reiniciarMismaPartida = function() {
   if (window._anuncioPantallaCompletaActivo) return;
-  if (!modoActual) {
-    window.irAlMenuHome();
-    return;
-  }
+  if (!modoActual) { window.irAlMenuHome(); return; }
   controlsContainer.classList.remove('hidden');
   btnRendirse.classList.remove('hidden');
   finJuegoBotones.classList.add('hidden');
@@ -1092,18 +1852,23 @@ window.reiniciarMismaPartida = function() {
   recordSuperadoEnPartida = false;
   actualizarMarcadoresUI();
   mantenerPantallaActivaTotal();
-
   micDeseado = true;
   pausarReconocimientoMientrasHabla();
   iniciarJuegoTablero(true);
 };
 
 function formatearTarjetaExplicacion(palabra, explicacion) {
-  if (!explicacion || !explicacion.texto) return "";
-  if (explicacion.tipo === 'definicion') {
+  if (!explicacion) return "";
+  if (explicacion.tipo === 'definicion' && explicacion.texto) {
     return '📖 <strong>' + palabra.toUpperCase() + ':</strong> ' + explicacion.texto;
   }
-  return '🔄 <strong>Sinónimos de ' + palabra.toUpperCase() + ':</strong> ' + explicacion.texto;
+  if (explicacion.tipo === 'sinonimos' && explicacion.texto) {
+    return '🔄 <strong>Sinónimos de ' + palabra.toUpperCase() + ':</strong> ' + explicacion.texto;
+  }
+  if (explicacion.tipo === 'externo' && explicacion.texto) {
+    return '🌐 <strong>' + palabra.toUpperCase() + ':</strong> ' + explicacion.texto;
+  }
+  return "";
 }
 
 function agregarPalabraUI(palabra, silabas, esInicial = false, indiceColor = 0, etiqueta = "", explicacion = null) {
@@ -1160,8 +1925,9 @@ function mostrarExplicacionEnUltimaPalabraUI(palabra, explicacion) {
   const slots = gameBoard.querySelectorAll('.info-palabra-slot');
   if (slots.length > 0) {
     const ultimoSlot = slots[slots.length - 1];
+    const urlRae = 'https://dle.rae.es/' + encodeURIComponent(palabra.toLowerCase());
     const htmlTarjeta = formatearTarjetaExplicacion(palabra, explicacion)
-      || ('📖 <strong>' + palabra.toUpperCase() + ':</strong> No está en el diccionario básico.');
+      || ('🌐 <strong>' + palabra.toUpperCase() + ':</strong> <a href="' + urlRae + '" target="_blank" rel="noopener" class="underline text-blue-700">Ver definición en la RAE</a>');
     ultimoSlot.innerHTML = '<div class="mt-1.5 bg-amber-50 border-2 border-[#a67c52] text-[#5c3a21] text-xs font-bold rounded-xl px-3 py-2 shadow text-center">' + htmlTarjeta + '</div>';
     gameBoard.scrollTop = gameBoard.scrollHeight;
   }
@@ -1171,18 +1937,18 @@ async function responderSignificadoUltimaPalabra() {
   if (historialPalabras.length === 0 || juegoTerminado || window._anuncioPantallaCompletaActivo) return;
   const ultima = historialPalabras[historialPalabras.length - 1];
   bloquearInputs(true);
-  actualizarInterfazTurno('📖 Consultando "' + ultima + '"...', "bg-amber-600");
+  actualizarInterfazTurno('📖 Buscando "' + ultima + '"...', "bg-amber-600");
 
   const explicacion = await obtenerExplicacionPalabra(ultima);
   mostrarExplicacionEnUltimaPalabraUI(ultima, explicacion);
 
   let locucion = "";
-  if (explicacion.tipo === 'definicion') {
+  if (explicacion.tipo === 'definicion' || explicacion.tipo === 'externo') {
     locucion = ultima + ": " + explicacion.texto + " Sigue el turno de " + nombres[jugadorActual] + ", empieza por " + silabaParaVoz(silabaObjetivo) + ".";
   } else if (explicacion.tipo === 'sinonimos') {
     locucion = "Sinónimos de " + ultima + ": " + explicacion.texto + ". Sigue el turno de " + nombres[jugadorActual] + ", empieza por " + silabaParaVoz(silabaObjetivo) + ".";
   } else {
-    locucion = "No tengo guardada la definición de " + ultima + ". Sigue el turno de " + nombres[jugadorActual] + ", empieza por " + silabaParaVoz(silabaObjetivo) + ".";
+    locucion = "Te dejo el enlace a la RAE para consultar " + ultima + ". Sigue el turno de " + nombres[jugadorActual] + ", empieza por " + silabaParaVoz(silabaObjetivo) + ".";
   }
 
   hablar(locucion, () => {
@@ -1311,7 +2077,7 @@ window.meRindo = async function() {
 
       const msgRecord = recordSuperadoEnPartida ? (" ¡Nuevo récord de " + recordPalabras + " palabras!") : "";
       let parteExp = "";
-      if (explicacion.tipo === 'definicion') parteExp = " " + explicacion.texto;
+      if (explicacion.tipo === 'definicion' || explicacion.tipo === 'externo') parteExp = " " + explicacion.texto;
       else if (explicacion.tipo === 'sinonimos') parteExp = " Sinónimos: " + explicacion.texto + ".";
 
       hablar("Podrías haber dicho: " + elegida + "." + parteExp + " " + textoGanador + msgRecord + " Di otra vez para reiniciar.", mostrarFinJuego);
@@ -1599,9 +2365,7 @@ setInterval(() => {
 
 function arrancarRecon(intentos = 0) {
   if (!recon || !micDeseado || isListening || hablando || window._anuncioPantallaCompletaActivo || modoActual === "") return;
-  try {
-    recon.start();
-  } catch (err) {
+  try { recon.start(); } catch (err) {
     if (intentos < 20) setTimeout(() => arrancarRecon(intentos + 1), 300);
   }
 }
@@ -1699,9 +2463,7 @@ pedirWakeLock();
         interstitialReady = false;
         window._anuncioPantallaCompletaActivo = false;
         preloadInterstitial();
-        setTimeout(() => {
-          if (callback) callback();
-        }, 350);
+        setTimeout(() => { if (callback) callback(); }, 350);
       };
 
       const onVisChange = () => {
@@ -1732,10 +2494,7 @@ pedirWakeLock();
         }, 4000);
 
         await callAdMob('showInterstitial', {});
-
-        if (listeners.length === 0) {
-          finalizarAnuncio();
-        }
+        if (listeners.length === 0) finalizarAnuncio();
       } catch (e) {
         finalizarAnuncio();
       }
