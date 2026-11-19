@@ -231,7 +231,7 @@ window.cargarDatosMenu = function() {
 window.cargarDatosMenu();
 </script>
 
-<!-- SCRIPT 2: MOTOR PRINCIPAL, DICCIONARIO AMPLIADO + VALIDACIÓN ONLINE Y CASCADA DE SIGNIFICADOS -->
+<!-- SCRIPT 2: MOTOR PRINCIPAL (SIN AUDIO SINTÉTICO), DICCIONARIO AMPLIADO Y CASCADA DE SIGNIFICADOS -->
 <script>
 const gameBoard = document.getElementById('game-board');
 const micBtn = document.getElementById('mic-btn');
@@ -269,7 +269,6 @@ let ignorarVozHasta = 0;
 let alertTimer = null;
 let cancelarHablaPrevia = null;
 let wakeLock = null;
-let silencio = null;
 let videoWakeLock = null;
 
 const COLORES_JUGADORES = [
@@ -351,7 +350,7 @@ function incrementarContadorPalabras() {
   actualizarMarcadoresUI();
 }
 
-// ---------- TRIPLE SISTEMA ANTIBLOQUEO DE PANTALLA ----------
+// ---------- PANTALLA ENCENDIDA SIN AUDIO (WakeLock + Vídeo mudo + FLAG_KEEP_SCREEN_ON nativo) ----------
 async function pedirWakeLock() {
   try {
     if ('wakeLock' in navigator && !wakeLock && document.visibilityState === 'visible') {
@@ -397,26 +396,9 @@ function activarVideoNoSleep() {
   } catch (e) {}
 }
 
-function crearSilencio() {
-  const n = 8000, b = new Uint8Array(44 + n), v = new DataView(b.buffer);
-  const w = (o, s) => [...s].forEach((c, i) => b[o + i] = c.charCodeAt(0));
-  w(0, 'RIFF'); v.setUint32(4, 36 + n, true); w(8, 'WAVEfmt '); v.setUint32(16, 16, true);
-  v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, 8000, true);
-  v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true);
-  w(36, 'data'); v.setUint32(40, n, true);
-  for (let i = 0; i < n; i++) b[44 + i] = 128 + (i % 2 ? 1 : -1);
-  const a = new Audio(URL.createObjectURL(new Blob([b], { type: 'audio/wav' })));
-  a.loop = true; a.volume = 0.02;
-  return a;
-}
-
 function mantenerPantallaActivaTotal() {
   pedirWakeLock();
   activarVideoNoSleep();
-  try {
-    silencio = silencio || crearSilencio();
-    if (silencio.paused) silencio.play().catch(() => {});
-  } catch (e) {}
 }
 
 document.addEventListener('touchstart', mantenerPantallaActivaTotal, { passive: true });
@@ -1310,7 +1292,7 @@ async function obtenerSeccionEspanolWikcionario(termino) {
   }
 }
 
-// ---------- CASCADA DE EXPLICACIÓN: 1) Significado básico -> 2) Sinónimos -> 3) Buscar fuera (Wikcionario ES / Wikipedia ES / RAE) ----------
+// ---------- CASCADA DE EXPLICACIÓN: 1) Significado básico -> 2) Sinónimos -> 3) Buscar fuera ----------
 function buscarDefinicionEnBasico(palabra) {
   const p = (palabra || "").toLowerCase().trim();
   if (!p) return "";
@@ -1414,7 +1396,6 @@ function limpiarTextoDefinicionExterna(rawLine) {
   if (!s || s.length < 8) return "";
   if (/↑|DEX online|Diccionario de la lengua española|Consultado el|http/i.test(s)) return "";
 
-  // Recortar a la primera frase clara y concisa
   let frase = s.split(/\.\s+/)[0].trim();
   const palabras = frase.split(/\s+/).filter(Boolean);
   if (palabras.length > 18) {
@@ -1428,7 +1409,6 @@ function limpiarTextoDefinicionExterna(rawLine) {
 function extraerDefinicionDeSeccionEs(seccionEs) {
   if (!seccionEs) return { def: "", lemaEnlazado: "" };
 
-  // Cortar antes de referencias, traducciones o notas
   const corte = seccionEs.search(/===+\s*(?:Referencias|Traducciones|Véase también|Enlaces externos|Información adicional)/i);
   const cuerpo = corte >= 0 ? seccionEs.slice(0, corte) : seccionEs;
 
@@ -1443,7 +1423,6 @@ function extraerDefinicionDeSeccionEs(seccionEs) {
         contenido = lineas[i + 1].trim().replace(/^:+/, '').trim();
       }
 
-      // Detectar si es una forma flexionada apuntando a otro lema (ej. {{f.s.p|...}}, {{forma participio|...}})
       const mForma = contenido.match(/\{\{(?:forma [^|]+|f\.[^|]+)\|([^}|]+)/i);
       if (mForma && !lemaEnlazado) {
         lemaEnlazado = mForma[1].trim().toLowerCase();
@@ -1481,16 +1460,13 @@ async function obtenerExplicacionPalabra(palabra) {
   const p = (palabra || "").toLowerCase().trim();
   if (!p) return { tipo: 'ninguno', texto: '' };
 
-  // 1. SIGNIFICADO en el diccionario básico local (instantáneo y offline)
   const defBasica = buscarDefinicionEnBasico(p);
   if (defBasica) {
     return { tipo: 'definicion', texto: defBasica };
   }
 
-  // Consultamos Wikcionario ES una sola vez (sirve tanto para sinónimos como para buscar fuera)
   const wikData = await obtenerSeccionEspanolWikcionario(p);
 
-  // 2. SINÓNIMOS (si no estaba en el diccionario básico)
   if (wikData) {
     const synsWik = extraerSinonimosDeSeccionEs(p, wikData.seccion);
     if (synsWik.length > 0) return { tipo: 'sinonimos', texto: synsWik.join(', ') };
@@ -1498,7 +1474,6 @@ async function obtenerExplicacionPalabra(palabra) {
   const synsDm = await consultarSinonimosDatamuse(p);
   if (synsDm.length > 0) return { tipo: 'sinonimos', texto: synsDm.join(', ') };
 
-  // 3. BUSCAR FUERA (Definición real en Wikcionario ES -> Lema base -> Wikipedia ES)
   if (wikData) {
     const { def, lemaEnlazado } = extraerDefinicionDeSeccionEs(wikData.seccion);
     if (def) return { tipo: 'externo', texto: def };
@@ -1629,7 +1604,7 @@ function hablar(texto, callback) {
   } catch (e) { fin(); }
 }
 
-// ---------- VALIDACIÓN AMPLIADA: Local (Básico + RAE grande) + Respaldo Online (Wikcionario ES / Datamuse) ----------
+// ---------- VALIDACIÓN AMPLIADA: Local (Básico + RAE grande) + Respaldo Online ----------
 function cachearPalabraValida(w) {
   if (!w) return;
   if (setDiccionarioRAE) {
@@ -1645,7 +1620,6 @@ async function verificarPalabraOnline(p) {
   const singulares = esExcepcion ? [] : obtenerSingularesDePlural(p).map(c => c.word);
   const candidatos = [...singulares, p];
 
-  // 1) Verificar en Wikcionario Español (solo si existe sección {{lengua|es}})
   for (const cand of candidatos) {
     const wik = await obtenerSeccionEspanolWikcionario(cand);
     if (wik && wik.titulo) {
@@ -1654,7 +1628,6 @@ async function verificarPalabraOnline(p) {
     }
   }
 
-  // 2) Respaldo rápido en Datamuse Español
   for (const cand of candidatos) {
     try {
       const controller = new AbortController();
@@ -1679,15 +1652,12 @@ async function verificarPalabraEnServidor(palabra) {
   const p = palabra.toLowerCase().trim();
   if (!p) return false;
 
-  // 1. Si dijo un plural válido, pasar directamente al SINGULAR
   const singularDetectado = convertirPluralASingularLocal(p);
   if (singularDetectado) return singularDetectado;
 
-  // 2. Coincidencia directa en diccionario básico integrado o diccionario grande RAE
   const directa = buscarEnDiccionarioLocal(p);
   if (directa) return directa;
 
-  // 3. Respaldo ONLINE: jamás rechazar una palabra española real que faltara en el listado local
   const validaOnline = await verificarPalabraOnline(p);
   if (validaOnline) return validaOnline;
 
