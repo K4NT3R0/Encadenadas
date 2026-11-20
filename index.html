@@ -58,7 +58,26 @@ input { -webkit-user-select: text; user-select: text; }
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
-::-webkit-scrollbar { display: none; }
+#game-board {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #8b5a2b rgba(139, 90, 43, 0.18);
+}
+#game-board::-webkit-scrollbar {
+  display: block;
+  width: 6px;
+}
+#game-board::-webkit-scrollbar-track {
+  background: rgba(139, 90, 43, 0.15);
+  border-radius: 9999px;
+}
+#game-board::-webkit-scrollbar-thumb {
+  background: #8b5a2b;
+  border-radius: 9999px;
+}
 </style>
 </head>
 <body class="w-full overflow-hidden flex flex-col items-center justify-between p-4 select-none">
@@ -133,7 +152,9 @@ input { -webkit-user-select: text; user-select: text; }
   </div>
 </header>
 
-<main id="game-board" class="z-10 flex-1 w-full max-w-md flex flex-col justify-end items-center pb-14 space-y-2 overflow-y-auto relative">
+<!-- LISTA DE PALABRAS CON SCROLL REAL Y BARRA VISIBLE -->
+<main id="game-board" class="z-10 flex-1 min-h-0 w-full max-w-md px-2 relative">
+  <div id="game-board-list" class="w-full min-h-full flex flex-col justify-end items-center pt-6 pb-16 space-y-2"></div>
 </main>
 
 <footer class="z-20 w-full max-w-md bg-[#8b5a2b] border-t-8 border-[#5c3a21] rounded-t-3xl p-4 shadow-2xl relative">
@@ -231,9 +252,10 @@ window.cargarDatosMenu = function() {
 window.cargarDatosMenu();
 </script>
 
-<!-- SCRIPT 2: MOTOR PRINCIPAL, CONFETI, +300 DIBUJITOS, FONÉTICA CIL/CE/CI Y DICCIONARIOS -->
+<!-- SCRIPT 2: MOTOR PRINCIPAL + PUENTE ANTI-CORS + RAE-API + CACHÉ LOCAL -->
 <script>
 const gameBoard = document.getElementById('game-board');
+const gameBoardList = document.getElementById('game-board-list');
 const micBtn = document.getElementById('mic-btn');
 const micStatus = document.getElementById('mic-status');
 const textInput = document.getElementById('text-input');
@@ -277,6 +299,107 @@ const COLORES_JUGADORES = [
   { bg: "bg-emerald-600", border: "border-emerald-500", text: "text-emerald-700", sil: "text-emerald-500" },
   { bg: "bg-pink-600", border: "border-pink-500", text: "text-pink-700", sil: "text-pink-500" }
 ];
+
+const MAPA_TILDES = { 'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u', 'ü': 'u' };
+function SinTildes(str) {
+  return (str || "").toLowerCase().replace(/[áéíóúü]/g, c => MAPA_TILDES[c]);
+}
+
+function bajarScrollTablero() {
+  requestAnimationFrame(() => {
+    gameBoard.scrollTop = gameBoard.scrollHeight;
+  });
+}
+
+// ---------- PUENTE HTTP UNIVERSAL (ANDROID NATIVO ANTI-CORS + RESPUESTA WEB FETCH) ----------
+const _pendingHttp = {};
+let _httpSeq = 0;
+
+function decodeUtf8Base64(b64) {
+  if (!b64) return "";
+  try {
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    if (typeof TextDecoder !== 'undefined') {
+      return new TextDecoder('utf-8').decode(bytes);
+    }
+    return decodeURIComponent(escape(bin));
+  } catch (e) {
+    return "";
+  }
+}
+
+window._onNativeHttpDone = function(reqId, status, b64Body) {
+  const entry = _pendingHttp[reqId];
+  if (!entry) return;
+  delete _pendingHttp[reqId];
+  clearTimeout(entry.timer);
+  const text = decodeUtf8Base64(b64Body);
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch (e) { data = null; }
+  entry.resolve({ ok: status >= 200 && status < 300, status, text, data });
+};
+
+async function fetchJsonUniversal(url, timeoutMs = 4200) {
+  if (window.AndroidVoice && typeof window.AndroidVoice.httpGet === 'function') {
+    return new Promise((resolve) => {
+      const reqId = 'r' + (++_httpSeq);
+      const timer = setTimeout(() => {
+        if (_pendingHttp[reqId]) {
+          delete _pendingHttp[reqId];
+          resolve({ ok: false, status: 0, text: '', data: null });
+        }
+      }, timeoutMs);
+      _pendingHttp[reqId] = { resolve, timer };
+      try {
+        window.AndroidVoice.httpGet(reqId, url);
+      } catch (e) {
+        clearTimeout(timer);
+        delete _pendingHttp[reqId];
+        resolve({ ok: false, status: 0, text: '', data: null });
+      }
+    });
+  }
+
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const res = await fetch(url, { signal: controller.signal, headers: { 'Accept': 'application/json' } });
+    clearTimeout(timer);
+    const text = await res.text();
+    let data = null;
+    try { data = text ? JSON.parse(text) : null; } catch (e) { data = null; }
+    return { ok: res.ok, status: res.status, text, data };
+  } catch (e) {
+    return { ok: false, status: 0, text: '', data: null };
+  }
+}
+
+// ---------- CACHÉ LOCAL DE DEFINICIONES ONLINE (localStorage) ----------
+const CACHE_DEF_KEY = 'encadenadas_def_cache_v1';
+let cacheDefiniciones = {};
+try {
+  const rawCache = localStorage.getItem(CACHE_DEF_KEY);
+  if (rawCache) cacheDefiniciones = JSON.parse(rawCache) || {};
+} catch (e) { cacheDefiniciones = {}; }
+
+function leerCacheDef(p) {
+  const clave = SinTildes(p);
+  return cacheDefiniciones[p] || cacheDefiniciones[clave] || null;
+}
+
+function guardarCacheDef(p, obj) {
+  if (!p || !obj || !obj.texto) return;
+  try {
+    cacheDefiniciones[p] = obj;
+    const keys = Object.keys(cacheDefiniciones);
+    if (keys.length > 500) {
+      for (let i = 0; i < keys.length - 450; i++) delete cacheDefiniciones[keys[i]];
+    }
+    localStorage.setItem(CACHE_DEF_KEY, JSON.stringify(cacheDefiniciones));
+  } catch (e) {}
+}
 
 // ---------- EXPLOSIÓN DE CONFETI AL GANAR LA PARTIDA ----------
 function lanzarConfeti() {
@@ -355,79 +478,30 @@ function lanzarConfeti() {
         ctx.restore();
       }
 
-      if (transcurrido < duracion) {
-        requestAnimationFrame(animar);
-      } else {
-        canvas.remove();
-      }
+      if (transcurrido < duracion) requestAnimationFrame(animar);
+      else canvas.remove();
     }
     requestAnimationFrame(animar);
   } catch (e) {}
 }
 
-// ---------- Pronunciación natural de sílabas (sin deletrear, "tó" y "cil -> zíl") ----------
+// ---------- Pronunciación natural de sílabas (sin deletreo ni "con acento agudo") ----------
 const FONETICA_SILABAS_VOZ = {
-  'to': 'tó', 'do': 'dó', 'no': 'nó', 'so': 'só', 'go': 'gó', 'lo': 'ló',
-  'po': 'pó', 'ro': 'ró', 'co': 'có', 'mo': 'mó', 'bo': 'bó', 'vo': 'vó',
-  'fo': 'fó', 'jo': 'jó', 'zo': 'zó', 'yo': 'yó', 'ho': 'ó', 'cho': 'chó',
-  'llo': 'lló', 'ño': 'ñó', 'tro': 'tró', 'pro': 'pró', 'bro': 'bró',
-  'cro': 'cró', 'dro': 'dró', 'fro': 'fró', 'gro': 'gró', 'plo': 'pló',
-  'clo': 'cló', 'blo': 'bló', 'flo': 'fló', 'glo': 'gló',
-  'tor': 'tór', 'por': 'pór', 'cor': 'cór', 'mor': 'mór', 'sor': 'sór',
-  'lor': 'lór', 'for': 'fór', 'bor': 'bór', 'dor': 'dór', 'nor': 'nór',
-  'tos': 'tós', 'pos': 'pós', 'cos': 'cós', 'mos': 'mós', 'los': 'lós',
-  'dos': 'dós', 'nos': 'nós', 'vos': 'vós', 'sos': 'sós', 'ros': 'rós',
-  'me': 'mé', 'te': 'té', 'se': 'sé', 'de': 'dé', 'le': 'lé', 'pe': 'pé',
-  're': 'ré', 'ce': 'zé', 'fe': 'fé', 'ge': 'jé', 'je': 'jé', 've': 'vé',
-  'be': 'bé', 'ne': 'né', 'que': 'ké', 'gue': 'gué', 'che': 'ché', 'lle': 'llé',
-  'cel': 'zél', 'cer': 'zér', 'ces': 'zés', 'cen': 'zén',
-  'mi': 'mí', 'ti': 'tí', 'si': 'sí', 'di': 'dí', 'li': 'lí', 'pi': 'pí',
-  'ri': 'rí', 'ci': 'zí', 'fi': 'fí', 'gi': 'jí', 'ji': 'jí', 'vi': 'ví',
-  'bi': 'bí', 'ni': 'ní', 'qui': 'kí', 'gui': 'guí',
-  'cil': 'zíl', 'cir': 'zír', 'cis': 'zís', 'cin': 'zín',
-  'la': 'lá', 'pa': 'pá', 'ta': 'tá', 'sa': 'sá', 'ca': 'cá', 'ma': 'má',
-  'ba': 'bá', 'va': 'vá', 'fa': 'fá', 'ga': 'gá', 'ja': 'já', 'za': 'zá',
-  'da': 'dá', 'na': 'ná', 'ra': 'rá', 'bra': 'brá', 'pla': 'plá', 'cla': 'clá',
-  'tra': 'trá', 'pra': 'prá', 'cra': 'crá', 'dra': 'drá', 'fra': 'frá', 'gra': 'grá',
-  'bla': 'blá', 'fla': 'flá', 'gla': 'glá', 'cha': 'chá', 'lla': 'llá', 'ña': 'ñá',
-  'tu': 'tú', 'su': 'sú', 'lu': 'lú', 'pu': 'pú', 'ru': 'rú', 'cu': 'cú',
-  'mu': 'mú', 'bu': 'bú', 'vu': 'vú', 'fu': 'fú', 'gu': 'gú', 'ju': 'jú',
-  'in': 'ín', 'on': 'ón', 'an': 'án', 'en': 'én', 'un': 'ún',
-  'is': 'ís', 'as': 'ás', 'es': 'és', 'os': 'ós', 'us': 'ús',
-  'lon': 'lón', 'pon': 'pón', 'con': 'cón', 'son': 'són', 'ton': 'tón',
-  'mon': 'món', 'ron': 'rón', 'don': 'dón', 'non': 'nón', 'bon': 'bón',
-  'lan': 'lán', 'pan': 'pán', 'can': 'cán', 'san': 'sán', 'tan': 'tán',
-  'man': 'mán', 'van': 'ván', 'dan': 'dán', 'gran': 'grán', 'plan': 'plán'
+  'to': 'tó',
+  'cil': 'zil', 'cel': 'zel', 'cir': 'zir', 'cer': 'zer',
+  'cis': 'zis', 'ces': 'zes', 'cin': 'zin', 'cen': 'zen',
+  'ci': 'zi'
 };
 
 function silabaParaVoz(silaba) {
-  let s = (silaba || "").toLowerCase().trim();
+  let s = SinTildes((silaba || "").toLowerCase().trim());
   if (!s) return "";
+  s = s.replace(/^rr/, 'r');
   if (FONETICA_SILABAS_VOZ[s]) return FONETICA_SILABAS_VOZ[s];
-
-  // Forzar siempre la C suave española en sílabas con CE/CI (evita "kil" o "quil" en cil, cir, etc.)
-  s = s
-    .replace(/^ce/, 'ze').replace(/^ci/, 'zi')
-    .replace(/^cé/, 'zé').replace(/^cí/, 'zí')
-    .replace(/^ge/, 'je').replace(/^gi/, 'ji')
-    .replace(/^gé/, 'jé').replace(/^gí/, 'jí')
-    .replace(/^que/, 'ke').replace(/^qui/, 'ki')
-    .replace(/^qué/, 'ké').replace(/^quí/, 'kí');
-
-  if (/[áéíóú]/.test(s)) return s;
-
-  const mapaTilde = { 'a': 'á', 'e': 'é', 'i': 'í', 'o': 'ó', 'u': 'ú' };
-  const fuertes = ['a', 'e', 'o'];
-  for (let i = s.length - 1; i >= 0; i--) {
-    if (fuertes.includes(s[i])) {
-      return s.slice(0, i) + mapaTilde[s[i]] + s.slice(i + 1);
-    }
+  if (s !== 'ce') {
+    s = s.replace(/^ce/, 'ze').replace(/^ci/, 'zi');
   }
-  for (let i = s.length - 1; i >= 0; i--) {
-    if (mapaTilde[s[i]]) {
-      return s.slice(0, i) + mapaTilde[s[i]] + s.slice(i + 1);
-    }
-  }
+  s = s.replace(/^ge/, 'je').replace(/^gi/, 'ji');
   return s;
 }
 
@@ -447,7 +521,7 @@ function incrementarContadorPalabras() {
   actualizarMarcadoresUI();
 }
 
-// ---------- PANTALLA ENCENDIDA SIN AUDIO (WakeLock + Vídeo mudo + FLAG_KEEP_SCREEN_ON nativo) ----------
+// ---------- PANTALLA ENCENDIDA SIN AUDIO ----------
 async function pedirWakeLock() {
   try {
     if ('wakeLock' in navigator && !wakeLock && document.visibilityState === 'visible') {
@@ -1213,11 +1287,6 @@ const DICCIONARIO_BASICO_INTEGRADO = {
   "zumo": "Líquido natural que se extrae al exprimir frutas."
 };
 
-const MAPA_TILDES = { 'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u', 'ü': 'u' };
-function SinTildes(str) {
-  return (str || "").toLowerCase().replace(/[áéíóúü]/g, c => MAPA_TILDES[c]);
-}
-
 let diccionarioBasico = { ...DICCIONARIO_BASICO_INTEGRADO };
 let arrayBasico = Object.keys(diccionarioBasico);
 let mapSinTildesBasico = new Map();
@@ -1325,6 +1394,22 @@ function obtenerSingularesDePlural(p) {
   return candidatos;
 }
 
+function obtenerLemasBase(p) {
+  const lemas = [];
+  const add = (w) => {
+    if (w && w.length >= 3 && w !== p && !lemas.includes(w)) lemas.push(w);
+  };
+  for (const { word } of obtenerSingularesDePlural(p)) add(word);
+  if (p.endsWith('a') && p.length >= 4) add(p.slice(0, -1) + 'o');
+  if (p.endsWith('ada') && p.length >= 5) { add(p.slice(0, -1) + 'o'); add(p.slice(0, -3) + 'ar'); }
+  if (p.endsWith('ado') && p.length >= 5) add(p.slice(0, -3) + 'ar');
+  if (p.endsWith('ida') && p.length >= 5) { add(p.slice(0, -1) + 'o'); add(p.slice(0, -3) + 'ir'); add(p.slice(0, -3) + 'er'); }
+  if (p.endsWith('ido') && p.length >= 5) { add(p.slice(0, -3) + 'ir'); add(p.slice(0, -3) + 'er'); }
+  if (p.endsWith('ando') && p.length >= 6) add(p.slice(0, -4) + 'ar');
+  if (p.endsWith('iendo') && p.length >= 7) { add(p.slice(0, -5) + 'er'); add(p.slice(0, -5) + 'ir'); }
+  return lemas;
+}
+
 function buscarEnDiccionarioLocal(palabra) {
   const p = (palabra || "").toLowerCase().trim();
   if (!p) return false;
@@ -1357,53 +1442,178 @@ function convertirPluralASingularLocal(palabra) {
   return null;
 }
 
-// ---------- UTILIDADES DE WIKCIONARIO (SOLO SECCIÓN ESPAÑOL) ----------
-async function obtenerSeccionEspanolWikcionario(termino) {
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 3200);
-    const url = 'https://es.wiktionary.org/w/api.php?action=query&prop=revisions&rvprop=content&rvslots=main&titles=' + encodeURIComponent(termino) + '&format=json&origin=*';
-    const res = await fetch(url, { signal: controller.signal });
-    clearTimeout(timer);
-    if (!res.ok) return null;
-    const data = await res.json();
-    const pages = (data && data.query && data.query.pages) ? data.query.pages : {};
-    const page = Object.values(pages)[0];
-    if (!page || page.missing !== undefined) return null;
-    const raw = (page.revisions && page.revisions[0] && page.revisions[0].slots && page.revisions[0].slots.main)
-      ? page.revisions[0].slots.main['*']
-      : (page.revisions && page.revisions[0] ? page.revisions[0]['*'] : "");
-    if (!raw) return null;
+// ---------- RESUMIDOR DE DEFINICIONES REALES ----------
+function resumirDefinicion(texto) {
+  if (!texto) return "";
+  let s = String(texto)
+    .replace(/<ref[^>]*>[\s\S]*?<\/ref>/gi, '')
+    .replace(/<ref[^>]*\/>/gi, '')
+    .replace(/\{\{(?:plm|ucf|l\+|l)\|es\|([^}|]+)(?:\|[^}]*)?\}\}/gi, '$1')
+    .replace(/\{\{(?:plm|ucf)\|([^}|]+)(?:\|[^}]*)?\}\}/gi, '$1')
+    .replace(/\{\{glosa\|([^}|]+)\}\}/gi, '$1')
+    .replace(/\{\{[^{}]*\}\}/g, '')
+    .replace(/\{\{[^{}]*\}\}/g, '')
+    .replace(/\[\[([^\]|]+\|)?([^\]]+)\]\]/g, '$2')
+    .replace(/<[^>]+>/g, '')
+    .replace(/'''|''/g, '')
+    .replace(/\[[^\]]*\]/g, '')
+    .replace(/\([^)]{3,40}\)/g, '')
+    .replace(/^(?:m\.|f\.|adj\.|tr\.|intr\.|prnl\.|adv\.|p\. us\.|desus\.|coloq\.|fig\.|U\. t\. c\. s\.|U\. m\. c\. s\.)\s*/gi, '')
+    .replace(/^[\s:;.,-–—•*#0-9]+/, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 
-    const matchEs = raw.match(/==\s*\{\{lengua\|es\}\}\s*==/i);
-    if (!matchEs) return null;
-    const inicioEs = matchEs.index + matchEs[0].length;
-    const resto = raw.slice(inicioEs);
-    const sigLengua = resto.search(/==\s*\{\{lengua\|/i);
-    return {
-      titulo: (page.title || termino).toLowerCase(),
-      seccion: sigLengua >= 0 ? resto.slice(0, sigLengua) : resto
-    };
-  } catch (e) {
-    return null;
+  if (!s || s.length < 7) return "";
+  if (/↑|DEX online|Diccionario de la lengua española|Consultado el|http/i.test(s)) return "";
+
+  // Primera cláusula clara (hasta primer punto o punto y coma)
+  let frase = s.split(/(?:\.\s+|;\s+)/)[0].trim();
+  const palabras = frase.split(/\s+/).filter(Boolean);
+  if (palabras.length > 16) {
+    frase = palabras.slice(0, 16).join(' ').replace(/[,;:\-–—]+$/, '');
   }
+  if (frase.length < 7) return "";
+  frase = frase.charAt(0).toUpperCase() + frase.slice(1);
+  return frase.endsWith('.') ? frase : (frase + '.');
 }
 
-// ---------- CASCADA DE EXPLICACIÓN: 1) Significado básico -> 2) Sinónimos -> 3) Buscar fuera ----------
-function buscarDefinicionEnBasico(palabra) {
-  const p = (palabra || "").toLowerCase().trim();
-  if (!p) return "";
-  if (diccionarioBasico[p]) return diccionarioBasico[p];
-  const pSin = SinTildes(p);
-  if (mapSinTildesBasico.has(pSin)) return diccionarioBasico[mapSinTildesBasico.get(pSin)];
+// ---------- NIVEL 2: RAE-API.COM (DEFINICIÓN OFICIAL RESUMIDA + BÚSQUEDA DE LEMA) ----------
+function extraerMejorAcepcionRae(jsonData, terminoOriginal) {
+  if (!jsonData || !jsonData.ok || !jsonData.data) return null;
+  const meanings = Array.isArray(jsonData.data.meanings) ? jsonData.data.meanings : [];
+  const tSin = SinTildes(terminoOriginal);
+  let mejorDef = "";
+  const syns = [];
 
-  const singulares = obtenerSingularesDePlural(p);
-  for (const { word: sing } of singulares) {
-    if (diccionarioBasico[sing]) return diccionarioBasico[sing];
-    const singSin = SinTildes(sing);
-    if (mapSinTildesBasico.has(singSin)) return diccionarioBasico[mapSinTildesBasico.get(singSin)];
+  const sensesOrdenados = [];
+  for (const m of meanings) {
+    if (Array.isArray(m.senses)) {
+      for (const sense of m.senses) sensesOrdenados.push(sense);
+    }
+  }
+  // Priorizar acepciones de uso común frente a arcaicas o poco usadas
+  sensesOrdenados.sort((a, b) => {
+    const score = (x) => (x && x.usage === 'common') ? 0 : (x && (x.usage === 'obsolete' || x.usage === 'rare')) ? 2 : 1;
+    return score(a) - score(b);
+  });
+
+  for (const sense of sensesOrdenados) {
+    if (!mejorDef) {
+      const desc = sense.description || sense.raw || "";
+      const resumida = resumirDefinicion(desc);
+      if (resumida && !/^(V\.|Véase|Forma del|Femenino de|Plural de)/i.test(resumida)) {
+        mejorDef = resumida;
+      }
+    }
+    if (Array.isArray(sense.synonyms)) {
+      for (const s of sense.synonyms) {
+        const w = (typeof s === 'string' ? s : (s && s.word) || '').toLowerCase().trim();
+        if (w && SINONIMO_LIMPIO.test(w) && SinTildes(w) !== tSin && !syns.includes(w)) {
+          syns.push(w);
+        }
+      }
+    }
+  }
+
+  return {
+    palabra: (jsonData.data.word || terminoOriginal).toLowerCase(),
+    definicion: mejorDef,
+    sinonimos: syns.slice(0, 4)
+  };
+}
+
+async function consultarRaeDirecto(termino) {
+  const url = 'https://rae-api.com/api/words/' + encodeURIComponent(termino);
+  const res = await fetchJsonUniversal(url, 3800);
+  if (!res.data) return { encontrado: false, info: null, suggestions: [] };
+
+  if (res.ok && res.data.ok && res.data.data) {
+    const info = extraerMejorAcepcionRae(res.data, termino);
+    return { encontrado: true, info, suggestions: [] };
+  }
+
+  const sugs = Array.isArray(res.data.suggestions) ? res.data.suggestions : [];
+  return { encontrado: false, info: null, suggestions: sugs };
+}
+
+async function buscarLemaEnRaeSearch(termino) {
+  const url = 'https://rae-api.com/api/search?q=' + encodeURIComponent(termino);
+  const res = await fetchJsonUniversal(url, 3200);
+  if (!res.ok || !res.data) return "";
+
+  const lista = Array.isArray(res.data.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []);
+  const tSin = SinTildes(termino);
+  for (const item of lista.slice(0, 5)) {
+    const cand = (
+      (item && item.doc && (item.doc.id || item.doc.raw)) ||
+      (item && (item.word || item.id)) ||
+      (typeof item === 'string' ? item : '')
+    ).toLowerCase().replace(/[0-9]+$/, '').trim();
+    if (!cand || !SOLO_LETRAS.test(cand)) continue;
+    if (SinTildes(cand) === tSin || SinTildes(cand).startsWith(tSin.slice(0, Math.min(4, tSin.length)))) {
+      return cand;
+    }
   }
   return "";
+}
+
+async function consultarRaeApiCompleto(p) {
+  // 1) Consulta exacta
+  const r1 = await consultarRaeDirecto(p);
+  if (r1.encontrado && r1.info && (r1.info.definicion || r1.info.sinonimos.length > 0)) {
+    return r1.info;
+  }
+
+  // 2) Probar sugerencia exacta (ej. falta tilde)
+  const pSin = SinTildes(p);
+  for (const sug of r1.suggestions.slice(0, 2)) {
+    const s = String(sug || '').toLowerCase().trim();
+    if (s && s !== p && (SinTildes(s) === pSin || SinTildes(s).startsWith(pSin.slice(0, 4)))) {
+      const rSug = await consultarRaeDirecto(s);
+      if (rSug.encontrado && rSug.info && rSug.info.definicion) return rSug.info;
+    }
+  }
+
+  // 3) Probar lemas base (femenino -> masculino, participio -> infinitivo)
+  for (const lema of obtenerLemasBase(p).slice(0, 3)) {
+    const rLema = await consultarRaeDirecto(lema);
+    if (rLema.encontrado && rLema.info && rLema.info.definicion) return rLema.info;
+  }
+
+  // 4) Búsqueda en /api/search
+  const hallado = await buscarLemaEnRaeSearch(p);
+  if (hallado && hallado !== p) {
+    const rSearch = await consultarRaeDirecto(hallado);
+    if (rSearch.encontrado && rSearch.info && (rSearch.info.definicion || rSearch.info.sinonimos.length > 0)) {
+      return rSearch.info;
+    }
+  }
+
+  return null;
+}
+
+// ---------- NIVEL 3: WIKCIONARIO ES (SOLO SECCIÓN ESPAÑOL) + WIKIPEDIA ES ----------
+async function obtenerSeccionEspanolWikcionario(termino) {
+  const url = 'https://es.wiktionary.org/w/api.php?action=query&prop=revisions&rvprop=content&rvslots=main&titles=' + encodeURIComponent(termino) + '&format=json&origin=*';
+  const res = await fetchJsonUniversal(url, 3400);
+  if (!res.ok || !res.data || !res.data.query || !res.data.query.pages) return null;
+
+  const page = Object.values(res.data.query.pages)[0];
+  if (!page || page.missing !== undefined) return null;
+  const raw = (page.revisions && page.revisions[0] && page.revisions[0].slots && page.revisions[0].slots.main)
+    ? page.revisions[0].slots.main['*']
+    : (page.revisions && page.revisions[0] ? page.revisions[0]['*'] : "");
+  if (!raw) return null;
+
+  const matchEs = raw.match(/==\s*\{\{lengua\|es\}\}\s*==/i);
+  if (!matchEs) return null;
+  const inicioEs = matchEs.index + matchEs[0].length;
+  const resto = raw.slice(inicioEs);
+  const sigLengua = resto.search(/==\s*\{\{lengua\|/i);
+  return {
+    titulo: (page.title || termino).toLowerCase(),
+    seccion: sigLengua >= 0 ? resto.slice(0, sigLengua) : resto
+  };
 }
 
 function extraerSinonimosDeSeccionEs(termino, seccionEs) {
@@ -1434,81 +1644,16 @@ function extraerSinonimosDeSeccionEs(termino, seccionEs) {
     if (/↑|DEX|Diccionario|http/i.test(linea)) continue;
     const enlaces = linea.match(/\[\[([^\]|#]+)(?:\|[^\]]+)?\]\]/g);
     if (enlaces) {
-      for (const en of enlaces) {
-        agregarSin(en.replace(/^\[\[|\]\]$/g, '').split('|')[0]);
-      }
+      for (const en of enlaces) agregarSin(en.replace(/^\[\[|\]\]$/g, '').split('|')[0]);
     }
   }
   return encontrados.slice(0, 4);
 }
 
-async function consultarSinonimosDatamuse(termino) {
-  const tSin = SinTildes(termino);
-  const endpoints = [
-    'https://api.datamuse.com/words?rel_syn=' + encodeURIComponent(termino) + '&v=es&max=8',
-    'https://api.datamuse.com/words?ml=' + encodeURIComponent(termino) + '&v=es&max=8'
-  ];
-  for (const url of endpoints) {
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 2500);
-      const res = await fetch(url, { signal: controller.signal });
-      clearTimeout(timer);
-      if (!res.ok) continue;
-      const data = await res.json();
-      if (!Array.isArray(data) || data.length === 0) continue;
-
-      const lista = [];
-      for (const item of data) {
-        const w = (item && item.word) ? item.word.toLowerCase().trim() : "";
-        if (!w || !SINONIMO_LIMPIO.test(w)) continue;
-        if (SinTildes(w) === tSin) continue;
-        if (!lista.includes(w)) lista.push(w);
-        if (lista.length >= 4) break;
-      }
-      if (lista.length > 0) return lista;
-    } catch (e) {}
-  }
-  return [];
-}
-
-function limpiarTextoDefinicionExterna(rawLine) {
-  if (!rawLine) return "";
-  let s = rawLine
-    .replace(/<ref[^>]*>[\s\S]*?<\/ref>/gi, '')
-    .replace(/<ref[^>]*\/>/gi, '')
-    .replace(/\{\{(?:plm|ucf|l\+|l)\|es\|([^}|]+)(?:\|[^}]*)?\}\}/gi, '$1')
-    .replace(/\{\{(?:plm|ucf)\|([^}|]+)(?:\|[^}]*)?\}\}/gi, '$1')
-    .replace(/\{\{glosa\|([^}|]+)\}\}/gi, '$1')
-    .replace(/\{\{[^{}]*\}\}/g, '')
-    .replace(/\{\{[^{}]*\}\}/g, '')
-    .replace(/\[\[([^\]|]+\|)?([^\]]+)\]\]/g, '$2')
-    .replace(/<[^>]+>/g, '')
-    .replace(/'''|''/g, '')
-    .replace(/\[[^\]]*\]/g, '')
-    .replace(/^[\s:;.,-–—•*#0-9]+/, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-  if (!s || s.length < 8) return "";
-  if (/↑|DEX online|Diccionario de la lengua española|Consultado el|http/i.test(s)) return "";
-
-  let frase = s.split(/\.\s+/)[0].trim();
-  const palabras = frase.split(/\s+/).filter(Boolean);
-  if (palabras.length > 18) {
-    frase = palabras.slice(0, 18).join(' ').replace(/[,;:]$/, '');
-  }
-  if (frase.length < 8) return "";
-  frase = frase.charAt(0).toUpperCase() + frase.slice(1);
-  return frase.endsWith('.') ? frase : (frase + '.');
-}
-
 function extraerDefinicionDeSeccionEs(seccionEs) {
   if (!seccionEs) return { def: "", lemaEnlazado: "" };
-
   const corte = seccionEs.search(/===+\s*(?:Referencias|Traducciones|Véase también|Enlaces externos|Información adicional)/i);
   const cuerpo = corte >= 0 ? seccionEs.slice(0, corte) : seccionEs;
-
   const lineas = cuerpo.split('\n');
   let lemaEnlazado = "";
 
@@ -1519,14 +1664,12 @@ function extraerDefinicionDeSeccionEs(seccionEs) {
       if (!contenido && i + 1 < lineas.length && lineas[i + 1].trim().startsWith(':')) {
         contenido = lineas[i + 1].trim().replace(/^:+/, '').trim();
       }
-
       const mForma = contenido.match(/\{\{(?:forma [^|]+|f\.[^|]+)\|([^}|]+)/i);
       if (mForma && !lemaEnlazado) {
         lemaEnlazado = mForma[1].trim().toLowerCase();
         continue;
       }
-
-      const limpia = limpiarTextoDefinicionExterna(contenido);
+      const limpia = resumirDefinicion(contenido);
       if (limpia && !/^(Forma del|Femenino de|Plural de|Participio de|Gerundio de)/i.test(limpia)) {
         return { def: limpia, lemaEnlazado };
       }
@@ -1536,57 +1679,126 @@ function extraerDefinicionDeSeccionEs(seccionEs) {
 }
 
 async function consultarWikipediaES(termino) {
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 2800);
-    const url = 'https://es.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(termino);
-    const res = await fetch(url, { signal: controller.signal });
-    clearTimeout(timer);
-    if (!res.ok) return "";
-    const data = await res.json();
-    if (!data || data.type === 'disambiguation' || !data.extract) return "";
-    if (/puede referirse a/i.test(data.extract)) return "";
-    return limpiarTextoDefinicionExterna(data.extract);
-  } catch (e) {
-    return "";
-  }
+  const url = 'https://es.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(termino);
+  const res = await fetchJsonUniversal(url, 3000);
+  if (!res.ok || !res.data || res.data.type === 'disambiguation' || !res.data.extract) return "";
+  if (/puede referirse a/i.test(res.data.extract)) return "";
+  return resumirDefinicion(res.data.extract);
 }
 
+// ---------- NIVEL 4: SINÓNIMOS REALES (DATAMUSE ES) ----------
+async function consultarSinonimosDatamuse(termino) {
+  const tSin = SinTildes(termino);
+  const endpoints = [
+    'https://api.datamuse.com/words?rel_syn=' + encodeURIComponent(termino) + '&v=es&max=8',
+    'https://api.datamuse.com/words?ml=' + encodeURIComponent(termino) + '&v=es&max=8'
+  ];
+  for (const url of endpoints) {
+    const res = await fetchJsonUniversal(url, 2600);
+    if (!res.ok || !Array.isArray(res.data) || res.data.length === 0) continue;
+    const lista = [];
+    for (const item of res.data) {
+      const w = (item && item.word) ? item.word.toLowerCase().trim() : "";
+      if (!w || !SINONIMO_LIMPIO.test(w)) continue;
+      if (SinTildes(w) === tSin) continue;
+      if (!lista.includes(w)) lista.push(w);
+      if (lista.length >= 4) break;
+    }
+    if (lista.length > 0) return lista;
+  }
+  return [];
+}
+
+function buscarDefinicionEnBasico(palabra) {
+  const p = (palabra || "").toLowerCase().trim();
+  if (!p) return "";
+  if (diccionarioBasico[p]) return diccionarioBasico[p];
+  const pSin = SinTildes(p);
+  if (mapSinTildesBasico.has(pSin)) return diccionarioBasico[mapSinTildesBasico.get(pSin)];
+
+  for (const { word: sing } of obtenerSingularesDePlural(p)) {
+    if (diccionarioBasico[sing]) return diccionarioBasico[sing];
+    const singSin = SinTildes(sing);
+    if (mapSinTildesBasico.has(singSin)) return diccionarioBasico[mapSinTildesBasico.get(singSin)];
+  }
+  return "";
+}
+
+// ---------- ORQUESTADOR DE EXPLICACIÓN REAL EN 4 NIVELES + CACHÉ ----------
 async function obtenerExplicacionPalabra(palabra) {
   await cargarDiccionarioBasico();
   const p = (palabra || "").toLowerCase().trim();
   if (!p) return { tipo: 'ninguno', texto: '' };
 
+  // Nivel 1a: Diccionario básico offline (0 ms)
   const defBasica = buscarDefinicionEnBasico(p);
-  if (defBasica) {
-    return { tipo: 'definicion', texto: defBasica };
+  if (defBasica) return { tipo: 'definicion', texto: defBasica };
+
+  // Nivel 1b: Caché en localStorage (0 ms)
+  const enCache = leerCacheDef(p);
+  if (enCache && enCache.texto) return enCache;
+
+  // Nivel 2: rae-api.com (definición oficial resumida)
+  let sinonimosRespaldo = [];
+  const raeInfo = await consultarRaeApiCompleto(p);
+  if (raeInfo) {
+    if (raeInfo.definicion) {
+      const resRae = { tipo: 'externo', texto: raeInfo.definicion };
+      guardarCacheDef(p, resRae);
+      return resRae;
+    }
+    if (raeInfo.sinonimos && raeInfo.sinonimos.length > 0) {
+      sinonimosRespaldo = raeInfo.sinonimos;
+    }
   }
 
+  // Nivel 3: Wikcionario ES (con salto de lema) + Wikipedia ES
   const wikData = await obtenerSeccionEspanolWikcionario(p);
-
-  if (wikData) {
-    const synsWik = extraerSinonimosDeSeccionEs(p, wikData.seccion);
-    if (synsWik.length > 0) return { tipo: 'sinonimos', texto: synsWik.join(', ') };
-  }
-  const synsDm = await consultarSinonimosDatamuse(p);
-  if (synsDm.length > 0) return { tipo: 'sinonimos', texto: synsDm.join(', ') };
-
   if (wikData) {
     const { def, lemaEnlazado } = extraerDefinicionDeSeccionEs(wikData.seccion);
-    if (def) return { tipo: 'externo', texto: def };
+    if (def) {
+      const resWik = { tipo: 'externo', texto: def };
+      guardarCacheDef(p, resWik);
+      return resWik;
+    }
     if (lemaEnlazado && lemaEnlazado !== p) {
       const defLemaBasico = buscarDefinicionEnBasico(lemaEnlazado);
-      if (defLemaBasico) return { tipo: 'externo', texto: defLemaBasico };
+      if (defLemaBasico) {
+        const resL = { tipo: 'externo', texto: defLemaBasico };
+        guardarCacheDef(p, resL);
+        return resL;
+      }
       const wikLema = await obtenerSeccionEspanolWikcionario(lemaEnlazado);
       if (wikLema) {
-        const resLema = extraerDefinicionDeSeccionEs(wikLema.seccion);
-        if (resLema.def) return { tipo: 'externo', texto: resLema.def };
+        const { def: defLema } = extraerDefinicionDeSeccionEs(wikLema.seccion);
+        if (defLema) {
+          const resL2 = { tipo: 'externo', texto: defLema };
+          guardarCacheDef(p, resL2);
+          return resL2;
+        }
       }
+    }
+    if (sinonimosRespaldo.length === 0) {
+      sinonimosRespaldo = extraerSinonimosDeSeccionEs(p, wikData.seccion);
     }
   }
 
   const defWiki = await consultarWikipediaES(p);
-  if (defWiki) return { tipo: 'externo', texto: defWiki };
+  if (defWiki) {
+    const resWiki = { tipo: 'externo', texto: defWiki };
+    guardarCacheDef(p, resWiki);
+    return resWiki;
+  }
+
+  // Nivel 4: Sinónimos reales (RAE / Wikcionario / Datamuse)
+  if (sinonimosRespaldo.length === 0) {
+    sinonimosRespaldo = await consultarSinonimosDatamuse(p);
+  }
+  if (sinonimosRespaldo.length > 0) {
+    const resSyn = { tipo: 'sinonimos', texto: sinonimosRespaldo.join(', ') };
+    guardarCacheDef(p, resSyn);
+    return resSyn;
+  }
 
   return { tipo: 'ninguno', texto: '' };
 }
@@ -1618,7 +1830,6 @@ function normalizarTokenVoz(token, silabaObjNorm) {
 
 // ---------- GRAN DICCIONARIO VISUAL DE DIBUJITOS (+300 PALABRAS) ----------
 const diccionarioEmojis = {
-  // Animales
   'abeja': '🐝', 'aguila': '🦅', 'animal': '🐾', 'arana': '🕷️', 'araña': '🕷️',
   'atun': '🐟', 'ave': '🐦', 'ballena': '🐋', 'buho': '🦉', 'burro': '🫏',
   'caballo': '🐴', 'cabra': '🐐', 'camello': '🐫', 'cangrejo': '🦀', 'caracol': '🐌',
@@ -1633,11 +1844,9 @@ const diccionarioEmojis = {
   'pinguino': '🐧', 'pollo': '🐥', 'pulpo': '🐙', 'rana': '🐸', 'rata': '🐀',
   'raton': '🐭', 'salmon': '🐟', 'sapo': '🐸', 'sardina': '🐟', 'serpiente': '🐍',
   'tigre': '🐯', 'topo': '🐹', 'toro': '🐂', 'tortuga': '🐢', 'trucha': '🐟',
-  'vaca': '🐄', 'zorro': '🦊', 'tiburón': '🦈', 'tiburon': '🦈', 'canguro': '🦘',
+  'vaca': '🐄', 'zorro': '🦊', 'tiburon': '🦈', 'canguro': '🦘',
   'koala': '🐨', 'flamenco': '🦩', 'pavo': '🦃', 'medusa': '🪼', 'escorpion': '🦂',
   'camaleon': '🦎', 'lagarto': '🦎', 'hipopotamo': '🦛', 'rinoceronte': '🦏',
-
-  // Comida y bebida
   'aceite': '🫒', 'agua': '💧', 'ajo': '🧄', 'alimento': '🍽️', 'arroz': '🍚',
   'azucar': '🍬', 'bebida': '🥤', 'cafe': '☕', 'caldo': '🍲', 'carne': '🥩',
   'cebolla': '🧅', 'cena': '🍽️', 'cereza': '🍒', 'chocolate': '🍫', 'coco': '🥥',
@@ -1652,8 +1861,6 @@ const diccionarioEmojis = {
   'tarta': '🎂', 'taza': '☕', 'tomate': '🍅', 'tortilla': '🍳', 'trigo': '🌾',
   'turron': '🍫', 'uva': '🍇', 'vino': '🍷', 'zanahoria': '🥕', 'zumo': '🧃',
   'pizza': '🍕', 'hamburguesa': '🍔', 'cerveza': '🍺', 'te': '🍵', 'churro': '🥨',
-
-  // Naturaleza, clima y espacio
   'aire': '💨', 'arbol': '🌳', 'arco': '🌈', 'arena': '🏖️', 'bosque': '🌲',
   'brasa': '🔥', 'brisa': '🍃', 'caliza': '🪨', 'campo': '🌾', 'cascada': '🌊',
   'ceniza': '💨', 'cerro': '⛰️', 'charco': '💦', 'cielo': '☁️', 'cima': '🏔️',
@@ -1671,8 +1878,6 @@ const diccionarioEmojis = {
   'sol': '☀️', 'tierra': '🌍', 'tormenta': '⛈️', 'trebol': '🍀', 'tronco': '🪵',
   'trueno': '⚡', 'tulipan': '🌷', 'valle': '🏞️', 'vapor': '💨', 'verano': '☀️',
   'viento': '💨', 'volcan': '🌋', 'nido': '🪺',
-
-  // Transporte y lugares
   'ancla': '⚓', 'avenida': '🛣️', 'avion': '✈️', 'balcon': '🏛️', 'banco': '🏦',
   'barco': '🚢', 'biblioteca': '📚', 'bicicleta': '🚲', 'calle': '🛣️', 'camino': '🛤️',
   'camion': '🚚', 'carro': '🚗', 'casa': '🏠', 'castillo': '🏰', 'cine': '🎬',
@@ -1685,8 +1890,6 @@ const diccionarioEmojis = {
   'semaforo': '🚦', 'teatro': '🎭', 'tienda': '🏪', 'torre': '🗼', 'tractor': '🚜',
   'tren': '🚆', 'trineo': '🛷', 'tunel': '🚇', 'velero': '⛵', 'viaje': '✈️',
   'vuelo': '✈️', 'rueda': '🛞', 'volante': '🚗',
-
-  // Objetos, hogar, ropa y herramientas
   'abrigo': '🧥', 'aguja': '🪡', 'alfombra': '🧶', 'almohada': '🛏️', 'anillo': '💍',
   'antena': '📡', 'armario': '🚪', 'bandera': '🚩', 'baston': '🦯', 'basura': '🗑️',
   'baul': '🧳', 'billete': '💵', 'blusa': '👚', 'bolsa': '🛍️', 'bota': '🥾',
@@ -1723,8 +1926,6 @@ const diccionarioEmojis = {
   'toalla': '🧻', 'tobogan': '🛝', 'tornillo': '🔩', 'traje': '🤵', 'trampa': '🪤',
   'trofeo': '🏆', 'trono': '👑', 'tubo': '🧪', 'tuerca': '🔩', 'vaso': '🥛',
   'vela': '🕯️', 'veneno': '☠️', 'ventana': '🪟', 'vestido': '👗', 'zapato': '👟',
-
-  // Música, ocio, personas, cuerpo y conceptos
   'ajedrez': '♟️', 'alegre': '😄', 'amigo': '🤝', 'amor': '❤️', 'arte': '🎨',
   'astronauta': '👨‍🚀', 'baile': '💃', 'balon': '⚽', 'barba': '🧔', 'bebe': '👶',
   'beso': '💋', 'bigote': '🥸', 'boca': '👄', 'boda': '💍', 'bombero': '👨‍🚒',
@@ -1753,8 +1954,6 @@ const diccionarioEmojis = {
   'suerte': '🍀', 'susto': '😱', 'tambor': '🥁', 'tiempo': '⏳', 'trabajo': '💼',
   'triste': '😢', 'trompa': '🎺', 'trompeta': '🎺', 'truco': '🎩', 'una': '💅',
   'uña': '💅', 'valiente': '🦁', 'violin': '🎻', 'vista': '👀', 'voz': '🗣️',
-
-  // Colores
   'amarillo': '💛', 'azul': '💙', 'blanco': '🤍', 'color': '🎨', 'gris': '🩶',
   'negro': '🖤', 'rojo': '❤️', 'verde': '💚'
 };
@@ -1853,7 +2052,7 @@ function hablar(texto, callback) {
   } catch (e) { fin(); }
 }
 
-// ---------- VALIDACIÓN AMPLIADA: Local (Básico + RAE grande) + Respaldo Online ----------
+// ---------- VALIDACIÓN AMPLIADA: Local + rae-api.com + Wikcionario ES + Datamuse ----------
 function cachearPalabraValida(w) {
   if (!w) return;
   if (setDiccionarioRAE) {
@@ -1869,6 +2068,18 @@ async function verificarPalabraOnline(p) {
   const singulares = esExcepcion ? [] : obtenerSingularesDePlural(p).map(c => c.word);
   const candidatos = [...singulares, p];
 
+  // 1) Validar en rae-api.com (y aprovechar para cachear su definición al vuelo)
+  for (const cand of candidatos) {
+    const r = await consultarRaeDirecto(cand);
+    if (r.encontrado && r.info && r.info.palabra) {
+      const valida = r.info.palabra;
+      cachearPalabraValida(valida);
+      if (r.info.definicion) guardarCacheDef(valida, { tipo: 'externo', texto: r.info.definicion });
+      return valida;
+    }
+  }
+
+  // 2) Validar en Wikcionario ES
   for (const cand of candidatos) {
     const wik = await obtenerSeccionEspanolWikcionario(cand);
     if (wik && wik.titulo) {
@@ -1877,21 +2088,16 @@ async function verificarPalabraOnline(p) {
     }
   }
 
+  // 3) Respaldo en Datamuse ES
   for (const cand of candidatos) {
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 2400);
-      const res = await fetch('https://api.datamuse.com/words?sp=' + encodeURIComponent(cand) + '&max=6&v=es', { signal: controller.signal });
-      clearTimeout(timer);
-      if (!res.ok) continue;
-      const data = await res.json();
-      const match = data.find(item => item && item.word && SOLO_LETRAS.test(item.word.toLowerCase()) && SinTildes(item.word.toLowerCase()) === SinTildes(cand));
-      if (match) {
-        const valida = match.word.toLowerCase();
-        cachearPalabraValida(valida);
-        return valida;
-      }
-    } catch (e) {}
+    const res = await fetchJsonUniversal('https://api.datamuse.com/words?sp=' + encodeURIComponent(cand) + '&max=6&v=es', 2500);
+    if (!res.ok || !Array.isArray(res.data)) continue;
+    const match = res.data.find(item => item && item.word && SOLO_LETRAS.test(item.word.toLowerCase()) && SinTildes(item.word.toLowerCase()) === SinTildes(cand));
+    if (match) {
+      const valida = match.word.toLowerCase();
+      cachearPalabraValida(valida);
+      return valida;
+    }
   }
   return false;
 }
@@ -1939,62 +2145,64 @@ async function obtenerPalabrasCandidatasMaquina(prefijoNormalizado) {
   return [];
 }
 
+// ---------- SILABEO ORTOGRÁFICO CORREGIDO (AN-CLA, HOM-BRE, TO-RRE, CO-LLAR, PA-ÍS...) ----------
 function silabear(palabra) {
-  let p = palabra.toLowerCase().trim();
-  const vocalesFuertes = 'aeoáéóíú';
-  const inseparables = ['br','bl','cr','cl','dr','fr','fl','gr','gl','pr','pl','tr','ch','ll','rr'];
-  let silabas = [];
-  let silabaActual = "";
-  const isVocal = (c) => 'aeiouáéíóúü'.includes(c);
-  const isConsonante = (c) => c && !isVocal(c);
+  const p = (palabra || "").toLowerCase().trim();
+  if (!p) return [];
 
-  for (let i = 0; i < p.length; i++) {
-    let char = p[i];
-    silabaActual += char;
-    let next1 = p[i+1] || ''; let next2 = p[i+2] || ''; let next3 = p[i+3] || '';
-    if (isVocal(char)) {
-      if (isVocal(next1) && vocalesFuertes.includes(char) && vocalesFuertes.includes(next1)) {
-        silabas.push(silabaActual); silabaActual = ""; continue;
-      }
-      if (isConsonante(next1)) {
-        if (isVocal(next2)) {
-          silabas.push(silabaActual); silabaActual = "";
-        } else if (isConsonante(next2)) {
-          if (isVocal(next3)) {
-            let grupo = next1 + next2;
-            if (inseparables.includes(grupo)) {
-              silabas.push(silabaActual); silabaActual = "";
-            } else {
-              silabaActual += next1; silabas.push(silabaActual); silabaActual = ""; i++;
-            }
-          } else if (isConsonante(next3)) {
-            let grupo = next2 + next3;
-            if (inseparables.includes(grupo)) {
-              silabas.push(silabaActual); silabaActual = "";
-            } else {
-              silabaActual += next1 + next2; silabas.push(silabaActual); silabaActual = ""; i += 2;
-            }
-          }
-        }
-      }
+  const isVocal = (c) => Boolean(c) && 'aeiouáéíóúü'.includes(c);
+  const isFuerte = (c) => Boolean(c) && 'aeoáéó'.includes(c);
+  const isDebilAcentuada = (c) => Boolean(c) && 'íú'.includes(c);
+  const INSEPARABLES = new Set(['br','bl','cr','cl','dr','fr','fl','gr','gl','pr','pl','tr','ch','ll','rr']);
+
+  const nucleos = [];
+  let i = 0;
+  while (i < p.length) {
+    if (!isVocal(p[i])) { i++; continue; }
+    const start = i;
+    i++;
+    while (i < p.length && isVocal(p[i])) {
+      const prev = p[i - 1];
+      const curr = p[i];
+      const esUMuda = prev === 'u' && i - 2 >= 0 && (p[i - 2] === 'q' || p[i - 2] === 'g') && 'eiéí'.includes(curr);
+      if (esUMuda) { i++; continue; }
+      const hayHiato =
+        (isFuerte(prev) && isFuerte(curr)) ||
+        isDebilAcentuada(prev) ||
+        isDebilAcentuada(curr) ||
+        (prev === curr);
+      if (hayHiato) break;
+      i++;
     }
+    nucleos.push({ start, end: i });
   }
-  if (silabaActual !== "") {
-    if (silabas.length > 0 && !/[aeiouáéíóúü]/.test(silabaActual)) {
-      silabas[silabas.length - 1] += silabaActual;
+
+  if (nucleos.length <= 1) return [p];
+
+  const cortes = [0];
+  for (let n = 0; n < nucleos.length - 1; n++) {
+    const cStart = nucleos[n].end;
+    const cEnd = nucleos[n + 1].start;
+    const cons = p.slice(cStart, cEnd);
+    const len = cons.length;
+
+    if (len === 0 || len === 1) cortes.push(cStart);
+    else if (len === 2) {
+      if (INSEPARABLES.has(cons)) cortes.push(cStart);
+      else cortes.push(cStart + 1);
     } else {
-      silabas.push(silabaActual);
+      const ultDos = cons.slice(len - 2);
+      if (INSEPARABLES.has(ultDos)) cortes.push(cEnd - 2);
+      else cortes.push(cEnd - 1);
     }
   }
-  const hardcoded = {
-    'palabra': ['pa','la','bra'], 'brasa': ['bra','sa'], 'sapo': ['sa','po'],
-    'pomo': ['po','mo'], 'mono': ['mo','no'], 'noto': ['no','to'],
-    'tope': ['to','pe'], 'perro': ['pe','rro'], 'roca': ['ro','ca'],
-    'carta': ['car','ta'], 'taco': ['ta','co'], 'camino': ['ca','mi','no'],
-    'verano': ['ve','ra','no'], 'planeta': ['pla','ne','ta'], 'tesoro': ['te','so','ro'],
-    'espejo': ['es','pe','jo'], 'castillo': ['cas','ti','llo'], 'naranja': ['na','ran','ja']
-  };
-  return hardcoded[p] || silabas;
+  cortes.push(p.length);
+
+  const silabas = [];
+  for (let k = 0; k < cortes.length - 1; k++) {
+    silabas.push(p.slice(cortes[k], cortes[k + 1]));
+  }
+  return silabas;
 }
 
 function normalizarSilaba(silaba) {
@@ -2088,7 +2296,7 @@ function formatearTarjetaExplicacion(palabra, explicacion) {
     return '🔄 <strong>Sinónimos de ' + palabra.toUpperCase() + ':</strong> ' + explicacion.texto;
   }
   if (explicacion.tipo === 'externo' && explicacion.texto) {
-    return '🌐 <strong>' + palabra.toUpperCase() + ':</strong> ' + explicacion.texto;
+    return '📖 <strong>' + palabra.toUpperCase() + ':</strong> ' + explicacion.texto;
   }
   return "";
 }
@@ -2140,19 +2348,18 @@ function agregarPalabraUI(palabra, silabas, esInicial = false, indiceColor = 0, 
   }
   wrapObj.appendChild(infoContainer);
 
-  gameBoard.appendChild(wrapObj);
-  gameBoard.scrollTop = gameBoard.scrollHeight;
+  gameBoardList.appendChild(wrapObj);
+  bajarScrollTablero();
 }
 
 function mostrarExplicacionEnUltimaPalabraUI(palabra, explicacion) {
-  const slots = gameBoard.querySelectorAll('.info-palabra-slot');
+  const slots = gameBoardList.querySelectorAll('.info-palabra-slot');
   if (slots.length > 0) {
     const ultimoSlot = slots[slots.length - 1];
-    const urlRae = 'https://dle.rae.es/' + encodeURIComponent(palabra.toLowerCase());
     const htmlTarjeta = formatearTarjetaExplicacion(palabra, explicacion)
-      || ('🌐 <strong>' + palabra.toUpperCase() + ':</strong> <a href="' + urlRae + '" target="_blank" rel="noopener" class="underline text-blue-700">Ver definición en la RAE</a>');
+      || ('📖 <strong>' + palabra.toUpperCase() + ':</strong> Sin conexión o sin acepción disponible.');
     ultimoSlot.innerHTML = '<div class="mt-1.5 bg-amber-50 border-2 border-[#a67c52] text-[#5c3a21] text-xs font-bold rounded-xl px-3 py-2 shadow text-center">' + htmlTarjeta + '</div>';
-    gameBoard.scrollTop = gameBoard.scrollHeight;
+    bajarScrollTablero();
   }
 }
 
@@ -2171,7 +2378,7 @@ async function responderSignificadoUltimaPalabra() {
   } else if (explicacion.tipo === 'sinonimos') {
     locucion = "Sinónimos de " + ultima + ": " + explicacion.texto + ". Sigue el turno de " + nombres[jugadorActual] + ", tiene que empezar por " + silabaParaVoz(silabaObjetivo) + ".";
   } else {
-    locucion = "Te dejo el enlace a la RAE para consultar " + ultima + ". Sigue el turno de " + nombres[jugadorActual] + ", tiene que empezar por " + silabaParaVoz(silabaObjetivo) + ".";
+    locucion = "No he podido obtener el significado de " + ultima + " en este momento. Sigue el turno de " + nombres[jugadorActual] + ", tiene que empezar por " + silabaParaVoz(silabaObjetivo) + ".";
   }
 
   hablar(locucion, () => {
@@ -2228,7 +2435,7 @@ window.arranqueVinculado = function(modo) {
 function iniciarJuegoTablero(esReinicio = false) {
   if (window._anuncioPantallaCompletaActivo) return;
   historialPalabras = [];
-  gameBoard.innerHTML = '';
+  gameBoardList.innerHTML = '';
 
   const palabraInicial = palabrasArranque[Math.floor(Math.random() * palabrasArranque.length)];
   const silabasIniciales = silabear(palabraInicial);
@@ -2693,7 +2900,6 @@ pedirWakeLock();
         window._anuncioPantallaCompletaActivo = false;
         preloadInterstitial();
 
-        // Recuperar foco de audio, volumen y SpeechRecognizer limpio tras volver del anuncio
         if (typeof window.recuperarTrasAnuncio === 'function') {
           window.recuperarTrasAnuncio();
         }
