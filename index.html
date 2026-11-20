@@ -231,7 +231,7 @@ window.cargarDatosMenu = function() {
 window.cargarDatosMenu();
 </script>
 
-<!-- SCRIPT 2: MOTOR PRINCIPAL (SIN AUDIO SINTÉTICO), DICCIONARIO AMPLIADO Y CASCADA DE SIGNIFICADOS -->
+<!-- SCRIPT 2: MOTOR PRINCIPAL, CONFETI, +300 DIBUJITOS, FONÉTICA CIL/CE/CI Y DICCIONARIOS -->
 <script>
 const gameBoard = document.getElementById('game-board');
 const micBtn = document.getElementById('mic-btn');
@@ -278,7 +278,94 @@ const COLORES_JUGADORES = [
   { bg: "bg-pink-600", border: "border-pink-500", text: "text-pink-700", sil: "text-pink-500" }
 ];
 
-// ---------- Pronunciación natural de sílabas (sin deletrear y "tó" en español) ----------
+// ---------- EXPLOSIÓN DE CONFETI AL GANAR LA PARTIDA ----------
+function lanzarConfeti() {
+  try {
+    const antiguo = document.getElementById('canvas-confeti');
+    if (antiguo) antiguo.remove();
+
+    const canvas = document.createElement('canvas');
+    canvas.id = 'canvas-confeti';
+    canvas.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:80;';
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    document.body.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+    const colores = ['#f43f5e', '#f59e0b', '#10b981', '#3b82f6', '#a855f7', '#ec4899', '#eab308', '#06b6d4'];
+    const particulas = [];
+    const origenX = canvas.width / 2;
+    const origenY = canvas.height * 0.42;
+
+    for (let i = 0; i < 140; i++) {
+      const angulo = Math.random() * Math.PI * 2;
+      const velocidad = 5 + Math.random() * 13;
+      particulas.push({
+        x: origenX + (Math.random() - 0.5) * 40,
+        y: origenY + (Math.random() - 0.5) * 30,
+        vx: Math.cos(angulo) * velocidad,
+        vy: Math.sin(angulo) * velocidad - (4 + Math.random() * 5),
+        w: 7 + Math.random() * 7,
+        h: 5 + Math.random() * 6,
+        color: colores[i % colores.length],
+        rot: Math.random() * 360,
+        vRot: (Math.random() - 0.5) * 14,
+        forma: i % 3,
+        opacidad: 1
+      });
+    }
+
+    const inicio = performance.now();
+    const duracion = 3600;
+
+    function animar(ahora) {
+      const transcurrido = ahora - inicio;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (const p of particulas) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vx *= 0.985;
+        p.vy += 0.28;
+        p.rot += p.vRot;
+        if (transcurrido > 2400) {
+          p.opacidad = Math.max(0, 1 - (transcurrido - 2400) / 1200);
+        }
+
+        ctx.save();
+        ctx.globalAlpha = p.opacidad;
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rot * Math.PI) / 180);
+        ctx.fillStyle = p.color;
+
+        if (p.forma === 0) {
+          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        } else if (p.forma === 1) {
+          ctx.beginPath();
+          ctx.arc(0, 0, p.h / 1.8, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.beginPath();
+          ctx.moveTo(0, -p.h);
+          ctx.lineTo(p.w / 2, p.h / 2);
+          ctx.lineTo(-p.w / 2, p.h / 2);
+          ctx.closePath();
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      if (transcurrido < duracion) {
+        requestAnimationFrame(animar);
+      } else {
+        canvas.remove();
+      }
+    }
+    requestAnimationFrame(animar);
+  } catch (e) {}
+}
+
+// ---------- Pronunciación natural de sílabas (sin deletrear, "tó" y "cil -> zíl") ----------
 const FONETICA_SILABAS_VOZ = {
   'to': 'tó', 'do': 'dó', 'no': 'nó', 'so': 'só', 'go': 'gó', 'lo': 'ló',
   'po': 'pó', 'ro': 'ró', 'co': 'có', 'mo': 'mó', 'bo': 'bó', 'vo': 'vó',
@@ -293,9 +380,11 @@ const FONETICA_SILABAS_VOZ = {
   'me': 'mé', 'te': 'té', 'se': 'sé', 'de': 'dé', 'le': 'lé', 'pe': 'pé',
   're': 'ré', 'ce': 'zé', 'fe': 'fé', 'ge': 'jé', 'je': 'jé', 've': 'vé',
   'be': 'bé', 'ne': 'né', 'que': 'ké', 'gue': 'gué', 'che': 'ché', 'lle': 'llé',
+  'cel': 'zél', 'cer': 'zér', 'ces': 'zés', 'cen': 'zén',
   'mi': 'mí', 'ti': 'tí', 'si': 'sí', 'di': 'dí', 'li': 'lí', 'pi': 'pí',
   'ri': 'rí', 'ci': 'zí', 'fi': 'fí', 'gi': 'jí', 'ji': 'jí', 'vi': 'ví',
   'bi': 'bí', 'ni': 'ní', 'qui': 'kí', 'gui': 'guí',
+  'cil': 'zíl', 'cir': 'zír', 'cis': 'zís', 'cin': 'zín',
   'la': 'lá', 'pa': 'pá', 'ta': 'tá', 'sa': 'sá', 'ca': 'cá', 'ma': 'má',
   'ba': 'bá', 'va': 'vá', 'fa': 'fá', 'ga': 'gá', 'ja': 'já', 'za': 'zá',
   'da': 'dá', 'na': 'ná', 'ra': 'rá', 'bra': 'brá', 'pla': 'plá', 'cla': 'clá',
@@ -315,9 +404,17 @@ function silabaParaVoz(silaba) {
   let s = (silaba || "").toLowerCase().trim();
   if (!s) return "";
   if (FONETICA_SILABAS_VOZ[s]) return FONETICA_SILABAS_VOZ[s];
-  if (/[áéíóú]/.test(s)) return s;
 
-  s = s.replace(/^ge/, 'je').replace(/^gi/, 'ji').replace(/^que/, 'ke').replace(/^qui/, 'ki');
+  // Forzar siempre la C suave española en sílabas con CE/CI (evita "kil" o "quil" en cil, cir, etc.)
+  s = s
+    .replace(/^ce/, 'ze').replace(/^ci/, 'zi')
+    .replace(/^cé/, 'zé').replace(/^cí/, 'zí')
+    .replace(/^ge/, 'je').replace(/^gi/, 'ji')
+    .replace(/^gé/, 'jé').replace(/^gí/, 'jí')
+    .replace(/^que/, 'ke').replace(/^qui/, 'ki')
+    .replace(/^qué/, 'ké').replace(/^quí/, 'kí');
+
+  if (/[áéíóú]/.test(s)) return s;
 
   const mapaTilde = { 'a': 'á', 'e': 'é', 'i': 'í', 'o': 'ó', 'u': 'ú' };
   const fuertes = ['a', 'e', 'o'];
@@ -1519,13 +1616,155 @@ function normalizarTokenVoz(token, silabaObjNorm) {
   return limpio;
 }
 
+// ---------- GRAN DICCIONARIO VISUAL DE DIBUJITOS (+300 PALABRAS) ----------
 const diccionarioEmojis = {
-  'brasa': '🔥', 'sapo': '🐸', 'pomo': '🚪', 'mono': '🐵',
-  'camino': '🛤️', 'planeta': '🌍', 'tesoro': '💎', 'castillo': '🏰',
-  'pelota': '⚽', 'casa': '🏠', 'coche': '🚗', 'pato': '🦆', 'taza': '☕',
-  'lupa': '🔍', 'vaca': '🐄', 'zorro': '🦊', 'perro': '🐶', 'llave': '🔑',
-  'roca': '🪨', 'rápido': '⚡', 'jota': '💃'
+  // Animales
+  'abeja': '🐝', 'aguila': '🦅', 'animal': '🐾', 'arana': '🕷️', 'araña': '🕷️',
+  'atun': '🐟', 'ave': '🐦', 'ballena': '🐋', 'buho': '🦉', 'burro': '🫏',
+  'caballo': '🐴', 'cabra': '🐐', 'camello': '🐫', 'cangrejo': '🦀', 'caracol': '🐌',
+  'cebra': '🦓', 'cerdo': '🐷', 'ciervo': '🦌', 'cisne': '🦢', 'cocodrilo': '🐊',
+  'conejo': '🐰', 'cordero': '🐑', 'delfin': '🐬', 'dragon': '🐉', 'elefante': '🐘',
+  'foca': '🦭', 'gallina': '🐔', 'gallo': '🐓', 'gato': '🐱', 'gaviota': '🕊️',
+  'gorila': '🦍', 'grillo': '🦗', 'gusano': '🪱', 'hormiga': '🐜', 'jirafa': '🦒',
+  'leon': '🦁', 'leopardo': '🐆', 'llama': '🦙', 'lobo': '🐺', 'loro': '🦜',
+  'mariposa': '🦋', 'mascota': '🐾', 'mono': '🐵', 'mosca': '🪰', 'murcielago': '🦇',
+  'nutria': '🦦', 'oso': '🐻', 'oveja': '🐑', 'pajaro': '🐦', 'paloma': '🕊️',
+  'panda': '🐼', 'pantera': '🐆', 'pato': '🦆', 'perro': '🐶', 'pez': '🐟',
+  'pinguino': '🐧', 'pollo': '🐥', 'pulpo': '🐙', 'rana': '🐸', 'rata': '🐀',
+  'raton': '🐭', 'salmon': '🐟', 'sapo': '🐸', 'sardina': '🐟', 'serpiente': '🐍',
+  'tigre': '🐯', 'topo': '🐹', 'toro': '🐂', 'tortuga': '🐢', 'trucha': '🐟',
+  'vaca': '🐄', 'zorro': '🦊', 'tiburón': '🦈', 'tiburon': '🦈', 'canguro': '🦘',
+  'koala': '🐨', 'flamenco': '🦩', 'pavo': '🦃', 'medusa': '🪼', 'escorpion': '🦂',
+  'camaleon': '🦎', 'lagarto': '🦎', 'hipopotamo': '🦛', 'rinoceronte': '🦏',
+
+  // Comida y bebida
+  'aceite': '🫒', 'agua': '💧', 'ajo': '🧄', 'alimento': '🍽️', 'arroz': '🍚',
+  'azucar': '🍬', 'bebida': '🥤', 'cafe': '☕', 'caldo': '🍲', 'carne': '🥩',
+  'cebolla': '🧅', 'cena': '🍽️', 'cereza': '🍒', 'chocolate': '🍫', 'coco': '🥥',
+  'comida': '🍽️', 'crema': '🍦', 'dulce': '🍬', 'ensalada': '🥗', 'fresa': '🍓',
+  'fruta': '🍎', 'fruto': '🍎', 'galleta': '🍪', 'gelatina': '🍮', 'harina': '🌾',
+  'helado': '🍦', 'huevo': '🥚', 'jamon': '🍖', 'leche': '🥛', 'lechuga': '🥬',
+  'limon': '🍋', 'maiz': '🌽', 'mango': '🥭', 'manzana': '🍎', 'melon': '🍈',
+  'miel': '🍯', 'naranja': '🍊', 'nata': '🍦', 'nuez': '🥜', 'paella': '🥘',
+  'pan': '🍞', 'pastel': '🍰', 'patata': '🥔', 'pera': '🍐', 'pimiento': '🫑',
+  'pina': '🍍', 'piña': '🍍', 'platano': '🍌', 'queso': '🧀', 'sal': '🧂',
+  'salsa': '🥫', 'sandia': '🍉', 'sopa': '🍲', 'taco': '🌮', 'tapa': '🍤',
+  'tarta': '🎂', 'taza': '☕', 'tomate': '🍅', 'tortilla': '🍳', 'trigo': '🌾',
+  'turron': '🍫', 'uva': '🍇', 'vino': '🍷', 'zanahoria': '🥕', 'zumo': '🧃',
+  'pizza': '🍕', 'hamburguesa': '🍔', 'cerveza': '🍺', 'te': '🍵', 'churro': '🥨',
+
+  // Naturaleza, clima y espacio
+  'aire': '💨', 'arbol': '🌳', 'arco': '🌈', 'arena': '🏖️', 'bosque': '🌲',
+  'brasa': '🔥', 'brisa': '🍃', 'caliza': '🪨', 'campo': '🌾', 'cascada': '🌊',
+  'ceniza': '💨', 'cerro': '⛰️', 'charco': '💦', 'cielo': '☁️', 'cima': '🏔️',
+  'clima': '🌦️', 'colina': '⛰️', 'cometa': '☄️', 'costa': '🏖️', 'cueva': '🪨',
+  'desierto': '🏜️', 'dia': '☀️', 'duna': '🏜️', 'espuma': '🫧', 'estrella': '⭐',
+  'flor': '🌸', 'fogata': '🔥', 'frio': '❄️', 'fuego': '🔥', 'fuente': '⛲',
+  'girasol': '🌻', 'gota': '💧', 'hielo': '🧊', 'hoja': '🍃', 'humo': '💨',
+  'isla': '🏝️', 'jardin': '🌺', 'jungla': '🌴', 'lago': '🏞️', 'lena': '🪵',
+  'leña': '🪵', 'lluvia': '🌧️', 'luna': '🌙', 'luz': '💡', 'madera': '🪵',
+  'mar': '🌊', 'montana': '⛰️', 'montaña': '⛰️', 'monte': '⛰️', 'mundo': '🌍',
+  'niebla': '🌫️', 'nieve': '❄️', 'noche': '🌃', 'nube': '☁️', 'ola': '🌊',
+  'palmera': '🌴', 'piedra': '🪨', 'pino': '🌲', 'planeta': '🪐', 'planta': '🪴',
+  'playa': '🏖️', 'prado': '🌿', 'raiz': '🌱', 'rama': '🌿', 'rayo': '⚡',
+  'rio': '🏞️', 'roca': '🪨', 'rosa': '🌹', 'selva': '🌴', 'semilla': '🌱',
+  'sol': '☀️', 'tierra': '🌍', 'tormenta': '⛈️', 'trebol': '🍀', 'tronco': '🪵',
+  'trueno': '⚡', 'tulipan': '🌷', 'valle': '🏞️', 'vapor': '💨', 'verano': '☀️',
+  'viento': '💨', 'volcan': '🌋', 'nido': '🪺',
+
+  // Transporte y lugares
+  'ancla': '⚓', 'avenida': '🛣️', 'avion': '✈️', 'balcon': '🏛️', 'banco': '🏦',
+  'barco': '🚢', 'biblioteca': '📚', 'bicicleta': '🚲', 'calle': '🛣️', 'camino': '🛤️',
+  'camion': '🚚', 'carro': '🚗', 'casa': '🏠', 'castillo': '🏰', 'cine': '🎬',
+  'ciudad': '🏙️', 'coche': '🚗', 'cocina': '🍳', 'cohete': '🚀', 'edificio': '🏢',
+  'escuela': '🏫', 'estacion': '🚉', 'fabrica': '🏭', 'faro': '🗼', 'garaje': '🚗',
+  'granja': '🚜', 'grua': '🏗️', 'lancha': '🚤', 'mercado': '🏪', 'metro': '🚇',
+  'molino': '🌬️', 'moto': '🏍️', 'muelle': '⚓', 'museo': '🏛️', 'nave': '🛸',
+  'palacio': '🏰', 'parque': '🏞️', 'patio': '🏡', 'piramide': '🔺', 'piscina': '🏊',
+  'piso': '🏢', 'plaza': '⛲', 'puente': '🌉', 'puerto': '⚓', 'ruta': '🗺️',
+  'semaforo': '🚦', 'teatro': '🎭', 'tienda': '🏪', 'torre': '🗼', 'tractor': '🚜',
+  'tren': '🚆', 'trineo': '🛷', 'tunel': '🚇', 'velero': '⛵', 'viaje': '✈️',
+  'vuelo': '✈️', 'rueda': '🛞', 'volante': '🚗',
+
+  // Objetos, hogar, ropa y herramientas
+  'abrigo': '🧥', 'aguja': '🪡', 'alfombra': '🧶', 'almohada': '🛏️', 'anillo': '💍',
+  'antena': '📡', 'armario': '🚪', 'bandera': '🚩', 'baston': '🦯', 'basura': '🗑️',
+  'baul': '🧳', 'billete': '💵', 'blusa': '👚', 'bolsa': '🛍️', 'bota': '🥾',
+  'bote': '🥫', 'botella': '🍾', 'boton': '🔘', 'brocha': '🖌️', 'brujula': '🧭',
+  'bufanda': '🧣', 'buzon': '📮', 'cadena': '⛓️', 'caja': '📦', 'calcetin': '🧦',
+  'cama': '🛏️', 'camara': '📷', 'camisa': '👔', 'campana': '🔔', 'candado': '🔒',
+  'canon': '💣', 'cañon': '💣', 'capa': '🦸', 'carta': '✉️', 'cartera': '👛',
+  'casco': '🪖', 'cepillo': '🪥', 'cesta': '🧺', 'chaleco': '🦺', 'chaqueta': '🧥',
+  'chimenea': '🏠', 'cinta': '🎀', 'cinturon': '👖', 'clavo': '🔩', 'cojin': '🛋️',
+  'collar': '📿', 'copa': '🏆', 'corbata': '👔', 'corona': '👑', 'cortina': '🪟',
+  'cristal': '🔮', 'cuaderno': '📓', 'cuadro': '🖼️', 'cuchara': '🥄', 'cuchillo': '🔪',
+  'cuerda': '🪢', 'cuna': '👶', 'dado': '🎲', 'diamante': '💎', 'dinero': '💰',
+  'disco': '💿', 'ducha': '🚿', 'escalera': '🪜', 'escoba': '🧹', 'escudo': '🛡️',
+  'espejo': '🪞', 'estatua': '🗽', 'estuche': '💼', 'falda': '👗', 'ficha': '♟️',
+  'flecha': '🏹', 'foco': '🔦', 'gafas': '👓', 'gancho': '🪝', 'globo': '🎈',
+  'goma': '🧽', 'gorra': '🧢', 'grifo': '🚰', 'guante': '🧤', 'hilo': '🧵',
+  'horno': '🔥', 'jabon': '🧼', 'jarra': '🏺', 'jaula': '🐦', 'jersey': '🧶',
+  'joya': '💎', 'juguete': '🧸', 'ladrillo': '🧱', 'lampara': '💡', 'lana': '🧶',
+  'lapiz': '✏️', 'lata': '🥫', 'lazo': '🎀', 'libro': '📖', 'linterna': '🔦',
+  'llave': '🔑', 'lupa': '🔍', 'maceta': '🪴', 'maleta': '🧳', 'manta': '🛏️',
+  'mapa': '🗺️', 'maquina': '⚙️', 'martillo': '🔨', 'mascara': '🎭', 'medalla': '🏅',
+  'mesa': '🪑', 'mochila': '🎒', 'moneda': '🪙', 'mueble': '🛋️', 'muneca': '🪆',
+  'muñeca': '🪆', 'muro': '🧱', 'nevera': '🧊', 'nudo': '🪢', 'oro': '🪙',
+  'pagina': '📄', 'pala': '🪏', 'pantalla': '📱', 'pantalon': '👖', 'panuelo': '🧻',
+  'pañuelo': '🧻', 'papel': '📄', 'paquete': '📦', 'paraguas': '☂️', 'pared': '🧱',
+  'perla': '🦪', 'pijama': '👕', 'pincel': '🖌️', 'pintura': '🎨', 'pizarra': '🧑‍🏫',
+  'plato': '🍽️', 'pluma': '🪶', 'pomo': '🚪', 'pozo': '🪣', 'premio': '🏆',
+  'puerta': '🚪', 'pulsera': '📿', 'radio': '📻', 'raqueta': '🎾', 'regalo': '🎁',
+  'regla': '📏', 'reloj': '⌚', 'remo': '🚣', 'robot': '🤖', 'ropa': '👕',
+  'sabana': '🛏️', 'saco': '🛍️', 'sarten': '🍳', 'sello': '✉️', 'sierra': '🪚',
+  'silbato': '📢', 'silla': '🪑', 'sillon': '🛋️', 'sobre': '✉️', 'sofa': '🛋️',
+  'sombrero': '🎩', 'tabla': '🪵', 'tapon': '🍾', 'tarjeta': '💳', 'teclado': '⌨️',
+  'telefono': '📱', 'tesoro': '💎', 'tijera': '✂️', 'timbre': '🔔', 'tinta': '🖋️',
+  'toalla': '🧻', 'tobogan': '🛝', 'tornillo': '🔩', 'traje': '🤵', 'trampa': '🪤',
+  'trofeo': '🏆', 'trono': '👑', 'tubo': '🧪', 'tuerca': '🔩', 'vaso': '🥛',
+  'vela': '🕯️', 'veneno': '☠️', 'ventana': '🪟', 'vestido': '👗', 'zapato': '👟',
+
+  // Música, ocio, personas, cuerpo y conceptos
+  'ajedrez': '♟️', 'alegre': '😄', 'amigo': '🤝', 'amor': '❤️', 'arte': '🎨',
+  'astronauta': '👨‍🚀', 'baile': '💃', 'balon': '⚽', 'barba': '🧔', 'bebe': '👶',
+  'beso': '💋', 'bigote': '🥸', 'boca': '👄', 'boda': '💍', 'bombero': '👨‍🚒',
+  'brazo': '💪', 'broma': '😂', 'bruja': '🧙‍♀️', 'cabeza': '🗣️', 'cancion': '🎵',
+  'canto': '🎤', 'cara': '😊', 'chiste': '😂', 'ciencia': '🔬', 'corazon': '❤️',
+  'cuento': '📚', 'dama': '👸', 'danza': '💃', 'dedo': '👆', 'deporte': '🏅',
+  'derbi': '⚽', 'diente': '🦷', 'doctor': '🩺', 'dolor': '🤕', 'duende': '🧝',
+  'familia': '👨‍👩‍👧‍👦', 'fantasma': '👻', 'feria': '🎡', 'fiesta': '🎉', 'flauta': '🪈',
+  'fuerte': '💪', 'fuerza': '💪', 'futbol': '⚽', 'genio': '🧞', 'golpe': '💥',
+  'grito': '📢', 'guerra': '⚔️', 'guitarra': '🎸', 'hada': '🧚', 'hermano': '👦',
+  'hijo': '🧒', 'hombre': '👨', 'hora': '⏰', 'hueso': '🦴', 'idea': '💡',
+  'jaleo': '🎉', 'jefe': '👔', 'jinete': '🏇', 'jocoso': '😂', 'jota': '💃',
+  'juego': '🎮', 'juez': '⚖️', 'labio': '👄', 'lagrima': '💧', 'lengua': '👅',
+  'letra': '🔤', 'loca': '🤪', 'loco': '🤪', 'lucha': '🥊', 'madre': '👩',
+  'maestro': '👨‍🏫', 'magia': '🪄', 'mano': '✋', 'medico': '👨‍⚕️', 'mensaje': '💬',
+  'meta': '🏁', 'miedo': '😱', 'musica': '🎵', 'nariz': '👃', 'nina': '👧',
+  'niña': '👧', 'nino': '👦', 'niño': '👦', 'nota': '🎵', 'noticia': '📰',
+  'numero': '🔢', 'ojo': '👁️', 'oreja': '👂', 'padre': '👨', 'palabra': '💬',
+  'paso': '👣', 'payaso': '🤡', 'paz': '🕊️', 'peligro': '⚠️', 'pelo': '💇',
+  'pelota': '⚽', 'persona': '🧑', 'piano': '🎹', 'pie': '🦶', 'pierna': '🦵',
+  'pirata': '🏴‍☠️', 'puno': '✊', 'puño': '✊', 'rapido': '⚡', 'receta': '📋',
+  'record': '🏆', 'reina': '👸', 'rey': '🤴', 'risa': '😂', 'ritmo': '🥁',
+  'rodilla': '🦵', 'rostro': '🙂', 'ruido': '🔊', 'salto': '🦘', 'salud': '❤️‍🩹',
+  'sangre': '🩸', 'secreto': '🤫', 'siesta': '😴', 'silencio': '🤫', 'soldado': '🪖',
+  'sonido': '🔊', 'sonrisa': '😊', 'sorpresa': '🎉', 'sueno': '💤', 'sueño': '💤',
+  'suerte': '🍀', 'susto': '😱', 'tambor': '🥁', 'tiempo': '⏳', 'trabajo': '💼',
+  'triste': '😢', 'trompa': '🎺', 'trompeta': '🎺', 'truco': '🎩', 'una': '💅',
+  'uña': '💅', 'valiente': '🦁', 'violin': '🎻', 'vista': '👀', 'voz': '🗣️',
+
+  // Colores
+  'amarillo': '💛', 'azul': '💙', 'blanco': '🤍', 'color': '🎨', 'gris': '🩶',
+  'negro': '🖤', 'rojo': '❤️', 'verde': '💚'
 };
+
+function obtenerEmojiPalabra(palabra) {
+  const p = (palabra || "").toLowerCase().trim();
+  if (!p) return "";
+  return diccionarioEmojis[p] || diccionarioEmojis[SinTildes(p)] || "";
+}
+
 const palabrasArranque = ['palabra', 'camino', 'verano', 'planeta', 'tesoro', 'espejo', 'castillo', 'naranja', 'pelota', 'regalo'];
 const coletillas = [
   "Mmm...", "A ver, a ver...", "Déjame pensar...",
@@ -1553,6 +1792,16 @@ window.pausarTodoParaAnuncio = function() {
   hablando = false;
   ignorarVozHasta = Date.now() + 60000;
   pausarReconocimientoMientrasHabla("⏳ Esperando a que termine el anuncio...");
+};
+
+window.recuperarTrasAnuncio = function() {
+  hablando = false;
+  isListening = false;
+  ignorarVozHasta = 0;
+  if (window.AndroidVoice && typeof window.AndroidVoice.resetAudio === 'function') {
+    try { window.AndroidVoice.resetAudio(); } catch (e) {}
+  }
+  try { window.speechSynthesis && window.speechSynthesis.resume(); } catch (e) {}
 };
 
 function hablar(texto, callback) {
@@ -1820,6 +2069,9 @@ window.reiniciarMismaPartida = function() {
   esTurnoMaquina = false;
   contadorPalabras = 0;
   recordSuperadoEnPartida = false;
+  ignorarVozHasta = 0;
+  hablando = false;
+  isListening = false;
   actualizarMarcadoresUI();
   mantenerPantallaActivaTotal();
   micDeseado = true;
@@ -1863,9 +2115,10 @@ function agregarPalabraUI(palabra, silabas, esInicial = false, indiceColor = 0, 
     wordDiv.appendChild(span);
   });
 
-  if (diccionarioEmojis[palabra.toLowerCase()]) {
+  const emoji = obtenerEmojiPalabra(palabra);
+  if (emoji) {
     const emojiSpan = document.createElement('span');
-    emojiSpan.textContent = diccionarioEmojis[palabra.toLowerCase()];
+    emojiSpan.textContent = emoji;
     emojiSpan.className = "absolute -top-6 -right-6 text-5xl animate-bounce drop-shadow-lg";
     wordDiv.appendChild(emojiSpan);
   }
@@ -1914,11 +2167,11 @@ async function responderSignificadoUltimaPalabra() {
 
   let locucion = "";
   if (explicacion.tipo === 'definicion' || explicacion.tipo === 'externo') {
-    locucion = ultima + ": " + explicacion.texto + " Sigue el turno de " + nombres[jugadorActual] + ", empieza por " + silabaParaVoz(silabaObjetivo) + ".";
+    locucion = ultima + ": " + explicacion.texto + " Sigue el turno de " + nombres[jugadorActual] + ", tiene que empezar por " + silabaParaVoz(silabaObjetivo) + ".";
   } else if (explicacion.tipo === 'sinonimos') {
-    locucion = "Sinónimos de " + ultima + ": " + explicacion.texto + ". Sigue el turno de " + nombres[jugadorActual] + ", empieza por " + silabaParaVoz(silabaObjetivo) + ".";
+    locucion = "Sinónimos de " + ultima + ": " + explicacion.texto + ". Sigue el turno de " + nombres[jugadorActual] + ", tiene que empezar por " + silabaParaVoz(silabaObjetivo) + ".";
   } else {
-    locucion = "Te dejo el enlace a la RAE para consultar " + ultima + ". Sigue el turno de " + nombres[jugadorActual] + ", empieza por " + silabaParaVoz(silabaObjetivo) + ".";
+    locucion = "Te dejo el enlace a la RAE para consultar " + ultima + ". Sigue el turno de " + nombres[jugadorActual] + ", tiene que empezar por " + silabaParaVoz(silabaObjetivo) + ".";
   }
 
   hablar(locucion, () => {
@@ -1955,6 +2208,7 @@ window.arranqueVinculado = function(modo) {
   esTurnoMaquina = false;
   contadorPalabras = 0;
   recordSuperadoEnPartida = false;
+  ignorarVozHasta = 0;
   actualizarMarcadoresUI();
 
   controlsContainer.classList.remove('hidden');
@@ -2013,7 +2267,8 @@ async function juegaMaquina() {
     const elegida = candidatas[Math.floor(Math.random() * candidatas.length)];
     await window.procesarEntrada(elegida, true);
   } else {
-    actualizarInterfazTurno("¡Victoria de " + nombres[0] + "!", "bg-green-500");
+    actualizarInterfazTurno("🎉 ¡Victoria de " + nombres[0] + "!", "bg-green-500");
+    lanzarConfeti();
     hablar("¡No me quedan palabras que empiecen por " + silabaParaVoz(silabaObjetivo) + "! ¡Has ganado, " + nombres[0] + "! Di otra vez para jugar de nuevo.", () => {
       mostrarFinJuego();
     });
@@ -2025,6 +2280,7 @@ window.meRindo = async function() {
   bloquearInputs(true);
 
   const rindiente = nombres[jugadorActual];
+  const ganaHumano = (modoActual === 'pvp' && nombres.length === 2);
   let textoGanador = (modoActual === 'pve')
     ? "¡Gana la máquina!"
     : (nombres.length === 2 ? ("¡Gana " + nombres[1 - jugadorActual] + "!") : ("¡Fin de la partida por rendición de " + rindiente + "!"));
@@ -2044,6 +2300,7 @@ window.meRindo = async function() {
       silabaObjetivo = silabasElegida[silabasElegida.length - 1];
       agregarPalabraUI(elegida, silabasElegida, false, 1, "💡 Esta valía", explicacion);
       actualizarInterfazTurno("🏆 " + textoGanador, "bg-green-600");
+      if (ganaHumano) lanzarConfeti();
 
       const msgRecord = recordSuperadoEnPartida ? (" ¡Nuevo récord de " + recordPalabras + " palabras!") : "";
       let parteExp = "";
@@ -2079,7 +2336,7 @@ window.procesarEntrada = async function(texto, esMaquina = false) {
   if (!esMaquina && /^otra vez$/i.test(textoBruto)) {
     textInput.value = "";
     mostrarAlerta("La orden «otra vez» solo funciona cuando acaba la partida.");
-    hablar("La partida aún no ha terminado. Debe empezar por " + silabaParaVoz(silabaObjetivo) + ".");
+    hablar("La partida aún no ha terminado. Tiene que empezar por " + silabaParaVoz(silabaObjetivo) + ".");
     return;
   }
 
@@ -2108,8 +2365,8 @@ window.procesarEntrada = async function(texto, esMaquina = false) {
   let jugadaValida = false;
   let vozError = "";
   if (s1 !== s2) {
-    mostrarAlerta("¡Error! Debe empezar por '" + silabaObjetivo.toUpperCase() + "', no por '" + silabasWord[0] + "'.");
-    vozError = palabra + ", no. Debe empezar por " + silabaParaVoz(silabaObjetivo) + ", no por " + silabaParaVoz(silabasWord[0]) + ". Inténtalo otra vez.";
+    mostrarAlerta(palabra.toUpperCase() + " ¡NO VALE! Tiene que empezar por '" + silabaObjetivo.toUpperCase() + "', no por '" + silabasWord[0].toUpperCase() + "'.");
+    vozError = palabra + ", ¡no vale! Tiene que empezar por " + silabaParaVoz(silabaObjetivo) + ", no por " + silabaParaVoz(silabasWord[0]) + ". Inténtalo otra vez.";
   } else if (esMaquina) {
     jugadaValida = true;
   } else {
@@ -2362,7 +2619,7 @@ function detenerMicrofono() {
 pedirWakeLock();
 </script>
 
-<!-- SCRIPT 3: CONEXIÓN BLINDADA GOOGLE ADMOB CON ESPERA REAL DE CIERRE DEL INTERSTICIAL -->
+<!-- SCRIPT 3: CONEXIÓN BLINDADA GOOGLE ADMOB CON RECUPERACIÓN COMPLETA DE AUDIO Y MICRÓFONO -->
 <script>
 (function initAdMob() {
   try {
@@ -2401,6 +2658,7 @@ pedirWakeLock();
       if (window._anuncioPantallaCompletaActivo) return;
       if (!interstitialReady) {
         preloadInterstitial();
+        if (typeof window.recuperarTrasAnuncio === 'function') window.recuperarTrasAnuncio();
         if (callback) callback();
         return;
       }
@@ -2419,7 +2677,8 @@ pedirWakeLock();
       const limpiar = () => {
         clearTimeout(safetyTimer);
         clearTimeout(returnTimer);
-        document.removeEventListener('visibilitychange', onVisChange);
+        document.removeEventListener('visibilitychange', onReturn);
+        window.removeEventListener('focus', onReturn);
         listeners.forEach(l => {
           try { if (l && typeof l.remove === 'function') l.remove(); } catch (e) {}
         });
@@ -2433,35 +2692,53 @@ pedirWakeLock();
         interstitialReady = false;
         window._anuncioPantallaCompletaActivo = false;
         preloadInterstitial();
-        setTimeout(() => { if (callback) callback(); }, 350);
+
+        // Recuperar foco de audio, volumen y SpeechRecognizer limpio tras volver del anuncio
+        if (typeof window.recuperarTrasAnuncio === 'function') {
+          window.recuperarTrasAnuncio();
+        }
+        setTimeout(() => {
+          if (typeof window.recuperarTrasAnuncio === 'function') {
+            window.recuperarTrasAnuncio();
+          }
+          if (callback) callback();
+        }, 600);
       };
 
-      const onVisChange = () => {
+      const onReturn = () => {
         if (anuncioMostrado && document.visibilityState === 'visible') {
           clearTimeout(returnTimer);
-          returnTimer = setTimeout(finalizarAnuncio, 1200);
+          returnTimer = setTimeout(finalizarAnuncio, 900);
         }
       };
-      document.addEventListener('visibilitychange', onVisChange);
+      document.addEventListener('visibilitychange', onReturn);
+      window.addEventListener('focus', onReturn);
 
       try {
         const admob = cap.Plugins && cap.Plugins.AdMob;
         if (admob && typeof admob.addListener === 'function') {
-          listeners.push(await admob.addListener('interstitialAdShowed', () => {
-            anuncioMostrado = true;
-            clearTimeout(safetyTimer);
-          }));
-          listeners.push(await admob.addListener('interstitialAdDismissed', () => {
-            finalizarAnuncio();
-          }));
-          listeners.push(await admob.addListener('interstitialAdFailedToShow', () => {
-            finalizarAnuncio();
-          }));
+          const evShow = ['interstitialAdShowed', 'onInterstitialAdShowed'];
+          const evClose = ['interstitialAdDismissed', 'onInterstitialAdDismissed', 'interstitialAdFailedToShow', 'onInterstitialAdFailedToShow'];
+          for (const ev of evShow) {
+            try {
+              listeners.push(await admob.addListener(ev, () => {
+                anuncioMostrado = true;
+                clearTimeout(safetyTimer);
+              }));
+            } catch (e) {}
+          }
+          for (const ev of evClose) {
+            try {
+              listeners.push(await admob.addListener(ev, () => {
+                finalizarAnuncio();
+              }));
+            } catch (e) {}
+          }
         }
 
         safetyTimer = setTimeout(() => {
           if (!anuncioMostrado) finalizarAnuncio();
-        }, 4000);
+        }, 4500);
 
         await callAdMob('showInterstitial', {});
         if (listeners.length === 0) finalizarAnuncio();
