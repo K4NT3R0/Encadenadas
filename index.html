@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#8b5a2b">
+<meta name="theme-color" content="#7c4a1e">
 <title>Encadenadas Pro</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -15,7 +15,7 @@ window.cerrarPortada = function() {
   if (p) {
     p.style.opacity = '0';
     p.style.pointerEvents = 'none';
-    setTimeout(function() { p.style.display = 'none'; }, 300);
+    setTimeout(function() { p.style.display = 'none'; }, 320);
   }
 };
 window.addEventListener('DOMContentLoaded', function() {
@@ -23,174 +23,330 @@ window.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@700;900&display=swap');
-html, body { height: 100%; }
+@import url('https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@700;800;900&display=swap');
+
+:root {
+  --wood-light: #f0c994;
+  --wood-mid: #d9a464;
+  --wood-dark: #8b5523;
+  --wood-deep: #4e2b10;
+  --brass: #f59e0b;
+}
+
+html, body { height: 100%; margin: 0; }
+
 body {
   font-family: 'Nunito', sans-serif;
-  background: linear-gradient(to bottom, #e0f2fe 0%, #ffedd5 60%, #8b5a2b 100%);
+  background:
+    radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.75) 0%, rgba(255, 244, 224, 0.35) 45%, rgba(139, 85, 35, 0.25) 100%),
+    linear-gradient(180deg, #dbeafe 0%, #fef3c7 52%, #b0743d 100%);
   touch-action: manipulation;
   height: 100vh;
   height: 100dvh;
 }
+
 input { -webkit-user-select: text; user-select: text; }
-.madera-textura {
-  background-color: #e6b981;
-  background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(139, 90, 43, 0.05) 10px, rgba(139, 90, 43, 0.05) 20px);
-  border: 4px solid #a67c52;
-  box-shadow: inset 0 0 10px rgba(139,90,43,0.5), 0 8px 15px rgba(0,0,0,0.2);
+
+/* Cuadrícula sutil de cuaderno artesanal */
+.fondo-cuaderno {
+  background-image:
+    linear-gradient(rgba(124, 74, 30, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124, 74, 30, 0.08) 1px, transparent 1px);
+  background-size: 28px 28px;
 }
+
+/* Placa de madera artesanal 3D */
+.madera-panel {
+  background:
+    repeating-linear-gradient(115deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 2px, transparent 2px, transparent 14px),
+    repeating-linear-gradient(35deg, rgba(78,43,16,0.05) 0px, rgba(78,43,16,0.05) 9px, transparent 9px, transparent 22px),
+    linear-gradient(180deg, #f1cb96 0%, #dda766 55%, #c78b47 100%);
+  border: 3px solid #7c4a1e;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 248, 225, 0.7),
+    inset 0 -4px 8px rgba(78, 43, 16, 0.35),
+    0 6px 0 #593213,
+    0 12px 22px rgba(45, 22, 6, 0.32);
+}
+
+/* Dock inferior de madera oscura biselada */
+.madera-dock {
+  background:
+    repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 8px, transparent 8px, transparent 18px),
+    linear-gradient(180deg, #9a602a 0%, #7a471b 55%, #5c3312 100%);
+  border-top: 5px solid #4e2b10;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 220, 170, 0.25),
+    0 -8px 24px rgba(35, 16, 4, 0.35);
+}
+
+/* Remaches metálicos decorativos */
+.remache {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 30% 30%, #fde68a, #b45309 65%, #451a03);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.45);
+}
+
+/* Título ENCADENADAS de máximo contraste */
 .titulo-alto-contraste {
   font-family: 'Titan One', 'Nunito', sans-serif;
   font-weight: 900;
   color: #ffffff;
-  -webkit-text-stroke: 2px #271206;
+  -webkit-text-stroke: 2.2px #2a1306;
   paint-order: stroke fill;
   text-shadow:
-    0 2px 0 #271206,
-    0 4px 0 #1c0d04,
-    0 6px 10px rgba(0, 0, 0, 0.55);
+    0 2px 0 #2a1306,
+    0 4px 0 #1a0b03,
+    0 6px 12px rgba(0, 0, 0, 0.45);
   letter-spacing: 0.05em;
 }
-@keyframes flotar {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
+
+/* Botón táctil 3D */
+.btn-3d {
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
+.btn-3d:active:not(:disabled) {
+  transform: translateY(3px);
+}
+
+/* Ficha de palabra táctil 3D */
+.ficha-palabra {
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,0.95),
+    0 5px 0 var(--bevel-color, #cbd5e1),
+    0 10px 18px rgba(30, 18, 6, 0.22);
+  transition: transform 0.15s ease;
+}
+.ficha-palabra:active {
+  transform: scale(0.97) translateY(2px);
+}
+
+/* Animaciones pulidas */
+@keyframes popIn {
+  0% { opacity: 0; transform: translateY(18px) scale(0.82); }
+  70% { opacity: 1; transform: translateY(-3px) scale(1.03); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes respirar {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+@keyframes ondaMic {
+  0% { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(1.55); opacity: 0; }
+}
+@keyframes sacudir {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+.anim-entrada { animation: popIn 0.34s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.ficha-activa { animation: respirar 2.8s ease-in-out infinite; }
+.anim-error { animation: sacudir 0.36s ease-in-out; }
+
+.mic-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  border: 3px solid #ef4444;
+  pointer-events: none;
+  animation: ondaMic 1.3s ease-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+
+/* Scroll visible, suave y táctil en la lista de palabras */
 #game-board {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
   overscroll-behavior: contain;
   scrollbar-width: thin;
-  scrollbar-color: #8b5a2b rgba(139, 90, 43, 0.18);
+  scrollbar-color: #8b5523 rgba(139, 85, 35, 0.16);
 }
 #game-board::-webkit-scrollbar {
   display: block;
   width: 6px;
 }
 #game-board::-webkit-scrollbar-track {
-  background: rgba(139, 90, 43, 0.15);
+  background: rgba(139, 85, 35, 0.14);
   border-radius: 9999px;
 }
 #game-board::-webkit-scrollbar-thumb {
-  background: #8b5a2b;
+  background: linear-gradient(180deg, #a66931, #6b3d16);
   border-radius: 9999px;
 }
 </style>
 </head>
-<body class="w-full overflow-hidden flex flex-col items-center justify-between p-4 select-none">
+<body class="w-full overflow-hidden flex flex-col items-center justify-between px-3 pt-2 pb-2 select-none relative">
 
-<div class="absolute inset-0 z-0 pointer-events-none opacity-20 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PHBhdGggZD0iTTAgMGg0MHY0MEgweiIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik0wIDIwaDQwTTIwIDB2NDAiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLW9wYWNpdHk9Ii4xIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=')]"></div>
+<div class="fondo-cuaderno absolute inset-0 z-0 pointer-events-none"></div>
 
 <!-- PANTALLA INICIAL A PANTALLA COMPLETA -->
-<div id="pantalla-portada" onclick="this.style.display='none'" ontouchstart="this.style.display='none'" class="fixed inset-0 z-[60] bg-[#ffedd5] flex flex-col items-center justify-end cursor-pointer transition-opacity duration-300">
+<div id="pantalla-portada" onclick="window.cerrarPortada()" ontouchstart="window.cerrarPortada()" class="fixed inset-0 z-[60] bg-[#ffedd5] flex flex-col items-center justify-end cursor-pointer transition-opacity duration-300">
   <img src="splash.png" onerror="this.onerror=null;this.src='31336.png'" alt="Palabras Encadenadas" class="absolute inset-0 w-full h-full object-cover pointer-events-none">
-  <button type="button" onclick="document.getElementById('pantalla-portada').style.display='none'" class="relative z-10 mb-10 bg-[#8b5a2b] border-4 border-[#ffedd5] text-white font-black text-xl px-8 py-3 rounded-full shadow-2xl animate-bounce">
+  <button type="button" onclick="window.cerrarPortada()" class="btn-3d relative z-10 mb-10 bg-gradient-to-b from-[#9a602a] to-[#6b3d16] border-4 border-[#fef3c7] text-white font-black text-xl px-8 py-3 rounded-full shadow-2xl animate-bounce">
     ▶ TOCA PARA EMPEZAR
   </button>
 </div>
 
 <!-- MENÚ PRINCIPAL -->
-<div id="modal-menu" role="dialog" aria-modal="true" aria-labelledby="titulo-menu" class="fixed inset-0 z-50 bg-black/60 flex flex-col items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-  <div class="madera-textura w-full max-w-sm max-h-[92dvh] overflow-y-auto rounded-3xl p-5 flex flex-col items-center shadow-2xl transform transition-transform scale-100">
-    <img src="icon-192.png" onerror="this.onerror=null;this.src='31541.png'" alt="Icono Encadenadas" class="w-16 h-16 rounded-2xl shadow-lg mb-1 border-2 border-[#a67c52]">
-    <h1 id="titulo-menu" class="titulo-alto-contraste text-3xl sm:text-4xl my-2 text-center">ENCADENADAS</h1>
+<div id="modal-menu" role="dialog" aria-modal="true" aria-labelledby="titulo-menu" class="fixed inset-0 z-50 bg-black/65 flex flex-col items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+  <div class="madera-panel w-full max-w-sm max-h-[92dvh] overflow-y-auto rounded-3xl p-5 flex flex-col items-center relative">
+    <div class="remache absolute top-3 left-3"></div>
+    <div class="remache absolute top-3 right-3"></div>
+    <div class="remache absolute bottom-3 left-3"></div>
+    <div class="remache absolute bottom-3 right-3"></div>
 
-    <div class="bg-[#5c3a21] text-amber-300 font-black text-sm px-4 py-1 rounded-full shadow mb-3 border border-[#a67c52]">
-      🏆 Récord actual: <span id="menu-record">0</span> palabras
+    <!-- Botón de ayuda / reglas -->
+    <button type="button" onclick="window.alternarAyudaMenu()" aria-label="Cómo jugar" title="Cómo jugar" class="btn-3d absolute top-3 right-6 bg-[#593213] hover:bg-[#3d210b] text-amber-200 font-black text-sm w-8 h-8 rounded-full border-2 border-amber-300/60 shadow flex items-center justify-center">
+      ?
+    </button>
+
+    <img src="icon-192.png" onerror="this.onerror=null;this.src='31541.png'" alt="Icono Encadenadas" class="w-16 h-16 rounded-2xl shadow-lg mb-1 border-2 border-[#7c4a1e]">
+    <h1 id="titulo-menu" class="titulo-alto-contraste text-3xl sm:text-4xl my-1.5 text-center">ENCADENADAS</h1>
+
+    <!-- Panel desplegable de reglas rápidas -->
+    <div id="panel-ayuda-menu" class="hidden w-full bg-amber-50/95 border-2 border-[#8b5523] rounded-2xl p-3 mb-3 text-xs text-[#4e2b10] shadow-inner space-y-1">
+      <p class="font-black text-center text-sm text-orange-700">🎯 Cómo jugar</p>
+      <p>• Encadena palabras usando la <strong>última sílaba</strong> de la anterior (ej. <em>PA-LA-<strong>BRA</strong> ➔ <strong>BRA</strong>-SA</em>).</p>
+      <p>• <strong>Manos libres:</strong> di tu palabra, <em>«¿qué significa?»</em>, <em>«me rindo»</em> o <em>«otra vez»</em> al terminar.</p>
+      <p>• Los plurales son válidos y pasan automáticamente a singular. Toca cualquier palabra del tablero para ver su significado.</p>
     </div>
 
-    <label class="text-xs font-extrabold text-[#5c3a21] mb-1 text-center uppercase tracking-wider">Número de jugadores (Máximo 4):</label>
+    <div class="bg-[#4e2b10] text-amber-300 font-black text-sm px-4 py-1 rounded-full shadow-md mb-3 border border-amber-400/40 flex items-center gap-1.5">
+      <span>🏆 Récord actual:</span>
+      <span id="menu-record" class="text-white text-base">0</span>
+      <span>palabras</span>
+    </div>
+
+    <label class="text-xs font-black text-[#4e2b10] mb-1.5 text-center uppercase tracking-wider">Multijugador (Máximo 4):</label>
     <div id="selector-num-jugadores" class="grid grid-cols-3 gap-2 w-full mb-3">
-      <button type="button" id="btn-num-2" onclick="window.elegirJugadores(2)" class="bg-orange-600 text-white font-black py-2 rounded-xl border-2 border-[#5c3a21] shadow active:scale-95">2 Jugadores</button>
-      <button type="button" id="btn-num-3" onclick="window.elegirJugadores(3)" class="bg-white text-slate-700 font-black py-2 rounded-xl border-2 border-orange-300 shadow active:scale-95">3 Jugadores</button>
-      <button type="button" id="btn-num-4" onclick="window.elegirJugadores(4)" class="bg-white text-slate-700 font-black py-2 rounded-xl border-2 border-orange-300 shadow active:scale-95">4 Jugadores</button>
+      <button type="button" id="btn-num-2" onclick="window.elegirJugadores(2)" class="btn-3d bg-orange-600 text-white font-black py-2 rounded-xl border-2 border-[#4e2b10] shadow-[0_3px_0_#4e2b10]">2 Jugadores</button>
+      <button type="button" id="btn-num-3" onclick="window.elegirJugadores(3)" class="btn-3d bg-amber-50 text-slate-700 font-black py-2 rounded-xl border-2 border-[#b0743d] shadow-[0_3px_0_#9a602a]">3 Jugadores</button>
+      <button type="button" id="btn-num-4" onclick="window.elegirJugadores(4)" class="btn-3d bg-amber-50 text-slate-700 font-black py-2 rounded-xl border-2 border-[#b0743d] shadow-[0_3px_0_#9a602a]">4 Jugadores</button>
     </div>
 
-    <div id="contenedor-inputs-jugadores" class="w-full space-y-2 mb-4 max-h-44 overflow-y-auto pr-1">
-      <input type="text" id="input-nombre-1" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 1 (Humano)" autocomplete="off" class="w-full py-1.5 px-3 rounded-xl text-center font-bold text-base text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
-      <input type="text" id="input-nombre-2" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 2" autocomplete="off" class="w-full py-1.5 px-3 rounded-xl text-center font-bold text-base text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
-      <input type="text" id="input-nombre-3" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 3" autocomplete="off" class="hidden w-full py-1.5 px-3 rounded-xl text-center font-bold text-base text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
-      <input type="text" id="input-nombre-4" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 4" autocomplete="off" class="hidden w-full py-1.5 px-3 rounded-xl text-center font-bold text-base text-slate-700 outline-none border-2 border-orange-300 focus:border-orange-500 shadow-inner">
+    <div id="contenedor-inputs-jugadores" class="w-full space-y-2 mb-4 max-h-40 overflow-y-auto pr-0.5">
+      <input type="text" id="input-nombre-1" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 1 (Humano)" autocomplete="off" class="w-full py-1.5 px-3 rounded-xl text-center font-extrabold text-base text-slate-800 bg-white/95 outline-none border-2 border-[#b0743d] focus:border-blue-500 shadow-inner">
+      <input type="text" id="input-nombre-2" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 2" autocomplete="off" class="w-full py-1.5 px-3 rounded-xl text-center font-extrabold text-base text-slate-800 bg-white/95 outline-none border-2 border-[#b0743d] focus:border-orange-500 shadow-inner">
+      <input type="text" id="input-nombre-3" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 3" autocomplete="off" class="hidden w-full py-1.5 px-3 rounded-xl text-center font-extrabold text-base text-slate-800 bg-white/95 outline-none border-2 border-[#b0743d] focus:border-emerald-500 shadow-inner">
+      <input type="text" id="input-nombre-4" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 4" autocomplete="off" class="hidden w-full py-1.5 px-3 rounded-xl text-center font-extrabold text-base text-slate-800 bg-white/95 outline-none border-2 border-[#b0743d] focus:border-pink-500 shadow-inner">
     </div>
 
-    <button type="button" id="btn-pve-menu" onclick="window.arranqueVinculado('pve')" class="w-full bg-white border-4 border-orange-500 rounded-xl py-2.5 px-4 mb-2.5 text-lg font-extrabold text-blue-600 shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
+    <button type="button" id="btn-pve-menu" onclick="window.arranqueVinculado('pve')" class="btn-3d w-full bg-gradient-to-b from-blue-500 to-blue-600 border-2 border-blue-800 rounded-2xl py-3 px-4 mb-2.5 text-base sm:text-lg font-black text-white shadow-[0_4px_0_#1e3a8a] flex items-center justify-center gap-2">
       <span id="txt-pve">👤 Jugador 1 vs 🤖 Máquina</span>
     </button>
-    <button type="button" id="btn-pvp-menu" onclick="window.arranqueVinculado('pvp')" class="w-full bg-white border-4 border-blue-500 rounded-xl py-2.5 px-4 text-lg font-extrabold text-orange-600 shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
-      <span id="txt-pvp">👥 Jugador 1 vs Jugador 2</span>
+    <button type="button" id="btn-pvp-menu" onclick="window.arranqueVinculado('pvp')" class="btn-3d w-full bg-gradient-to-b from-orange-500 to-orange-600 border-2 border-orange-800 rounded-2xl py-3 px-4 text-base sm:text-lg font-black text-white shadow-[0_4px_0_#7c2d12] flex items-center justify-center gap-2">
+      <span id="txt-pvp">👤 Jugador 1 vs 👤 Jugador 2</span>
     </button>
-    <p class="mt-3 text-xs font-bold text-[#5c3a21] text-center">
-      Manos libres: di tu palabra (plurales pasan a singular), «¿qué significa?», «me rindo» o «otra vez» al terminar.
+    <p class="mt-3 text-[11px] font-extrabold text-[#4e2b10]/90 text-center leading-tight">
+      🎙️ Manos libres: di tu palabra, «¿qué significa?», «me rindo» o «otra vez» al terminar.
     </p>
   </div>
 </div>
 
-<!-- CABECERA -->
-<header class="z-10 w-full max-w-md flex flex-col items-center mt-1 relative">
-  <div class="madera-textura text-center py-2 px-4 rounded-2xl w-full relative shadow-lg flex flex-col items-center">
-    <button id="btn-home" type="button" onclick="window.irAlMenuHome()" aria-label="Volver al menú principal" title="Inicio" class="absolute left-3 top-2.5 bg-[#5c3a21] hover:bg-[#3e2716] text-white text-xl w-10 h-10 rounded-xl shadow-md border-2 border-[#a67c52] flex items-center justify-center active:scale-90 transition-transform">
+<!-- CABECERA ARTESANAL 3D -->
+<header class="z-20 w-full max-w-md flex flex-col items-center relative">
+  <div class="madera-panel text-center py-2 px-3 rounded-2xl w-full relative flex flex-col items-center">
+    <div class="remache absolute top-2 left-2"></div>
+    <div class="remache absolute top-2 right-2"></div>
+
+    <!-- Botón Home -->
+    <button id="btn-home" type="button" onclick="window.irAlMenuHome()" aria-label="Volver al menú principal" title="Menú principal" class="btn-3d absolute left-3 top-2.5 bg-gradient-to-b from-[#6b3d16] to-[#4e2b10] text-white text-lg w-10 h-10 rounded-xl shadow-[0_3px_0_#2a1306] border-2 border-amber-300/40 flex items-center justify-center">
       🏠
     </button>
 
-    <h1 class="titulo-alto-contraste text-2xl sm:text-3xl">ENCADENADAS</h1>
+    <!-- Botón Sonido FX -->
+    <button id="btn-sfx" type="button" onclick="window.alternarSonidoFX()" aria-label="Activar o silenciar efectos de sonido" title="Efectos de sonido" class="btn-3d absolute right-3 top-2.5 bg-gradient-to-b from-[#6b3d16] to-[#4e2b10] text-amber-200 text-lg w-10 h-10 rounded-xl shadow-[0_3px_0_#2a1306] border-2 border-amber-300/40 flex items-center justify-center">
+      🔊
+    </button>
 
-    <div class="flex items-center justify-center gap-2 mt-1">
-      <div class="bg-white/90 text-slate-800 text-xs font-black px-3 py-0.5 rounded-full border border-[#a67c52] shadow-sm">
-        🔗 Palabras: <span id="contador-palabras" class="text-blue-600">0</span>
+    <h1 class="titulo-alto-contraste text-2xl sm:text-3xl leading-none mt-0.5">ENCADENADAS</h1>
+
+    <!-- Marcadores -->
+    <div class="flex items-center justify-center gap-2 mt-1.5">
+      <div class="bg-white/95 text-slate-800 text-xs font-black px-3 py-0.5 rounded-full border-2 border-[#8b5523] shadow-sm">
+        🔗 Palabras: <span id="contador-palabras" class="text-blue-600 text-sm">0</span>
       </div>
-      <div class="bg-[#5c3a21] text-amber-300 text-xs font-black px-3 py-0.5 rounded-full border border-[#a67c52] shadow-sm">
-        🏆 Récord: <span id="record-palabras">0</span>
+      <div id="pill-record" class="bg-[#4e2b10] text-amber-300 text-xs font-black px-3 py-0.5 rounded-full border-2 border-amber-400/50 shadow-sm transition-transform">
+        🏆 Récord: <span id="record-palabras" class="text-white text-sm">0</span>
       </div>
     </div>
 
-    <div id="indicador-turno" aria-live="polite" class="mt-1.5 text-sm font-bold text-white bg-[#5c3a21] rounded-full px-4 py-0.5 inline-block transition-colors">
+    <!-- Indicador de Turno + Sílaba destacada -->
+    <div id="indicador-turno" aria-live="polite" class="mt-1.5 text-xs sm:text-sm font-black text-white bg-[#4e2b10] rounded-full px-4 py-1 inline-flex items-center gap-1.5 shadow-md transition-colors">
       Esperando...
     </div>
   </div>
 </header>
 
-<!-- LISTA DE PALABRAS CON SCROLL REAL Y BARRA VISIBLE -->
+<!-- TABLERO CON SCROLL VISIBLE -->
 <main id="game-board" class="z-10 flex-1 min-h-0 w-full max-w-md px-2 relative">
-  <div id="game-board-list" class="w-full min-h-full flex flex-col justify-end items-center pt-6 pb-16 space-y-2"></div>
+  <div id="game-board-list" class="w-full min-h-full flex flex-col justify-end items-center pt-6 pb-16 space-y-1"></div>
 </main>
 
-<footer class="z-20 w-full max-w-md bg-[#8b5a2b] border-t-8 border-[#5c3a21] rounded-t-3xl p-4 shadow-2xl relative">
-  <div class="absolute -top-6 right-4 text-3xl transform rotate-12 pointer-events-none" aria-hidden="true">✏️</div>
-  <div class="absolute -top-4 left-6 text-2xl transform -rotate-12 pointer-events-none" aria-hidden="true">🧽</div>
+<!-- DOCK DE CONTROLES -->
+<footer class="madera-dock z-20 w-full max-w-md rounded-t-3xl px-3.5 pt-3.5 pb-3 relative">
+  <div class="absolute -top-5 left-4 text-xl transform -rotate-12 pointer-events-none opacity-80" aria-hidden="true">🧽</div>
 
-  <button id="btn-rendirse" type="button" onclick="window.meRindo()" class="absolute -top-12 right-4 bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-full shadow-lg border-2 border-red-800 flex items-center gap-1 active:scale-95 transition-transform z-30">
-    <span aria-hidden="true">🏳️</span> Me rindo
-  </button>
-
-  <div id="alert-box" role="alert" class="hidden absolute -top-16 left-0 right-0 mx-auto w-11/12 bg-red-500 text-white text-center py-2 px-4 rounded-xl font-bold shadow-lg transition-all duration-300 opacity-0 z-50"></div>
-
-  <div id="controls-container" class="flex items-center gap-3">
-    <button id="mic-btn" type="button" onclick="window.alternarMicrofono()" aria-label="Activar o desactivar el micrófono" class="bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white p-4 rounded-full shadow-lg transition-transform transform active:scale-95 flex-shrink-0 disabled:opacity-50 disabled:active:scale-100">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-      </svg>
+  <!-- Botones rápidos flotantes: Significado + Me rindo -->
+  <div id="barra-acciones-rapidas" class="absolute -top-11 right-3 flex items-center gap-2 z-30">
+    <button id="btn-significado" type="button" onclick="window.pedirSignificadoBoton()" class="btn-3d bg-gradient-to-b from-amber-400 to-amber-500 text-[#3d210b] font-black text-xs sm:text-sm py-1.5 px-3 rounded-full shadow-[0_3px_0_#92400e] border-2 border-amber-700 flex items-center gap-1">
+      <span aria-hidden="true">📖</span> ¿Qué es?
     </button>
-    <div class="flex-1 bg-white rounded-2xl flex items-center px-4 py-2 shadow-inner border-2 border-orange-200 focus-within:border-orange-500 transition-colors">
-      <input type="text" id="text-input" onkeydown="if(event.key==='Enter')window.procesarEntrada(this.value)" aria-label="Tu palabra" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Di o escribe palabra..." class="w-full bg-transparent outline-none text-lg font-bold text-slate-700 placeholder-slate-400 disabled:bg-transparent">
-      <button id="send-btn" type="button" onclick="window.procesarEntrada(document.getElementById('text-input').value)" aria-label="Enviar palabra" class="ml-2 text-orange-500 font-black text-xl disabled:opacity-50">➔</button>
+    <button id="btn-rendirse" type="button" onclick="window.meRindo()" class="btn-3d bg-gradient-to-b from-red-500 to-red-600 text-white font-black text-xs sm:text-sm py-1.5 px-3 rounded-full shadow-[0_3px_0_#7f1d1d] border-2 border-red-800 flex items-center gap-1">
+      <span aria-hidden="true">🏳️</span> Me rindo
+    </button>
+  </div>
+
+  <!-- Alerta flotante -->
+  <div id="alert-box" role="alert" class="hidden absolute -top-20 left-0 right-0 mx-auto w-11/12 bg-gradient-to-r from-red-600 to-rose-600 text-white text-center py-2 px-4 rounded-2xl font-extrabold text-sm shadow-xl border-2 border-white/60 transition-all duration-300 opacity-0 z-50"></div>
+
+  <!-- Controles de voz y texto -->
+  <div id="controls-container" class="flex items-center gap-2.5">
+    <div class="relative flex-shrink-0">
+      <div id="mic-ring-fx" class="hidden mic-ring"></div>
+      <button id="mic-btn" type="button" onclick="window.alternarMicrofono()" aria-label="Activar o desactivar el micrófono" class="btn-3d relative z-10 bg-gradient-to-b from-blue-500 to-blue-600 text-white p-3.5 rounded-full shadow-[0_4px_0_#1e3a8a] border-2 border-blue-200/60 disabled:opacity-50">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+        </svg>
+      </button>
+    </div>
+
+    <div id="caja-input-wrap" class="flex-1 bg-amber-50 rounded-2xl flex items-center pl-4 pr-2 py-1.5 shadow-inner border-2 border-[#4e2b10] focus-within:border-amber-400 focus-within:bg-white transition-colors">
+      <input type="text" id="text-input" onkeydown="if(event.key==='Enter')window.procesarEntrada(this.value)" aria-label="Tu palabra" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Di o escribe palabra..." class="w-full bg-transparent outline-none text-base sm:text-lg font-extrabold text-slate-800 placeholder-slate-400 disabled:bg-transparent">
+      <button id="send-btn" type="button" onclick="window.procesarEntrada(document.getElementById('text-input').value)" aria-label="Enviar palabra" class="btn-3d ml-1.5 bg-gradient-to-b from-orange-400 to-orange-600 text-white font-black text-lg w-10 h-10 rounded-xl shadow-[0_2px_0_#9a3412] flex items-center justify-center flex-shrink-0 disabled:opacity-50">
+        ➔
+      </button>
     </div>
   </div>
 
+  <!-- Botón de reinicio al acabar -->
   <div id="fin-juego-botones" class="hidden flex gap-2">
-    <button id="btn-otra-vez" type="button" onclick="window.reiniciarMismaPartida()" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-black text-lg py-3.5 rounded-2xl shadow-lg border-4 border-green-700 active:scale-95 transition-transform uppercase tracking-wide">
+    <button id="btn-otra-vez" type="button" onclick="window.reiniciarMismaPartida()" class="btn-3d flex-1 bg-gradient-to-b from-emerald-400 to-emerald-600 text-white font-black text-base sm:text-lg py-3 rounded-2xl shadow-[0_4px_0_#065f46] border-2 border-emerald-200/70 uppercase tracking-wide">
       🔄 Otra vez (o di «otra vez»)
     </button>
   </div>
 
-  <div class="text-center mt-2 text-orange-200 text-sm font-semibold" id="mic-status" aria-live="polite">Micrófono apagado</div>
+  <div class="text-center mt-2 text-amber-100/95 text-xs sm:text-sm font-bold tracking-wide" id="mic-status" aria-live="polite">Micrófono apagado</div>
 </footer>
 
 <!-- SCRIPT 1: CONTROL DEL MENÚ Y JUGADORES (2 A 4) -->
 <script>
 window.numJugadores = 2;
+
+window.alternarAyudaMenu = function() {
+  var panel = document.getElementById('panel-ayuda-menu');
+  if (panel) panel.classList.toggle('hidden');
+};
 
 window.elegirJugadores = function(n) {
   if (n < 2) n = 2;
@@ -201,8 +357,8 @@ window.elegirJugadores = function(n) {
     var btn = document.getElementById('btn-num-' + i);
     if (btn) {
       btn.className = (i === n)
-        ? "bg-orange-600 text-white font-black py-2 rounded-xl border-2 border-[#5c3a21] shadow active:scale-95"
-        : "bg-white text-slate-700 font-black py-2 rounded-xl border-2 border-orange-300 shadow active:scale-95";
+        ? "btn-3d bg-orange-600 text-white font-black py-2 rounded-xl border-2 border-[#4e2b10] shadow-[0_3px_0_#4e2b10]"
+        : "btn-3d bg-amber-50 text-slate-700 font-black py-2 rounded-xl border-2 border-[#b0743d] shadow-[0_3px_0_#9a602a]";
     }
   }
   for (var j = 1; j <= 4; j++) {
@@ -252,30 +408,39 @@ window.cargarDatosMenu = function() {
 window.cargarDatosMenu();
 </script>
 
-<!-- SCRIPT 2: MOTOR PRINCIPAL + PUENTE ANTI-CORS + RAE-API + CACHÉ LOCAL -->
+<!-- SCRIPT 2: MOTOR PROFESIONAL DE ENCADENADAS -->
 <script>
 const gameBoard = document.getElementById('game-board');
 const gameBoardList = document.getElementById('game-board-list');
 const micBtn = document.getElementById('mic-btn');
+const micRingFx = document.getElementById('mic-ring-fx');
 const micStatus = document.getElementById('mic-status');
 const textInput = document.getElementById('text-input');
+const cajaInputWrap = document.getElementById('caja-input-wrap');
 const sendBtn = document.getElementById('send-btn');
 const alertBox = document.getElementById('alert-box');
 const modalMenu = document.getElementById('modal-menu');
 const indicadorTurno = document.getElementById('indicador-turno');
 const btnRendirse = document.getElementById('btn-rendirse');
+const btnSignificado = document.getElementById('btn-significado');
+const barraAccionesRapidas = document.getElementById('barra-acciones-rapidas');
 const finJuegoBotones = document.getElementById('fin-juego-botones');
 const controlsContainer = document.getElementById('controls-container');
 const spanContadorPalabras = document.getElementById('contador-palabras');
 const spanRecordPalabras = document.getElementById('record-palabras');
 const spanMenuRecord = document.getElementById('menu-record');
+const pillRecord = document.getElementById('pill-record');
+const btnSfx = document.getElementById('btn-sfx');
 
 window._anuncioPantallaCompletaActivo = false;
 
+let partidaId = 0;
 let historialPalabras = [];
+let historialSinTildes = new Set();
 let silabaObjetivo = "";
 let modoActual = "";
 let esTurnoMaquina = false;
+let enProceso = false;
 let nombres = ["Jugador 1", "Jugador 2"];
 let jugadorActual = 0;
 let juegoTerminado = false;
@@ -293,16 +458,88 @@ let cancelarHablaPrevia = null;
 let wakeLock = null;
 let videoWakeLock = null;
 
+// Preferencia de efectos de sonido táctiles (sin bucles continuos, cero pitidos)
+let sfxActivo = (localStorage.getItem('encadenadas_sfx') !== '0');
+let audioCtx = null;
+
+function actualizarBotonSfx() {
+  if (btnSfx) {
+    btnSfx.textContent = sfxActivo ? '🔊' : '🔇';
+    btnSfx.classList.toggle('opacity-70', !sfxActivo);
+  }
+}
+actualizarBotonSfx();
+
+window.alternarSonidoFX = function() {
+  sfxActivo = !sfxActivo;
+  try { localStorage.setItem('encadenadas_sfx', sfxActivo ? '1' : '0'); } catch (e) {}
+  actualizarBotonSfx();
+  if (sfxActivo) tocarSonidoFX('click');
+};
+
+function tocarSonidoFX(tipo) {
+  if (!sfxActivo || window._anuncioPantallaCompletaActivo) return;
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    if (!audioCtx) audioCtx = new AudioCtx();
+    if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+
+    const now = audioCtx.currentTime;
+    const playTone = (freq, delay, dur, vol, wave = 'triangle') => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = wave;
+      osc.frequency.setValueAtTime(freq, now + delay);
+      gain.gain.setValueAtTime(0.001, now + delay);
+      gain.gain.exponentialRampToValueAtTime(vol, now + delay + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + delay + dur);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now + delay);
+      osc.stop(now + delay + dur + 0.02);
+    };
+
+    if (tipo === 'pop') {
+      playTone(440, 0, 0.09, 0.12, 'triangle');
+      playTone(660, 0.055, 0.12, 0.10, 'sine');
+    } else if (tipo === 'record') {
+      playTone(523.25, 0, 0.11, 0.13, 'triangle');
+      playTone(659.25, 0.08, 0.11, 0.13, 'triangle');
+      playTone(783.99, 0.16, 0.18, 0.14, 'sine');
+    } else if (tipo === 'error') {
+      playTone(230, 0, 0.13, 0.11, 'sine');
+      playTone(180, 0.09, 0.16, 0.10, 'sine');
+    } else if (tipo === 'victoria') {
+      playTone(523.25, 0, 0.14, 0.14, 'triangle');
+      playTone(659.25, 0.10, 0.14, 0.14, 'triangle');
+      playTone(783.99, 0.20, 0.14, 0.14, 'triangle');
+      playTone(1046.5, 0.30, 0.32, 0.16, 'sine');
+    } else if (tipo === 'click') {
+      playTone(520, 0, 0.06, 0.08, 'sine');
+    }
+  } catch (e) {}
+}
+
 const COLORES_JUGADORES = [
-  { bg: "bg-blue-600", border: "border-orange-500", text: "text-blue-600", sil: "text-orange-500" },
-  { bg: "bg-orange-600", border: "border-purple-500", text: "text-purple-700", sil: "text-purple-500" },
-  { bg: "bg-emerald-600", border: "border-emerald-500", text: "text-emerald-700", sil: "text-emerald-500" },
-  { bg: "bg-pink-600", border: "border-pink-500", text: "text-pink-700", sil: "text-pink-500" }
+  { bg: "bg-blue-600", border: "border-orange-500", bevel: "#ea580c", text: "text-blue-700", sil: "text-orange-500", badge: "bg-blue-600" },
+  { bg: "bg-purple-600", border: "border-purple-500", bevel: "#7e22ce", text: "text-purple-800", sil: "text-purple-500", badge: "bg-purple-600" },
+  { bg: "bg-emerald-600", border: "border-emerald-500", bevel: "#047857", text: "text-emerald-800", sil: "text-emerald-500", badge: "bg-emerald-600" },
+  { bg: "bg-rose-600", border: "border-rose-500", bevel: "#be123c", text: "text-rose-800", sil: "text-rose-500", badge: "bg-rose-600" }
 ];
 
 const MAPA_TILDES = { 'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u', 'ü': 'u' };
 function SinTildes(str) {
   return (str || "").toLowerCase().replace(/[áéíóúü]/g, c => MAPA_TILDES[c]);
+}
+
+function escapeHtml(str) {
+  return String(str || "")
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function bajarScrollTablero() {
@@ -311,7 +548,7 @@ function bajarScrollTablero() {
   });
 }
 
-// ---------- PUENTE HTTP UNIVERSAL (ANDROID NATIVO ANTI-CORS + RESPUESTA WEB FETCH) ----------
+// ---------- PUENTE HTTP UNIVERSAL (ANDROID NATIVO ANTI-CORS + WEB FETCH) ----------
 const _pendingHttp = {};
 let _httpSeq = 0;
 
@@ -418,28 +655,28 @@ function lanzarConfeti() {
     const colores = ['#f43f5e', '#f59e0b', '#10b981', '#3b82f6', '#a855f7', '#ec4899', '#eab308', '#06b6d4'];
     const particulas = [];
     const origenX = canvas.width / 2;
-    const origenY = canvas.height * 0.42;
+    const origenY = canvas.height * 0.40;
 
-    for (let i = 0; i < 140; i++) {
+    for (let i = 0; i < 150; i++) {
       const angulo = Math.random() * Math.PI * 2;
-      const velocidad = 5 + Math.random() * 13;
+      const velocidad = 5 + Math.random() * 14;
       particulas.push({
         x: origenX + (Math.random() - 0.5) * 40,
         y: origenY + (Math.random() - 0.5) * 30,
         vx: Math.cos(angulo) * velocidad,
-        vy: Math.sin(angulo) * velocidad - (4 + Math.random() * 5),
+        vy: Math.sin(angulo) * velocidad - (4.5 + Math.random() * 5),
         w: 7 + Math.random() * 7,
         h: 5 + Math.random() * 6,
         color: colores[i % colores.length],
         rot: Math.random() * 360,
-        vRot: (Math.random() - 0.5) * 14,
+        vRot: (Math.random() - 0.5) * 15,
         forma: i % 3,
         opacidad: 1
       });
     }
 
     const inicio = performance.now();
-    const duracion = 3600;
+    const duracion = 3800;
 
     function animar(ahora) {
       const transcurrido = ahora - inicio;
@@ -451,8 +688,8 @@ function lanzarConfeti() {
         p.vx *= 0.985;
         p.vy += 0.28;
         p.rot += p.vRot;
-        if (transcurrido > 2400) {
-          p.opacidad = Math.max(0, 1 - (transcurrido - 2400) / 1200);
+        if (transcurrido > 2500) {
+          p.opacidad = Math.max(0, 1 - (transcurrido - 2500) / 1300);
         }
 
         ctx.save();
@@ -485,7 +722,7 @@ function lanzarConfeti() {
   } catch (e) {}
 }
 
-// ---------- Pronunciación natural de sílabas (sin deletreo ni "con acento agudo") ----------
+// ---------- Pronunciación natural de sílabas (sin deletreo, sin "acento agudo", "to->tó", "cil->zil") ----------
 const FONETICA_SILABAS_VOZ = {
   'to': 'tó',
   'cil': 'zil', 'cel': 'zel', 'cir': 'zir', 'cer': 'zer',
@@ -512,16 +749,22 @@ function actualizarMarcadoresUI() {
 }
 
 function incrementarContadorPalabras() {
+  const superadoAhora = (contadorPalabras + 1) > recordPalabras;
   contadorPalabras++;
-  if (contadorPalabras > recordPalabras) {
+  if (superadoAhora) {
     recordPalabras = contadorPalabras;
     recordSuperadoEnPartida = true;
     try { localStorage.setItem('encadenadas_record', String(recordPalabras)); } catch (e) {}
+    if (pillRecord) {
+      pillRecord.classList.add('scale-110');
+      setTimeout(() => pillRecord.classList.remove('scale-110'), 420);
+    }
   }
   actualizarMarcadoresUI();
+  return superadoAhora;
 }
 
-// ---------- PANTALLA ENCENDIDA SIN AUDIO ----------
+// ---------- PANTALLA ENCENDIDA SIN AUDIO (ZERO PITIDOS) ----------
 async function pedirWakeLock() {
   try {
     if ('wakeLock' in navigator && !wakeLock && document.visibilityState === 'visible') {
@@ -1466,7 +1709,6 @@ function resumirDefinicion(texto) {
   if (!s || s.length < 7) return "";
   if (/↑|DEX online|Diccionario de la lengua española|Consultado el|http/i.test(s)) return "";
 
-  // Primera cláusula clara (hasta primer punto o punto y coma)
   let frase = s.split(/(?:\.\s+|;\s+)/)[0].trim();
   const palabras = frase.split(/\s+/).filter(Boolean);
   if (palabras.length > 16) {
@@ -1491,7 +1733,6 @@ function extraerMejorAcepcionRae(jsonData, terminoOriginal) {
       for (const sense of m.senses) sensesOrdenados.push(sense);
     }
   }
-  // Priorizar acepciones de uso común frente a arcaicas o poco usadas
   sensesOrdenados.sort((a, b) => {
     const score = (x) => (x && x.usage === 'common') ? 0 : (x && (x.usage === 'obsolete' || x.usage === 'rare')) ? 2 : 1;
     return score(a) - score(b);
@@ -1558,13 +1799,11 @@ async function buscarLemaEnRaeSearch(termino) {
 }
 
 async function consultarRaeApiCompleto(p) {
-  // 1) Consulta exacta
   const r1 = await consultarRaeDirecto(p);
   if (r1.encontrado && r1.info && (r1.info.definicion || r1.info.sinonimos.length > 0)) {
     return r1.info;
   }
 
-  // 2) Probar sugerencia exacta (ej. falta tilde)
   const pSin = SinTildes(p);
   for (const sug of r1.suggestions.slice(0, 2)) {
     const s = String(sug || '').toLowerCase().trim();
@@ -1574,13 +1813,11 @@ async function consultarRaeApiCompleto(p) {
     }
   }
 
-  // 3) Probar lemas base (femenino -> masculino, participio -> infinitivo)
   for (const lema of obtenerLemasBase(p).slice(0, 3)) {
     const rLema = await consultarRaeDirecto(lema);
     if (rLema.encontrado && rLema.info && rLema.info.definicion) return rLema.info;
   }
 
-  // 4) Búsqueda en /api/search
   const hallado = await buscarLemaEnRaeSearch(p);
   if (hallado && hallado !== p) {
     const rSearch = await consultarRaeDirecto(hallado);
@@ -1588,7 +1825,6 @@ async function consultarRaeApiCompleto(p) {
       return rSearch.info;
     }
   }
-
   return null;
 }
 
@@ -1730,15 +1966,12 @@ async function obtenerExplicacionPalabra(palabra) {
   const p = (palabra || "").toLowerCase().trim();
   if (!p) return { tipo: 'ninguno', texto: '' };
 
-  // Nivel 1a: Diccionario básico offline (0 ms)
   const defBasica = buscarDefinicionEnBasico(p);
   if (defBasica) return { tipo: 'definicion', texto: defBasica };
 
-  // Nivel 1b: Caché en localStorage (0 ms)
   const enCache = leerCacheDef(p);
   if (enCache && enCache.texto) return enCache;
 
-  // Nivel 2: rae-api.com (definición oficial resumida)
   let sinonimosRespaldo = [];
   const raeInfo = await consultarRaeApiCompleto(p);
   if (raeInfo) {
@@ -1752,7 +1985,6 @@ async function obtenerExplicacionPalabra(palabra) {
     }
   }
 
-  // Nivel 3: Wikcionario ES (con salto de lema) + Wikipedia ES
   const wikData = await obtenerSeccionEspanolWikcionario(p);
   if (wikData) {
     const { def, lemaEnlazado } = extraerDefinicionDeSeccionEs(wikData.seccion);
@@ -1790,7 +2022,6 @@ async function obtenerExplicacionPalabra(palabra) {
     return resWiki;
   }
 
-  // Nivel 4: Sinónimos reales (RAE / Wikcionario / Datamuse)
   if (sinonimosRespaldo.length === 0) {
     sinonimosRespaldo = await consultarSinonimosDatamuse(p);
   }
@@ -1980,10 +2211,11 @@ function pausarReconocimientoMientrasHabla(mensajeEstado) {
   if (recon) {
     try { if (typeof recon.abort === 'function') recon.abort(); else recon.stop(); } catch (e) {}
   }
-  micBtn.classList.remove('bg-red-500', 'animate-pulse');
-  micBtn.classList.add('bg-blue-500');
+  micBtn.classList.remove('from-red-500', 'to-red-600', 'shadow-[0_4px_0_#7f1d1d]');
+  micBtn.classList.add('from-blue-500', 'to-blue-600', 'shadow-[0_4px_0_#1e3a8a]');
+  if (micRingFx) micRingFx.classList.add('hidden');
   if (mensajeEstado) micStatus.textContent = mensajeEstado;
-  else if (micDeseado) micStatus.textContent = "🔊 Máquina hablando (micrófono en espera)...";
+  else if (micDeseado) micStatus.textContent = "🔊 Hablando (micrófono en espera)...";
 }
 
 window.pausarTodoParaAnuncio = function() {
@@ -2006,6 +2238,7 @@ window.recuperarTrasAnuncio = function() {
 function hablar(texto, callback) {
   if (window._anuncioPantallaCompletaActivo) return;
   if (cancelarHablaPrevia) { cancelarHablaPrevia(); cancelarHablaPrevia = null; }
+  const idActual = partidaId;
   hablando = true;
   ignorarVozHasta = Date.now() + 15000;
 
@@ -2027,7 +2260,7 @@ function hablar(texto, callback) {
     ignorarVozHasta = Date.now() + 850;
     setTimeout(() => {
       hablando = false;
-      if (window._anuncioPantallaCompletaActivo) return;
+      if (window._anuncioPantallaCompletaActivo || idActual !== partidaId) return;
       if (callback) callback();
       if (micDeseado && modoActual !== "" && !esTurnoMaquina) arrancarRecon();
     }, 400);
@@ -2068,7 +2301,6 @@ async function verificarPalabraOnline(p) {
   const singulares = esExcepcion ? [] : obtenerSingularesDePlural(p).map(c => c.word);
   const candidatos = [...singulares, p];
 
-  // 1) Validar en rae-api.com (y aprovechar para cachear su definición al vuelo)
   for (const cand of candidatos) {
     const r = await consultarRaeDirecto(cand);
     if (r.encontrado && r.info && r.info.palabra) {
@@ -2079,7 +2311,6 @@ async function verificarPalabraOnline(p) {
     }
   }
 
-  // 2) Validar en Wikcionario ES
   for (const cand of candidatos) {
     const wik = await obtenerSeccionEspanolWikcionario(cand);
     if (wik && wik.titulo) {
@@ -2088,7 +2319,6 @@ async function verificarPalabraOnline(p) {
     }
   }
 
-  // 3) Respaldo en Datamuse ES
   for (const cand of candidatos) {
     const res = await fetchJsonUniversal('https://api.datamuse.com/words?sp=' + encodeURIComponent(cand) + '&max=6&v=es', 2500);
     if (!res.ok || !Array.isArray(res.data)) continue;
@@ -2119,12 +2349,12 @@ async function verificarPalabraEnServidor(palabra) {
   return false;
 }
 
-// ---------- Selección de la máquina: PRIORIZA diccionario básico integrado ----------
+// ---------- Selección de la máquina: PRIORIZA diccionario básico y evita callejones raros ----------
 async function obtenerPalabrasCandidatasMaquina(prefijoNormalizado) {
   await Promise.all([cargarDiccionarioBasico(), cargarDiccionarioRAE()]);
 
   const basicas = arrayBasico.filter(p => {
-    if (p.length < 3 || historialPalabras.includes(p)) return false;
+    if (p.length < 3 || historialSinTildes.has(SinTildes(p))) return false;
     if (!SOLO_LETRAS.test(p)) return false;
     const silabas = silabear(p);
     return silabas.length >= 2 && normalizarSilaba(silabas[0]) === prefijoNormalizado;
@@ -2133,7 +2363,7 @@ async function obtenerPalabrasCandidatasMaquina(prefijoNormalizado) {
 
   if (arrayDiccionarioRAE) {
     const todas = arrayDiccionarioRAE.filter(p => {
-      if (p.length < 3 || historialPalabras.includes(p)) return false;
+      if (p.length < 3 || historialSinTildes.has(SinTildes(p))) return false;
       if (!SOLO_LETRAS.test(p)) return false;
       if (convertirPluralASingularLocal(p)) return false;
       const silabas = silabear(p);
@@ -2145,7 +2375,7 @@ async function obtenerPalabrasCandidatasMaquina(prefijoNormalizado) {
   return [];
 }
 
-// ---------- SILABEO ORTOGRÁFICO CORREGIDO (AN-CLA, HOM-BRE, TO-RRE, CO-LLAR, PA-ÍS...) ----------
+// ---------- SILABEO ORTOGRÁFICO ESPAÑOL (AN-CLA, HOM-BRE, TO-RRE, CO-LLAR, PA-ÍS...) ----------
 function silabear(palabra) {
   const p = (palabra || "").toLowerCase().trim();
   if (!p) return [];
@@ -2214,35 +2444,62 @@ function mostrarAlerta(mensaje, duracion = 3800) {
   alertBox.textContent = mensaje;
   alertBox.classList.remove('hidden');
   requestAnimationFrame(() => alertBox.classList.remove('opacity-0'));
+  if (cajaInputWrap) {
+    cajaInputWrap.classList.remove('anim-error');
+    void cajaInputWrap.offsetWidth;
+    cajaInputWrap.classList.add('anim-error');
+  }
   alertTimer = setTimeout(() => {
     alertBox.classList.add('opacity-0');
     alertTimer = setTimeout(() => alertBox.classList.add('hidden'), 300);
   }, duracion);
 }
 
-function actualizarInterfazTurno(texto, colorBg) {
-  indicadorTurno.textContent = texto;
-  indicadorTurno.className = "mt-1.5 text-sm font-bold text-white rounded-full px-4 py-0.5 inline-block shadow-md transition-colors " + colorBg;
+function actualizarInterfazTurno(htmlTexto, colorBg) {
+  indicadorTurno.innerHTML = htmlTexto;
+  indicadorTurno.className = "mt-1.5 text-xs sm:text-sm font-black text-white rounded-full px-4 py-1 inline-flex items-center gap-1.5 shadow-md transition-colors " + colorBg;
 }
 
 function mostrarTurnoHumano() {
   const estilo = COLORES_JUGADORES[jugadorActual % COLORES_JUGADORES.length];
-  actualizarInterfazTurno("🗣️ Turno de " + nombres[jugadorActual] + " (" + silabaObjetivo.toUpperCase() + ")", estilo.bg);
+  const nombreSeguro = escapeHtml(nombres[jugadorActual]);
+  const silSegura = escapeHtml(silabaObjetivo.toUpperCase());
+  actualizarInterfazTurno(
+    '<span>🗣️ Turno de ' + nombreSeguro + '</span><span class="bg-white text-slate-900 px-2 py-0.2 rounded-full font-black tracking-wide shadow-sm">' + silSegura + '</span>',
+    estilo.bg
+  );
 }
 
 function bloquearInputs(bloquear) {
   textInput.disabled = bloquear;
   sendBtn.disabled = bloquear;
   micBtn.disabled = !recon;
-  if (bloquear) btnRendirse.classList.add('opacity-50', 'pointer-events-none');
-  else btnRendirse.classList.remove('opacity-50', 'pointer-events-none');
+  if (bloquear) {
+    btnRendirse.classList.add('opacity-50', 'pointer-events-none');
+    if (btnSignificado) btnSignificado.classList.add('opacity-50', 'pointer-events-none');
+  } else {
+    btnRendirse.classList.remove('opacity-50', 'pointer-events-none');
+    if (btnSignificado) btnSignificado.classList.remove('opacity-50', 'pointer-events-none');
+  }
+}
+
+function mostrarResumenFinUI(titulo, subtitulo, esVictoriaHumana) {
+  const card = document.createElement('div');
+  card.className = "anim-entrada w-11/12 max-w-xs mt-3 mb-2 rounded-2xl p-3.5 text-center border-3 shadow-lg " +
+    (esVictoriaHumana ? "bg-emerald-50 border-emerald-500 text-emerald-900" : "bg-amber-50 border-[#8b5523] text-[#4e2b10]");
+  card.innerHTML =
+    '<div class="text-base font-black">' + escapeHtml(titulo) + '</div>' +
+    '<div class="text-xs font-bold mt-1 opacity-90">' + escapeHtml(subtitulo) + '</div>';
+  gameBoardList.appendChild(card);
+  bajarScrollTablero();
 }
 
 function mostrarFinJuego() {
   juegoTerminado = true;
   esTurnoMaquina = false;
+  enProceso = false;
   controlsContainer.classList.add('hidden');
-  btnRendirse.classList.add('hidden');
+  if (barraAccionesRapidas) barraAccionesRapidas.classList.add('hidden');
   finJuegoBotones.classList.remove('hidden');
   if (micDeseado && !window._anuncioPantallaCompletaActivo) {
     micStatus.textContent = "Di «otra vez» para reiniciar la partida";
@@ -2252,14 +2509,17 @@ function mostrarFinJuego() {
 
 window.irAlMenuHome = function() {
   if (window._anuncioPantallaCompletaActivo) return;
+  partidaId++;
+  tocarSonidoFX('click');
   if (cancelarHablaPrevia) { cancelarHablaPrevia(); cancelarHablaPrevia = null; }
   hablando = false;
+  enProceso = false;
   modoActual = "";
   juegoTerminado = false;
   esTurnoMaquina = false;
   detenerMicrofono();
   controlsContainer.classList.remove('hidden');
-  btnRendirse.classList.remove('hidden');
+  if (barraAccionesRapidas) barraAccionesRapidas.classList.remove('hidden');
   finJuegoBotones.classList.add('hidden');
   actualizarMarcadoresUI();
   modalMenu.style.display = 'flex';
@@ -2269,12 +2529,15 @@ window.irAlMenuHome = function() {
 window.reiniciarMismaPartida = function() {
   if (window._anuncioPantallaCompletaActivo) return;
   if (!modoActual) { window.irAlMenuHome(); return; }
+  partidaId++;
+  tocarSonidoFX('click');
   controlsContainer.classList.remove('hidden');
-  btnRendirse.classList.remove('hidden');
+  if (barraAccionesRapidas) barraAccionesRapidas.classList.remove('hidden');
   finJuegoBotones.classList.add('hidden');
   jugadorActual = 0;
   juegoTerminado = false;
   esTurnoMaquina = false;
+  enProceso = false;
   contadorPalabras = 0;
   recordSuperadoEnPartida = false;
   ignorarVozHasta = 0;
@@ -2289,54 +2552,98 @@ window.reiniciarMismaPartida = function() {
 
 function formatearTarjetaExplicacion(palabra, explicacion) {
   if (!explicacion) return "";
-  if (explicacion.tipo === 'definicion' && explicacion.texto) {
-    return '📖 <strong>' + palabra.toUpperCase() + ':</strong> ' + explicacion.texto;
+  const pSegura = escapeHtml(palabra.toUpperCase());
+  const tSeguro = escapeHtml(explicacion.texto || "");
+  if (!tSeguro) return "";
+  if (explicacion.tipo === 'definicion' || explicacion.tipo === 'externo') {
+    return '📖 <strong>' + pSegura + ':</strong> ' + tSeguro;
   }
-  if (explicacion.tipo === 'sinonimos' && explicacion.texto) {
-    return '🔄 <strong>Sinónimos de ' + palabra.toUpperCase() + ':</strong> ' + explicacion.texto;
-  }
-  if (explicacion.tipo === 'externo' && explicacion.texto) {
-    return '📖 <strong>' + palabra.toUpperCase() + ':</strong> ' + explicacion.texto;
+  if (explicacion.tipo === 'sinonimos') {
+    return '🔄 <strong>Sinónimos de ' + pSegura + ':</strong> ' + tSeguro;
   }
   return "";
 }
 
-function agregarPalabraUI(palabra, silabas, esInicial = false, indiceColor = 0, etiqueta = "", explicacion = null) {
-  const wrapObj = document.createElement('div');
-  wrapObj.className = "flex flex-col items-center animate-[flotar_3s_ease-in-out_infinite] w-full relative my-2";
+// Consulta interactiva al tocar cualquier ficha del tablero
+async function consultarPalabraEnSlot(palabra, slotEl) {
+  if (!slotEl || slotEl.dataset.cargando === '1') return;
+  if (slotEl.dataset.cargado === '1') {
+    slotEl.classList.toggle('hidden');
+    return;
+  }
+  tocarSonidoFX('click');
+  slotEl.dataset.cargando = '1';
+  slotEl.classList.remove('hidden');
+  slotEl.innerHTML = '<div class="mt-1.5 bg-amber-50/90 border-2 border-[#a67c52] text-[#5c3a21] text-xs font-bold rounded-xl px-3 py-1.5 shadow text-center">📖 Buscando significado...</div>';
+  bajarScrollTablero();
 
+  const exp = await obtenerExplicacionPalabra(palabra);
+  slotEl.dataset.cargando = '0';
+  slotEl.dataset.cargado = '1';
+  const htmlTarjeta = formatearTarjetaExplicacion(palabra, exp)
+    || ('📖 <strong>' + escapeHtml(palabra.toUpperCase()) + ':</strong> Sin conexión o sin acepción disponible.');
+  slotEl.innerHTML = '<div class="mt-1.5 bg-amber-50 border-2 border-[#a67c52] text-[#5c3a21] text-xs font-bold rounded-xl px-3 py-2 shadow text-center">' + htmlTarjeta + '</div>';
+  bajarScrollTablero();
+}
+
+function agregarPalabraUI(palabra, silabas, esInicial = false, indiceColor = 0, etiqueta = "", explicacion = null, autor = "") {
+  // Quitar la animación de respiración de la ficha anterior
+  const prevActivas = gameBoardList.querySelectorAll('.ficha-activa');
+  prevActivas.forEach(el => el.classList.remove('ficha-activa'));
+
+  const wrapObj = document.createElement('div');
+  wrapObj.className = "anim-entrada flex flex-col items-center w-full relative pt-1";
+
+  // Eslabón metálico SVG realista conectando con la ficha anterior
   if (!esInicial) {
     const link = document.createElement('div');
-    link.className = "h-8 w-4 border-l-4 border-r-4 border-slate-400 bg-slate-200 rounded-full my-1 absolute -top-6 z-0 shadow-sm";
+    link.className = "relative -mt-3 -mb-2 z-0 pointer-events-none flex justify-center";
+    link.innerHTML =
+      '<svg width="24" height="32" viewBox="0 0 24 32" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect x="5" y="2" width="14" height="28" rx="7" fill="#cbd5e1" stroke="#475569" stroke-width="3.2"/>' +
+      '<rect x="9.5" y="7" width="5" height="18" rx="2.5" fill="#f8fafc"/>' +
+      '</svg>';
     wrapObj.appendChild(link);
   }
 
   const estilo = COLORES_JUGADORES[indiceColor % COLORES_JUGADORES.length];
-  const wordDiv = document.createElement('div');
-  wordDiv.className = "flex items-center text-3xl sm:text-4xl font-extrabold uppercase z-10 px-6 py-2.5 rounded-full bg-white border-4 " + estilo.border + " shadow-xl relative " + estilo.text + " transition-all";
+
+  // Etiqueta discreta del autor (quién dijo la palabra)
+  if (autor) {
+    const autorTag = document.createElement('div');
+    autorTag.textContent = autor;
+    autorTag.className = "mb-0.5 z-10 text-[10px] font-black uppercase tracking-wider text-white px-2.5 py-0.5 rounded-full shadow-sm " + estilo.badge;
+    wrapObj.appendChild(autorTag);
+  }
+
+  const wordBtn = document.createElement('button');
+  wordBtn.type = "button";
+  wordBtn.title = "Toca para ver el significado";
+  wordBtn.style.setProperty('--bevel-color', estilo.bevel);
+  wordBtn.className = "ficha-palabra ficha-activa flex items-center justify-center text-2xl sm:text-4xl font-black uppercase z-10 px-6 py-2.5 rounded-full bg-white border-4 " + estilo.border + " relative " + estilo.text + " cursor-pointer";
 
   silabas.forEach((sil, index) => {
     const span = document.createElement('span');
     span.textContent = sil;
     if (index === 0 && !esInicial) span.className = estilo.sil;
-    else if (index === silabas.length - 1) span.className = "text-green-600";
-    wordDiv.appendChild(span);
+    else if (index === silabas.length - 1) span.className = "text-emerald-600";
+    wordBtn.appendChild(span);
   });
 
   const emoji = obtenerEmojiPalabra(palabra);
   if (emoji) {
     const emojiSpan = document.createElement('span');
     emojiSpan.textContent = emoji;
-    emojiSpan.className = "absolute -top-6 -right-6 text-5xl animate-bounce drop-shadow-lg";
-    wordDiv.appendChild(emojiSpan);
+    emojiSpan.className = "absolute -top-5 -right-5 text-4xl sm:text-5xl drop-shadow-md pointer-events-none";
+    wordBtn.appendChild(emojiSpan);
   }
 
-  wrapObj.appendChild(wordDiv);
+  wrapObj.appendChild(wordBtn);
 
   if (etiqueta) {
     const tag = document.createElement('div');
     tag.textContent = etiqueta;
-    tag.className = "mt-1 z-10 text-xs font-extrabold text-white bg-purple-600 rounded-full px-3 py-0.5 shadow";
+    tag.className = "mt-2 z-10 text-xs font-black text-white bg-gradient-to-r from-amber-500 to-orange-600 rounded-full px-3 py-0.5 shadow border border-white/60";
     wrapObj.appendChild(tag);
   }
 
@@ -2344,9 +2651,14 @@ function agregarPalabraUI(palabra, silabas, esInicial = false, indiceColor = 0, 
   infoContainer.className = "info-palabra-slot w-11/12 max-w-xs";
   const htmlTarjeta = formatearTarjetaExplicacion(palabra, explicacion);
   if (htmlTarjeta) {
-    infoContainer.innerHTML = '<div class="mt-1.5 bg-amber-50 border-2 border-[#a67c52] text-[#5c3a21] text-xs font-bold rounded-xl px-3 py-2 shadow text-center">' + htmlTarjeta + '</div>';
+    infoContainer.dataset.cargado = '1';
+    infoContainer.innerHTML = '<div class="mt-2 bg-amber-50 border-2 border-[#a67c52] text-[#5c3a21] text-xs font-bold rounded-xl px-3 py-2 shadow text-center">' + htmlTarjeta + '</div>';
   }
   wrapObj.appendChild(infoContainer);
+
+  wordBtn.addEventListener('click', () => {
+    consultarPalabraEnSlot(palabra, infoContainer);
+  });
 
   gameBoardList.appendChild(wrapObj);
   bajarScrollTablero();
@@ -2356,20 +2668,32 @@ function mostrarExplicacionEnUltimaPalabraUI(palabra, explicacion) {
   const slots = gameBoardList.querySelectorAll('.info-palabra-slot');
   if (slots.length > 0) {
     const ultimoSlot = slots[slots.length - 1];
+    ultimoSlot.dataset.cargado = '1';
+    ultimoSlot.classList.remove('hidden');
     const htmlTarjeta = formatearTarjetaExplicacion(palabra, explicacion)
-      || ('📖 <strong>' + palabra.toUpperCase() + ':</strong> Sin conexión o sin acepción disponible.');
-    ultimoSlot.innerHTML = '<div class="mt-1.5 bg-amber-50 border-2 border-[#a67c52] text-[#5c3a21] text-xs font-bold rounded-xl px-3 py-2 shadow text-center">' + htmlTarjeta + '</div>';
+      || ('📖 <strong>' + escapeHtml(palabra.toUpperCase()) + ':</strong> Sin conexión o sin acepción disponible.');
+    ultimoSlot.innerHTML = '<div class="mt-2 bg-amber-50 border-2 border-[#a67c52] text-[#5c3a21] text-xs font-bold rounded-xl px-3 py-2 shadow text-center">' + htmlTarjeta + '</div>';
     bajarScrollTablero();
   }
 }
 
+window.pedirSignificadoBoton = function() {
+  if (esTurnoMaquina || textInput.disabled || juegoTerminado || enProceso || window._anuncioPantallaCompletaActivo) return;
+  tocarSonidoFX('click');
+  responderSignificadoUltimaPalabra();
+};
+
 async function responderSignificadoUltimaPalabra() {
-  if (historialPalabras.length === 0 || juegoTerminado || window._anuncioPantallaCompletaActivo) return;
+  if (historialPalabras.length === 0 || juegoTerminado || enProceso || window._anuncioPantallaCompletaActivo) return;
+  const idActual = partidaId;
   const ultima = historialPalabras[historialPalabras.length - 1];
+  enProceso = true;
   bloquearInputs(true);
-  actualizarInterfazTurno('📖 Buscando "' + ultima + '"...', "bg-amber-600");
+  actualizarInterfazTurno('<span>📖 Buscando «' + escapeHtml(ultima) + '»...</span>', "bg-amber-600");
 
   const explicacion = await obtenerExplicacionPalabra(ultima);
+  if (idActual !== partidaId) return;
+
   mostrarExplicacionEnUltimaPalabraUI(ultima, explicacion);
 
   let locucion = "";
@@ -2382,6 +2706,8 @@ async function responderSignificadoUltimaPalabra() {
   }
 
   hablar(locucion, () => {
+    if (idActual !== partidaId) return;
+    enProceso = false;
     mostrarTurnoHumano();
     bloquearInputs(false);
     arrancarRecon();
@@ -2390,6 +2716,7 @@ async function responderSignificadoUltimaPalabra() {
 
 window.arranqueVinculado = function(modo) {
   window.cerrarPortada();
+  tocarSonidoFX('click');
   try {
     for (let i = 1; i <= 4; i++) {
       const clave = (i === 1) ? 'encadenadas_n1' : (i === 2) ? 'encadenadas_n2' : ('encadenadas_n' + i);
@@ -2409,17 +2736,19 @@ window.arranqueVinculado = function(modo) {
     }
   }
 
+  partidaId++;
   modoActual = modo;
   jugadorActual = 0;
   juegoTerminado = false;
   esTurnoMaquina = false;
+  enProceso = false;
   contadorPalabras = 0;
   recordSuperadoEnPartida = false;
   ignorarVozHasta = 0;
   actualizarMarcadoresUI();
 
   controlsContainer.classList.remove('hidden');
-  btnRendirse.classList.remove('hidden');
+  if (barraAccionesRapidas) barraAccionesRapidas.classList.remove('hidden');
   finJuegoBotones.classList.add('hidden');
 
   modalMenu.classList.add('hidden');
@@ -2434,19 +2763,23 @@ window.arranqueVinculado = function(modo) {
 
 function iniciarJuegoTablero(esReinicio = false) {
   if (window._anuncioPantallaCompletaActivo) return;
+  const idActual = partidaId;
   historialPalabras = [];
+  historialSinTildes = new Set();
   gameBoardList.innerHTML = '';
 
   const palabraInicial = palabrasArranque[Math.floor(Math.random() * palabrasArranque.length)];
   const silabasIniciales = silabear(palabraInicial);
 
   historialPalabras.push(palabraInicial);
+  historialSinTildes.add(SinTildes(palabraInicial));
   silabaObjetivo = silabasIniciales[silabasIniciales.length - 1];
-  agregarPalabraUI(palabraInicial, silabasIniciales, true, 0);
+  agregarPalabraUI(palabraInicial, silabasIniciales, true, 0, "", null, "🎯 Salida");
 
   esTurnoMaquina = false;
+  enProceso = true;
   bloquearInputs(true);
-  actualizarInterfazTurno("🔊 Presentando primera palabra...", "bg-amber-700");
+  actualizarInterfazTurno("<span>🔊 Presentando primera palabra...</span>", "bg-amber-700");
 
   const listaSaludo = nombres.length > 1
     ? (nombres.slice(0, -1).join(', ') + ' y ' + nombres[nombres.length - 1])
@@ -2457,6 +2790,8 @@ function iniciarJuegoTablero(esReinicio = false) {
     : ("¡Hola " + listaSaludo + "! Primera palabra: " + palabraInicial + ".");
 
   hablar(fraseInicio, () => {
+    if (idActual !== partidaId) return;
+    enProceso = false;
     mostrarTurnoHumano();
     bloquearInputs(false);
     arrancarRecon();
@@ -2465,26 +2800,34 @@ function iniciarJuegoTablero(esReinicio = false) {
 
 async function juegaMaquina() {
   if (modoActual !== 'pve' || juegoTerminado || window._anuncioPantallaCompletaActivo) return;
-  actualizarInterfazTurno("📚 Buscando palabra...", "bg-purple-500");
+  const idActual = partidaId;
+  actualizarInterfazTurno("<span>📚 Pensando palabra...</span>", "bg-purple-600");
 
   const prefijo = normalizarSilaba(silabaObjetivo);
   const candidatas = await obtenerPalabrasCandidatasMaquina(prefijo);
+  if (idActual !== partidaId) return;
 
   if (candidatas.length > 0) {
     const elegida = candidatas[Math.floor(Math.random() * candidatas.length)];
     await window.procesarEntrada(elegida, true);
   } else {
-    actualizarInterfazTurno("🎉 ¡Victoria de " + nombres[0] + "!", "bg-green-500");
+    actualizarInterfazTurno("<span>🎉 ¡Victoria de " + escapeHtml(nombres[0]) + "!</span>", "bg-emerald-600");
+    tocarSonidoFX('victoria');
     lanzarConfeti();
+    mostrarResumenFinUI("🎉 ¡Has vencido a la máquina!", "Total: " + contadorPalabras + " palabras encadenadas", true);
     hablar("¡No me quedan palabras que empiecen por " + silabaParaVoz(silabaObjetivo) + "! ¡Has ganado, " + nombres[0] + "! Di otra vez para jugar de nuevo.", () => {
+      if (idActual !== partidaId) return;
       mostrarFinJuego();
     });
   }
 }
 
 window.meRindo = async function() {
-  if (esTurnoMaquina || textInput.disabled || juegoTerminado || window._anuncioPantallaCompletaActivo) return;
+  if (esTurnoMaquina || textInput.disabled || juegoTerminado || enProceso || window._anuncioPantallaCompletaActivo) return;
+  const idActual = partidaId;
+  enProceso = true;
   bloquearInputs(true);
+  tocarSonidoFX('error');
 
   const rindiente = nombres[jugadorActual];
   const ganaHumano = (modoActual === 'pvp' && nombres.length === 2);
@@ -2492,32 +2835,48 @@ window.meRindo = async function() {
     ? "¡Gana la máquina!"
     : (nombres.length === 2 ? ("¡Gana " + nombres[1 - jugadorActual] + "!") : ("¡Fin de la partida por rendición de " + rindiente + "!"));
 
-  actualizarInterfazTurno("Buscando palabra válida...", "bg-red-500");
+  actualizarInterfazTurno("<span>Buscando palabra válida...</span>", "bg-red-600");
 
   hablar(rindiente + " se rinde. Buscando una palabra válida...", async () => {
+    if (idActual !== partidaId) return;
     const prefijo = normalizarSilaba(silabaObjetivo);
     const candidatas = await obtenerPalabrasCandidatasMaquina(prefijo);
+    if (idActual !== partidaId) return;
 
     if (candidatas.length > 0) {
       const elegida = candidatas[Math.floor(Math.random() * candidatas.length)];
       const silabasElegida = silabear(elegida);
       const explicacion = await obtenerExplicacionPalabra(elegida);
+      if (idActual !== partidaId) return;
 
       historialPalabras.push(elegida);
+      historialSinTildes.add(SinTildes(elegida));
       silabaObjetivo = silabasElegida[silabasElegida.length - 1];
-      agregarPalabraUI(elegida, silabasElegida, false, 1, "💡 Esta valía", explicacion);
-      actualizarInterfazTurno("🏆 " + textoGanador, "bg-green-600");
-      if (ganaHumano) lanzarConfeti();
+      agregarPalabraUI(elegida, silabasElegida, false, 1, "💡 Esta valía", explicacion, "🤖 Solución");
+      actualizarInterfazTurno("<span>🏆 " + escapeHtml(textoGanador) + "</span>", "bg-emerald-600");
+
+      if (ganaHumano) {
+        tocarSonidoFX('victoria');
+        lanzarConfeti();
+      }
+      mostrarResumenFinUI("🏆 " + textoGanador, "Cadena de " + contadorPalabras + " palabras · Récord: " + recordPalabras, ganaHumano);
 
       const msgRecord = recordSuperadoEnPartida ? (" ¡Nuevo récord de " + recordPalabras + " palabras!") : "";
       let parteExp = "";
       if (explicacion.tipo === 'definicion' || explicacion.tipo === 'externo') parteExp = " " + explicacion.texto;
       else if (explicacion.tipo === 'sinonimos') parteExp = " Sinónimos: " + explicacion.texto + ".";
 
-      hablar("Podrías haber dicho: " + elegida + "." + parteExp + " " + textoGanador + msgRecord + " Di otra vez para reiniciar.", mostrarFinJuego);
+      hablar("Podrías haber dicho: " + elegida + "." + parteExp + " " + textoGanador + msgRecord + " Di otra vez para reiniciar.", () => {
+        if (idActual !== partidaId) return;
+        mostrarFinJuego();
+      });
     } else {
-      actualizarInterfazTurno("🤝 Empate técnico", "bg-gray-600");
-      hablar("No existía ninguna palabra con la sílaba " + silabaParaVoz(silabaObjetivo) + ". ¡Empate técnico! Di otra vez para reiniciar.", mostrarFinJuego);
+      actualizarInterfazTurno("<span>🤝 Empate técnico</span>", "bg-slate-600");
+      mostrarResumenFinUI("🤝 Empate técnico", "No quedaban palabras con " + silabaObjetivo.toUpperCase(), false);
+      hablar("No existía ninguna palabra con la sílaba " + silabaParaVoz(silabaObjetivo) + ". ¡Empate técnico! Di otra vez para reiniciar.", () => {
+        if (idActual !== partidaId) return;
+        mostrarFinJuego();
+      });
     }
   });
 };
@@ -2529,8 +2888,9 @@ function esPreguntaDeSignificado(texto) {
 
 window.procesarEntrada = async function(texto, esMaquina = false) {
   if (juegoTerminado || window._anuncioPantallaCompletaActivo) return;
-  if (!esMaquina && (esTurnoMaquina || textInput.disabled || hablando)) return;
+  if (!esMaquina && (esTurnoMaquina || textInput.disabled || hablando || enProceso)) return;
 
+  const idActual = partidaId;
   const textoBruto = (texto || "").trim();
   if (!textoBruto) return;
 
@@ -2552,17 +2912,20 @@ window.procesarEntrada = async function(texto, esMaquina = false) {
   if (!palabra) return;
 
   if (!SOLO_LETRAS.test(palabra)) {
+    tocarSonidoFX('error');
     mostrarAlerta("Escribe una sola palabra, solo con letras.");
     textInput.value = "";
     return;
   }
-  if (historialPalabras.includes(palabra)) {
+  if (historialSinTildes.has(SinTildes(palabra))) {
+    tocarSonidoFX('error');
     mostrarAlerta("La palabra '" + palabra + "' ya se ha usado.");
     textInput.value = "";
     hablar("La palabra " + palabra + " ya se ha usado. Prueba con otra.");
     return;
   }
 
+  enProceso = true;
   bloquearInputs(true);
   textInput.value = "";
 
@@ -2577,15 +2940,24 @@ window.procesarEntrada = async function(texto, esMaquina = false) {
   } else if (esMaquina) {
     jugadaValida = true;
   } else {
-    actualizarInterfazTurno("Consultando diccionario...", "bg-yellow-500");
+    actualizarInterfazTurno("<span>🔎 Consultando diccionario...</span>", "bg-amber-600");
     const formaValida = await verificarPalabraEnServidor(palabra);
+    if (idActual !== partidaId) return;
+
     if (formaValida && typeof formaValida === 'string') {
-      if (historialPalabras.includes(formaValida)) {
+      const silabasForma = silabear(formaValida);
+      const s1Forma = normalizarSilaba(silabasForma[0]);
+
+      if (s1Forma !== s2) {
+        // Caso especial: ej. dijo "peces" (pe-ces) -> singular "pez" (empieza por PEZ, no por PE)
+        mostrarAlerta(palabra.toUpperCase() + " en singular es '" + formaValida.toUpperCase() + "' (empieza por '" + silabasForma[0].toUpperCase() + "', no por '" + silabaObjetivo.toUpperCase() + "').");
+        vozError = palabra + ", en singular es " + formaValida + ", que empieza por " + silabaParaVoz(silabasForma[0]) + " y no por " + silabaParaVoz(silabaObjetivo) + ". Inténtalo otra vez.";
+      } else if (historialSinTildes.has(SinTildes(formaValida))) {
         mostrarAlerta("La palabra '" + formaValida + "' ya se ha usado.");
         vozError = "La palabra " + formaValida + " ya se ha usado. Prueba con otra.";
       } else {
         palabra = formaValida;
-        silabasWord = silabear(palabra);
+        silabasWord = silabasForma;
         jugadaValida = true;
       }
     } else {
@@ -2595,41 +2967,57 @@ window.procesarEntrada = async function(texto, esMaquina = false) {
   }
 
   if (!jugadaValida) {
+    tocarSonidoFX('error');
     mostrarTurnoHumano();
     bloquearInputs(false);
-    hablar(vozError, () => arrancarRecon());
+    enProceso = false;
+    hablar(vozError, () => {
+      if (idActual !== partidaId) return;
+      arrancarRecon();
+    });
     return;
   }
 
   const previoRecord = recordPalabras;
-  incrementarContadorPalabras();
-  const etiquetaRecord = (contadorPalabras > previoRecord && previoRecord > 0) ? "🔥 ¡Nuevo Récord!" : "";
+  const esNuevoRecord = incrementarContadorPalabras();
+  const etiquetaRecord = (esNuevoRecord && previoRecord > 0) ? "🔥 ¡Nuevo Récord!" : "";
+  tocarSonidoFX((esNuevoRecord && previoRecord > 0) ? 'record' : 'pop');
 
   historialPalabras.push(palabra);
+  historialSinTildes.add(SinTildes(palabra));
   silabaObjetivo = silabasWord[silabasWord.length - 1];
 
   const indiceColor = esMaquina ? 1 : jugadorActual;
-  agregarPalabraUI(palabra, silabasWord, false, indiceColor, etiquetaRecord);
+  const autorEtiqueta = esMaquina ? "🤖 Máquina" : ("👤 " + nombres[jugadorActual]);
+  agregarPalabraUI(palabra, silabasWord, false, indiceColor, etiquetaRecord, null, autorEtiqueta);
 
   if (modoActual === 'pve') {
     if (esMaquina) {
       hablar(palabra, () => {
+        if (idActual !== partidaId) return;
         esTurnoMaquina = false;
+        enProceso = false;
         mostrarTurnoHumano();
         bloquearInputs(false);
         arrancarRecon();
       });
     } else {
       esTurnoMaquina = true;
-      actualizarInterfazTurno("🤖 Máquina pensando...", "bg-purple-500");
+      actualizarInterfazTurno("<span>🤖 Máquina pensando...</span>", "bg-purple-600");
       const coletilla = coletillas[Math.floor(Math.random() * coletillas.length)];
       hablar(palabra + ". " + coletilla, () => {
-        setTimeout(juegaMaquina, 400);
+        if (idActual !== partidaId) return;
+        setTimeout(() => {
+          if (idActual !== partidaId) return;
+          juegaMaquina();
+        }, 380);
       });
     }
   } else {
     jugadorActual = (jugadorActual + 1) % nombres.length;
     hablar(palabra, () => {
+      if (idActual !== partidaId) return;
+      enProceso = false;
       mostrarTurnoHumano();
       bloquearInputs(false);
       arrancarRecon();
@@ -2639,12 +3027,18 @@ window.procesarEntrada = async function(texto, esMaquina = false) {
 
 // ---------- Reconocimiento de Voz Inteligente ----------
 function uiMic(encendido) {
-  micBtn.classList.toggle('bg-red-500', encendido);
-  micBtn.classList.toggle('bg-blue-500', !encendido);
-  micBtn.classList.toggle('animate-pulse', encendido);
+  if (encendido) {
+    micBtn.classList.remove('from-blue-500', 'to-blue-600', 'shadow-[0_4px_0_#1e3a8a]');
+    micBtn.classList.add('from-red-500', 'to-red-600', 'shadow-[0_4px_0_#7f1d1d]');
+    if (micRingFx) micRingFx.classList.remove('hidden');
+  } else {
+    micBtn.classList.remove('from-red-500', 'to-red-600', 'shadow-[0_4px_0_#7f1d1d]');
+    micBtn.classList.add('from-blue-500', 'to-blue-600', 'shadow-[0_4px_0_#1e3a8a]');
+    if (micRingFx) micRingFx.classList.add('hidden');
+  }
   if (!encendido) micStatus.textContent = "Micrófono apagado";
-  else if (juegoTerminado) micStatus.textContent = "Escuchando... (di «otra vez» para reiniciar)";
-  else micStatus.textContent = "Escuchando...";
+  else if (juegoTerminado) micStatus.textContent = "🎙️ Escuchando... (di «otra vez» para reiniciar)";
+  else micStatus.textContent = "🎙️ Escuchando...";
 }
 
 function procesarFraseVoz(rawInput) {
@@ -2662,7 +3056,7 @@ function procesarFraseVoz(rawInput) {
     return;
   }
 
-  if (esTurnoMaquina || textInput.disabled) return;
+  if (esTurnoMaquina || textInput.disabled || enProceso) return;
 
   for (const alt of alternativas) {
     if (/^(otra vez|jugar otra vez)$/.test(alt)) {
@@ -2787,7 +3181,6 @@ try {
   } else {
     micStatus.textContent = "Voz no soportada";
     micBtn.disabled = true;
-    micBtn.classList.replace('bg-blue-500', 'bg-gray-400');
   }
 } catch (e) {}
 
@@ -2812,6 +3205,7 @@ function iniciarMicrofono() {
 
 window.alternarMicrofono = function() {
   if (window._anuncioPantallaCompletaActivo) return;
+  tocarSonidoFX('click');
   if (micDeseado) detenerMicrofono();
   else iniciarMicrofono();
 };
