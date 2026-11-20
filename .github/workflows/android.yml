@@ -217,9 +217,14 @@ jobs:
           import android.speech.SpeechRecognizer;
           import android.speech.tts.TextToSpeech;
           import android.speech.tts.UtteranceProgressListener;
+          import android.util.Base64;
           import android.view.WindowManager;
           import android.webkit.JavascriptInterface;
           import com.getcapacitor.BridgeActivity;
+          import java.io.ByteArrayOutputStream;
+          import java.io.InputStream;
+          import java.net.HttpURLConnection;
+          import java.net.URL;
           import java.util.ArrayList;
           import java.util.Locale;
 
@@ -347,6 +352,46 @@ jobs:
               }
 
               public class NativeVoiceBridge {
+                  @JavascriptInterface
+                  public void httpGet(final String reqId, final String urlStr) {
+                      new Thread(() -> {
+                          int status = 0;
+                          String b64 = "";
+                          HttpURLConnection conn = null;
+                          try {
+                              URL url = new URL(urlStr);
+                              conn = (HttpURLConnection) url.openConnection();
+                              conn.setRequestMethod("GET");
+                              conn.setConnectTimeout(3500);
+                              conn.setReadTimeout(4000);
+                              conn.setInstanceFollowRedirects(true);
+                              conn.setRequestProperty("Accept", "application/json");
+                              conn.setRequestProperty("User-Agent", "EncadenadasApp/1.2 (Android)");
+                              status = conn.getResponseCode();
+                              InputStream is = (status >= 200 && status < 400) ? conn.getInputStream() : conn.getErrorStream();
+                              if (is != null) {
+                                  ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                  byte[] buf = new byte[4096];
+                                  int n;
+                                  while ((n = is.read(buf)) != -1) {
+                                      baos.write(buf, 0, n);
+                                  }
+                                  is.close();
+                                  b64 = Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP);
+                              }
+                          } catch (Exception e) {
+                              status = 0;
+                              b64 = "";
+                          } finally {
+                              if (conn != null) conn.disconnect();
+                          }
+                          final int finalStatus = status;
+                          final String finalB64 = b64;
+                          final String safeId = reqId.replace("'", "");
+                          evalJs("window._onNativeHttpDone && window._onNativeHttpDone('" + safeId + "'," + finalStatus + ",'" + finalB64 + "')");
+                      }).start();
+                  }
+
                   @JavascriptInterface
                   public void resetAudio() {
                       mainHandler.post(() -> {
