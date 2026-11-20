@@ -247,6 +247,18 @@ jobs:
                       }
                   }
 
+                  initTts();
+
+                  srIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                  srIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                  srIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "es-ES");
+                  srIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5);
+
+                  getBridge().getWebView().addJavascriptInterface(new NativeVoiceBridge(), "AndroidVoice");
+              }
+
+              private void initTts() {
+                  if (tts != null) return;
                   tts = new TextToSpeech(this, status -> {
                       if (status == TextToSpeech.SUCCESS) {
                           tts.setLanguage(new Locale("es", "ES"));
@@ -257,13 +269,15 @@ jobs:
                       @Override public void onDone(String id) { evalJs("window._onNativeTtsDone && window._onNativeTtsDone()"); }
                       @Override public void onError(String id) { evalJs("window._onNativeTtsDone && window._onNativeTtsDone()"); }
                   });
+              }
 
-                  srIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-                  srIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-                  srIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "es-ES");
-                  srIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5);
-
-                  getBridge().getWebView().addJavascriptInterface(new NativeVoiceBridge(), "AndroidVoice");
+              private void destroyRecognizer() {
+                  if (sr != null) {
+                      try { sr.stopListening(); } catch (Exception e) {}
+                      try { sr.cancel(); } catch (Exception e) {}
+                      try { sr.destroy(); } catch (Exception e) {}
+                      sr = null;
+                  }
               }
 
               private void muteRecognizerBeeps() {
@@ -314,10 +328,12 @@ jobs:
               public void onResume() {
                   super.onResume();
                   getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                  restoreAudioStreams();
               }
 
               @Override
               public void onPause() {
+                  destroyRecognizer();
                   restoreAudioStreams();
                   super.onPause();
               }
@@ -332,6 +348,21 @@ jobs:
 
               public class NativeVoiceBridge {
                   @JavascriptInterface
+                  public void resetAudio() {
+                      mainHandler.post(() -> {
+                          destroyRecognizer();
+                          restoreAudioStreams();
+                          try {
+                              if (audioManager != null) {
+                                  audioManager.setMode(AudioManager.MODE_NORMAL);
+                                  audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
+                              }
+                          } catch (Exception e) {}
+                          initTts();
+                      });
+                  }
+
+                  @JavascriptInterface
                   public void speak(final String text) {
                       mainHandler.post(() -> {
                           try {
@@ -342,10 +373,21 @@ jobs:
                           } catch (Exception e) {}
 
                           restoreAudioStreams();
+                          try {
+                              if (audioManager != null) {
+                                  audioManager.setMode(AudioManager.MODE_NORMAL);
+                                  audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
+                              }
+                          } catch (Exception e) {}
 
+                          initTts();
                           if (tts != null) {
                               Bundle params = new Bundle();
-                              tts.speak(text, TextToSpeech.QUEUE_FLUSH, params, "utt_" + System.currentTimeMillis());
+                              params.putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, AudioManager.STREAM_MUSIC);
+                              int res = tts.speak(text, TextToSpeech.QUEUE_FLUSH, params, "utt_" + System.currentTimeMillis());
+                              if (res == TextToSpeech.ERROR) {
+                                  evalJs("window._onNativeTtsDone && window._onNativeTtsDone()");
+                              }
                           } else {
                               evalJs("window._onNativeTtsDone && window._onNativeTtsDone()");
                           }
@@ -376,7 +418,12 @@ jobs:
                                       @Override public void onRmsChanged(float rmsdB) {}
                                       @Override public void onBufferReceived(byte[] buffer) {}
                                       @Override public void onEndOfSpeech() {}
-                                      @Override public void onError(int error) { evalJs("window._onNativeSrEnd && window._onNativeSrEnd()"); }
+                                      @Override public void onError(int error) {
+                                          if (error == SpeechRecognizer.ERROR_RECOGNIZER_BUSY || error == SpeechRecognizer.ERROR_CLIENT) {
+                                              destroyRecognizer();
+                                          }
+                                          evalJs("window._onNativeSrEnd && window._onNativeSrEnd()");
+                                      }
                                       @Override public void onResults(Bundle results) {
                                           ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                                           if (matches != null && !matches.isEmpty()) {
@@ -397,6 +444,7 @@ jobs:
                               muteRecognizerBeeps();
                               sr.startListening(srIntent);
                           } catch (Exception e) {
+                              destroyRecognizer();
                               restoreAudioStreams();
                               evalJs("window._onNativeSrEnd && window._onNativeSrEnd()");
                           }
@@ -421,8 +469,8 @@ jobs:
               @Override
               public void onDestroy() {
                   restoreAudioStreams();
-                  if (tts != null) { tts.stop(); tts.shutdown(); }
-                  if (sr != null) { sr.destroy(); }
+                  if (tts != null) { tts.stop(); tts.shutdown(); tts = null; }
+                  destroyRecognizer();
                   super.onDestroy();
               }
           }
