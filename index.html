@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#7c4a1e">
+<meta name="theme-color" content="#4e2b10">
 <title>Encadenadas Pro</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -30,7 +30,7 @@ window.addEventListener('DOMContentLoaded', function() {
   --wood-mid: #d9a464;
   --wood-dark: #8b5523;
   --wood-deep: #4e2b10;
-  --brass: #f59e0b;
+  --safe-top: max(env(safe-area-inset-top, 0px), 34px);
 }
 
 html, body { height: 100%; margin: 0; }
@@ -47,7 +47,21 @@ body {
 
 input { -webkit-user-select: text; user-select: text; }
 
-/* Cuadrícula sutil de cuaderno artesanal */
+/* Franja superior dedicada a la zona de notificaciones del teléfono */
+#franja-notificaciones {
+  width: 100%;
+  flex-shrink: 0;
+  height: var(--safe-top);
+  background: linear-gradient(180deg, #351b09 0%, #4e2b10 100%);
+  border-bottom: 2px solid #241004;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  z-index: 70;
+}
+
+#modal-menu {
+  top: var(--safe-top);
+}
+
 .fondo-cuaderno {
   background-image:
     linear-gradient(rgba(124, 74, 30, 0.08) 1px, transparent 1px),
@@ -55,7 +69,6 @@ input { -webkit-user-select: text; user-select: text; }
   background-size: 28px 28px;
 }
 
-/* Placa de madera artesanal 3D */
 .madera-panel {
   background:
     repeating-linear-gradient(115deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 2px, transparent 2px, transparent 14px),
@@ -69,7 +82,6 @@ input { -webkit-user-select: text; user-select: text; }
     0 12px 22px rgba(45, 22, 6, 0.32);
 }
 
-/* Dock inferior de madera oscura biselada */
 .madera-dock {
   background:
     repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 8px, transparent 8px, transparent 18px),
@@ -80,7 +92,6 @@ input { -webkit-user-select: text; user-select: text; }
     0 -8px 24px rgba(35, 16, 4, 0.35);
 }
 
-/* Remaches metálicos decorativos */
 .remache {
   width: 8px;
   height: 8px;
@@ -89,7 +100,6 @@ input { -webkit-user-select: text; user-select: text; }
   box-shadow: 0 1px 2px rgba(0,0,0,0.45);
 }
 
-/* Título ENCADENADAS de máximo contraste */
 .titulo-alto-contraste {
   font-family: 'Titan One', 'Nunito', sans-serif;
   font-weight: 900;
@@ -103,7 +113,6 @@ input { -webkit-user-select: text; user-select: text; }
   letter-spacing: 0.05em;
 }
 
-/* Botón táctil 3D */
 .btn-3d {
   transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
@@ -111,7 +120,6 @@ input { -webkit-user-select: text; user-select: text; }
   transform: translateY(3px);
 }
 
-/* Ficha de palabra táctil 3D */
 .ficha-palabra {
   box-shadow:
     inset 0 2px 0 rgba(255,255,255,0.95),
@@ -123,7 +131,6 @@ input { -webkit-user-select: text; user-select: text; }
   transform: scale(0.97) translateY(2px);
 }
 
-/* Animaciones pulidas */
 @keyframes popIn {
   0% { opacity: 0; transform: translateY(18px) scale(0.82); }
   70% { opacity: 1; transform: translateY(-3px) scale(1.03); }
@@ -162,7 +169,6 @@ input { -webkit-user-select: text; user-select: text; }
   * { animation: none !important; transition: none !important; }
 }
 
-/* Scroll visible, suave y táctil en la lista de palabras */
 #game-board {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -185,12 +191,18 @@ input { -webkit-user-select: text; user-select: text; }
 }
 </style>
 </head>
-<body class="w-full overflow-hidden flex flex-col items-center justify-between px-3 pt-2 pb-2 select-none relative">
+<body class="w-full overflow-hidden flex flex-col select-none relative p-0">
+
+<!-- FRANJA SUPERIOR RESERVADA PARA LA ZONA DE NOTIFICACIONES DEL TELÉFONO -->
+<div id="franja-notificaciones" aria-hidden="true"></div>
+
+<!-- CONTENEDOR PRINCIPAL BAJO LA BARRA DE NOTIFICACIONES -->
+<div id="app-shell" class="relative flex-1 min-h-0 w-full flex flex-col items-center justify-between px-3 pt-2 pb-2 overflow-hidden">
 
 <div class="fondo-cuaderno absolute inset-0 z-0 pointer-events-none"></div>
 
 <!-- PANTALLA INICIAL A PANTALLA COMPLETA -->
-<div id="pantalla-portada" onclick="window.cerrarPortada()" ontouchstart="window.cerrarPortada()" class="fixed inset-0 z-[60] bg-[#ffedd5] flex flex-col items-center justify-end cursor-pointer transition-opacity duration-300">
+<div id="pantalla-portada" onclick="window.cerrarPortada()" ontouchstart="window.cerrarPortada()" class="fixed inset-0 z-[80] bg-[#ffedd5] flex flex-col items-center justify-end cursor-pointer transition-opacity duration-300">
   <img src="splash.png" onerror="this.onerror=null;this.src='31336.png'" alt="Palabras Encadenadas" class="absolute inset-0 w-full h-full object-cover pointer-events-none">
   <button type="button" onclick="window.cerrarPortada()" class="btn-3d relative z-10 mb-10 bg-gradient-to-b from-[#9a602a] to-[#6b3d16] border-4 border-[#fef3c7] text-white font-black text-xl px-8 py-3 rounded-full shadow-2xl animate-bounce">
     ▶ TOCA PARA EMPEZAR
@@ -198,8 +210,8 @@ input { -webkit-user-select: text; user-select: text; }
 </div>
 
 <!-- MENÚ PRINCIPAL -->
-<div id="modal-menu" role="dialog" aria-modal="true" aria-labelledby="titulo-menu" class="fixed inset-0 z-50 bg-black/65 flex flex-col items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-  <div class="madera-panel w-full max-w-sm max-h-[92dvh] overflow-y-auto rounded-3xl p-5 flex flex-col items-center relative">
+<div id="modal-menu" role="dialog" aria-modal="true" aria-labelledby="titulo-menu" class="fixed left-0 right-0 bottom-0 z-50 bg-black/65 flex flex-col items-center justify-center p-3 backdrop-blur-sm transition-opacity">
+  <div class="madera-panel w-full max-w-sm max-h-full overflow-y-auto rounded-3xl p-4 flex flex-col items-center relative">
     <div class="remache absolute top-3 left-3"></div>
     <div class="remache absolute top-3 right-3"></div>
     <div class="remache absolute bottom-3 left-3"></div>
@@ -210,44 +222,72 @@ input { -webkit-user-select: text; user-select: text; }
       ?
     </button>
 
-    <img src="icon-192.png" onerror="this.onerror=null;this.src='31541.png'" alt="Icono Encadenadas" class="w-16 h-16 rounded-2xl shadow-lg mb-1 border-2 border-[#7c4a1e]">
-    <h1 id="titulo-menu" class="titulo-alto-contraste text-3xl sm:text-4xl my-1.5 text-center">ENCADENADAS</h1>
+    <img src="icon-192.png" onerror="this.onerror=null;this.src='31541.png'" alt="Icono Encadenadas" class="w-14 h-14 rounded-2xl shadow-lg mb-1 border-2 border-[#7c4a1e]">
+    <h1 id="titulo-menu" class="titulo-alto-contraste text-3xl my-1 text-center">ENCADENADAS</h1>
 
     <!-- Panel desplegable de reglas rápidas -->
-    <div id="panel-ayuda-menu" class="hidden w-full bg-amber-50/95 border-2 border-[#8b5523] rounded-2xl p-3 mb-3 text-xs text-[#4e2b10] shadow-inner space-y-1">
-      <p class="font-black text-center text-sm text-orange-700">🎯 Cómo jugar</p>
-      <p>• Encadena palabras usando la <strong>última sílaba</strong> de la anterior (ej. <em>PA-LA-<strong>BRA</strong> ➔ <strong>BRA</strong>-SA</em>).</p>
+    <div id="panel-ayuda-menu" class="hidden w-full bg-amber-50/95 border-2 border-[#8b5523] rounded-2xl p-3 mb-2.5 text-xs text-[#4e2b10] shadow-inner space-y-1">
+      <p class="font-black text-center text-sm text-orange-700">🎯 Reglas y Dificultades</p>
+      <p>• <strong>🟢 Fácil:</strong> vale cualquier palabra que empiece por las mismas letras de la última sílaba (<em>RO-<strong>CA</strong> ➔ <strong>CA</strong>LCIO</em>, <em>DO-<strong>NAR</strong> ➔ <strong>NAR</strong>RADOR</em>).</p>
+      <p>• <strong>🔵 Normal:</strong> la primera sílaba debe coincidir exactamente con la última anterior.</p>
+      <p>• <strong>🔴 Difícil:</strong> sílaba exacta con <strong>cronómetro por turno</strong> (5, 10, 15 o 20 s).</p>
+      <p>• <strong>Multijugador:</strong> de 1 a 4 personas pueden jugar contra la máquina o entre sí.</p>
       <p>• <strong>Manos libres:</strong> di tu palabra, <em>«¿qué significa?»</em>, <em>«me rindo»</em> o <em>«otra vez»</em> al terminar.</p>
-      <p>• Los plurales son válidos y pasan automáticamente a singular. Toca cualquier palabra del tablero para ver su significado.</p>
     </div>
 
-    <div class="bg-[#4e2b10] text-amber-300 font-black text-sm px-4 py-1 rounded-full shadow-md mb-3 border border-amber-400/40 flex items-center gap-1.5">
+    <div class="bg-[#4e2b10] text-amber-300 font-black text-xs sm:text-sm px-4 py-1 rounded-full shadow-md mb-2.5 border border-amber-400/40 flex items-center gap-1.5">
       <span>🏆 Récord actual:</span>
-      <span id="menu-record" class="text-white text-base">0</span>
+      <span id="menu-record" class="text-white text-sm sm:text-base">0</span>
       <span>palabras</span>
     </div>
 
-    <label class="text-xs font-black text-[#4e2b10] mb-1.5 text-center uppercase tracking-wider">Multijugador (Máximo 4):</label>
-    <div id="selector-num-jugadores" class="grid grid-cols-3 gap-2 w-full mb-3">
-      <button type="button" id="btn-num-2" onclick="window.elegirJugadores(2)" class="btn-3d bg-orange-600 text-white font-black py-2 rounded-xl border-2 border-[#4e2b10] shadow-[0_3px_0_#4e2b10]">2 Jugadores</button>
-      <button type="button" id="btn-num-3" onclick="window.elegirJugadores(3)" class="btn-3d bg-amber-50 text-slate-700 font-black py-2 rounded-xl border-2 border-[#b0743d] shadow-[0_3px_0_#9a602a]">3 Jugadores</button>
-      <button type="button" id="btn-num-4" onclick="window.elegirJugadores(4)" class="btn-3d bg-amber-50 text-slate-700 font-black py-2 rounded-xl border-2 border-[#b0743d] shadow-[0_3px_0_#9a602a]">4 Jugadores</button>
+    <!-- SELECTOR DE DIFICULTAD -->
+    <label class="text-[11px] font-black text-[#4e2b10] mb-1 text-center uppercase tracking-wider">Dificultad:</label>
+    <div class="grid grid-cols-3 gap-1.5 w-full mb-1.5">
+      <button type="button" id="btn-dif-facil" onclick="window.elegirDificultad('facil')" class="btn-3d bg-amber-50 text-slate-700 font-black text-xs sm:text-sm py-2 rounded-xl border-2 border-[#b0743d] shadow-[0_3px_0_#9a602a]">🟢 Fácil</button>
+      <button type="button" id="btn-dif-normal" onclick="window.elegirDificultad('normal')" class="btn-3d bg-blue-600 text-white font-black text-xs sm:text-sm py-2 rounded-xl border-2 border-blue-900 shadow-[0_3px_0_#1e3a8a]">🔵 Normal</button>
+      <button type="button" id="btn-dif-dificil" onclick="window.elegirDificultad('dificil')" class="btn-3d bg-amber-50 text-slate-700 font-black text-xs sm:text-sm py-2 rounded-xl border-2 border-[#b0743d] shadow-[0_3px_0_#9a602a]">🔴 Difícil</button>
+    </div>
+    <p id="desc-dificultad" class="text-[11px] font-extrabold text-[#4e2b10] text-center mb-2 leading-tight px-1">
+      Reglas clásicas: empieza por la última sílaba exacta.
+    </p>
+
+    <!-- SELECTOR DE CRONÓMETRO (SOLO VISIBLE EN DIFÍCIL) -->
+    <div id="selector-tiempo-wrap" class="hidden w-full bg-red-950/15 border-2 border-red-800/40 rounded-2xl p-2 mb-2.5">
+      <div class="text-[11px] font-black text-red-900 text-center uppercase tracking-wider mb-1">⏱️ Tiempo por turno:</div>
+      <div class="grid grid-cols-4 gap-1.5 w-full">
+        <button type="button" id="btn-tiempo-5" onclick="window.elegirTiempoTurno(5)" class="btn-3d bg-amber-50 text-slate-800 font-black text-xs py-1.5 rounded-lg border-2 border-red-300 shadow-[0_2px_0_#991b1b]">5 s</button>
+        <button type="button" id="btn-tiempo-10" onclick="window.elegirTiempoTurno(10)" class="btn-3d bg-red-600 text-white font-black text-xs py-1.5 rounded-lg border-2 border-red-900 shadow-[0_2px_0_#7f1d1d]">10 s</button>
+        <button type="button" id="btn-tiempo-15" onclick="window.elegirTiempoTurno(15)" class="btn-3d bg-amber-50 text-slate-800 font-black text-xs py-1.5 rounded-lg border-2 border-red-300 shadow-[0_2px_0_#991b1b]">15 s</button>
+        <button type="button" id="btn-tiempo-20" onclick="window.elegirTiempoTurno(20)" class="btn-3d bg-amber-50 text-slate-800 font-black text-xs py-1.5 rounded-lg border-2 border-red-300 shadow-[0_2px_0_#991b1b]">20 s</button>
+      </div>
     </div>
 
-    <div id="contenedor-inputs-jugadores" class="w-full space-y-2 mb-4 max-h-40 overflow-y-auto pr-0.5">
-      <input type="text" id="input-nombre-1" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 1 (Humano)" autocomplete="off" class="w-full py-1.5 px-3 rounded-xl text-center font-extrabold text-base text-slate-800 bg-white/95 outline-none border-2 border-[#b0743d] focus:border-blue-500 shadow-inner">
-      <input type="text" id="input-nombre-2" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 2" autocomplete="off" class="w-full py-1.5 px-3 rounded-xl text-center font-extrabold text-base text-slate-800 bg-white/95 outline-none border-2 border-[#b0743d] focus:border-orange-500 shadow-inner">
-      <input type="text" id="input-nombre-3" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 3" autocomplete="off" class="hidden w-full py-1.5 px-3 rounded-xl text-center font-extrabold text-base text-slate-800 bg-white/95 outline-none border-2 border-[#b0743d] focus:border-emerald-500 shadow-inner">
-      <input type="text" id="input-nombre-4" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 4" autocomplete="off" class="hidden w-full py-1.5 px-3 rounded-xl text-center font-extrabold text-base text-slate-800 bg-white/95 outline-none border-2 border-[#b0743d] focus:border-pink-500 shadow-inner">
+    <!-- SELECTOR DE JUGADORES HUMANOS (1 A 4) -->
+    <label class="text-[11px] font-black text-[#4e2b10] mb-1 text-center uppercase tracking-wider">Jugadores humanos (1 a 4):</label>
+    <div id="selector-num-jugadores" class="grid grid-cols-4 gap-1.5 w-full mb-2.5">
+      <button type="button" id="btn-num-1" onclick="window.elegirJugadores(1)" class="btn-3d bg-amber-50 text-slate-700 font-black text-xs sm:text-sm py-1.5 rounded-xl border-2 border-[#b0743d] shadow-[0_3px_0_#9a602a]">1 Jug.</button>
+      <button type="button" id="btn-num-2" onclick="window.elegirJugadores(2)" class="btn-3d bg-orange-600 text-white font-black text-xs sm:text-sm py-1.5 rounded-xl border-2 border-[#4e2b10] shadow-[0_3px_0_#4e2b10]">2 Jug.</button>
+      <button type="button" id="btn-num-3" onclick="window.elegirJugadores(3)" class="btn-3d bg-amber-50 text-slate-700 font-black text-xs sm:text-sm py-1.5 rounded-xl border-2 border-[#b0743d] shadow-[0_3px_0_#9a602a]">3 Jug.</button>
+      <button type="button" id="btn-num-4" onclick="window.elegirJugadores(4)" class="btn-3d bg-amber-50 text-slate-700 font-black text-xs sm:text-sm py-1.5 rounded-xl border-2 border-[#b0743d] shadow-[0_3px_0_#9a602a]">4 Jug.</button>
     </div>
 
-    <button type="button" id="btn-pve-menu" onclick="window.arranqueVinculado('pve')" class="btn-3d w-full bg-gradient-to-b from-blue-500 to-blue-600 border-2 border-blue-800 rounded-2xl py-3 px-4 mb-2.5 text-base sm:text-lg font-black text-white shadow-[0_4px_0_#1e3a8a] flex items-center justify-center gap-2">
-      <span id="txt-pve">👤 Jugador 1 vs 🤖 Máquina</span>
+    <!-- INPUTS DE NOMBRES -->
+    <div id="contenedor-inputs-jugadores" class="w-full space-y-1.5 mb-3 max-h-36 overflow-y-auto pr-0.5">
+      <input type="text" id="input-nombre-1" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 1" autocomplete="off" class="w-full py-1.5 px-3 rounded-xl text-center font-extrabold text-sm sm:text-base text-slate-800 bg-white/95 outline-none border-2 border-[#b0743d] focus:border-blue-500 shadow-inner">
+      <input type="text" id="input-nombre-2" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 2" autocomplete="off" class="w-full py-1.5 px-3 rounded-xl text-center font-extrabold text-sm sm:text-base text-slate-800 bg-white/95 outline-none border-2 border-[#b0743d] focus:border-orange-500 shadow-inner">
+      <input type="text" id="input-nombre-3" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 3" autocomplete="off" class="hidden w-full py-1.5 px-3 rounded-xl text-center font-extrabold text-sm sm:text-base text-slate-800 bg-white/95 outline-none border-2 border-[#b0743d] focus:border-emerald-500 shadow-inner">
+      <input type="text" id="input-nombre-4" oninput="window.actualizarTextoBotones()" maxlength="20" placeholder="Jugador 4" autocomplete="off" class="hidden w-full py-1.5 px-3 rounded-xl text-center font-extrabold text-sm sm:text-base text-slate-800 bg-white/95 outline-none border-2 border-[#b0743d] focus:border-pink-500 shadow-inner">
+    </div>
+
+    <!-- BOTONES DE INICIO (1-4 JUGADORES VS MÁQUINA / 2-4 JUGADORES SIN MÁQUINA) -->
+    <button type="button" id="btn-pve-menu" onclick="window.arranqueVinculado(true)" class="btn-3d w-full bg-gradient-to-b from-blue-500 to-blue-600 border-2 border-blue-800 rounded-2xl py-2.5 px-4 mb-2 text-base font-black text-white shadow-[0_4px_0_#1e3a8a] flex items-center justify-center gap-2">
+      <span id="txt-pve">👥 2 Jugadores vs 🤖 Máquina</span>
     </button>
-    <button type="button" id="btn-pvp-menu" onclick="window.arranqueVinculado('pvp')" class="btn-3d w-full bg-gradient-to-b from-orange-500 to-orange-600 border-2 border-orange-800 rounded-2xl py-3 px-4 text-base sm:text-lg font-black text-white shadow-[0_4px_0_#7c2d12] flex items-center justify-center gap-2">
+    <button type="button" id="btn-pvp-menu" onclick="window.arranqueVinculado(false)" class="btn-3d w-full bg-gradient-to-b from-orange-500 to-orange-600 border-2 border-orange-800 rounded-2xl py-2.5 px-4 text-base font-black text-white shadow-[0_4px_0_#7c2d12] flex items-center justify-center gap-2">
       <span id="txt-pvp">👤 Jugador 1 vs 👤 Jugador 2</span>
     </button>
-    <p class="mt-3 text-[11px] font-extrabold text-[#4e2b10]/90 text-center leading-tight">
+    <p class="mt-2.5 text-[11px] font-extrabold text-[#4e2b10]/90 text-center leading-tight">
       🎙️ Manos libres: di tu palabra, «¿qué significa?», «me rindo» o «otra vez» al terminar.
     </p>
   </div>
@@ -259,31 +299,40 @@ input { -webkit-user-select: text; user-select: text; }
     <div class="remache absolute top-2 left-2"></div>
     <div class="remache absolute top-2 right-2"></div>
 
-    <!-- Botón Home -->
     <button id="btn-home" type="button" onclick="window.irAlMenuHome()" aria-label="Volver al menú principal" title="Menú principal" class="btn-3d absolute left-3 top-2.5 bg-gradient-to-b from-[#6b3d16] to-[#4e2b10] text-white text-lg w-10 h-10 rounded-xl shadow-[0_3px_0_#2a1306] border-2 border-amber-300/40 flex items-center justify-center">
       🏠
     </button>
 
-    <!-- Botón Sonido FX -->
     <button id="btn-sfx" type="button" onclick="window.alternarSonidoFX()" aria-label="Activar o silenciar efectos de sonido" title="Efectos de sonido" class="btn-3d absolute right-3 top-2.5 bg-gradient-to-b from-[#6b3d16] to-[#4e2b10] text-amber-200 text-lg w-10 h-10 rounded-xl shadow-[0_3px_0_#2a1306] border-2 border-amber-300/40 flex items-center justify-center">
       🔊
     </button>
 
     <h1 class="titulo-alto-contraste text-2xl sm:text-3xl leading-none mt-0.5">ENCADENADAS</h1>
 
-    <!-- Marcadores -->
-    <div class="flex items-center justify-center gap-2 mt-1.5">
-      <div class="bg-white/95 text-slate-800 text-xs font-black px-3 py-0.5 rounded-full border-2 border-[#8b5523] shadow-sm">
-        🔗 Palabras: <span id="contador-palabras" class="text-blue-600 text-sm">0</span>
+    <!-- Marcadores + Insignia de Dificultad -->
+    <div class="flex flex-wrap items-center justify-center gap-1.5 mt-1.5">
+      <div class="bg-white/95 text-slate-800 text-xs font-black px-2.5 py-0.5 rounded-full border-2 border-[#8b5523] shadow-sm">
+        🔗 <span id="contador-palabras" class="text-blue-600 text-sm">0</span>
       </div>
-      <div id="pill-record" class="bg-[#4e2b10] text-amber-300 text-xs font-black px-3 py-0.5 rounded-full border-2 border-amber-400/50 shadow-sm transition-transform">
-        🏆 Récord: <span id="record-palabras" class="text-white text-sm">0</span>
+      <div id="pill-record" class="bg-[#4e2b10] text-amber-300 text-xs font-black px-2.5 py-0.5 rounded-full border-2 border-amber-400/50 shadow-sm transition-transform">
+        🏆 <span id="record-palabras" class="text-white text-sm">0</span>
+      </div>
+      <div id="badge-dificultad" class="bg-blue-700 text-white text-[11px] font-black px-2.5 py-0.5 rounded-full border-2 border-white/60 shadow-sm">
+        🔵 Normal
       </div>
     </div>
 
     <!-- Indicador de Turno + Sílaba destacada -->
     <div id="indicador-turno" aria-live="polite" class="mt-1.5 text-xs sm:text-sm font-black text-white bg-[#4e2b10] rounded-full px-4 py-1 inline-flex items-center gap-1.5 shadow-md transition-colors">
       Esperando...
+    </div>
+
+    <!-- BARRA DE CRONÓMETRO (MODO DIFÍCIL) -->
+    <div id="cronometro-wrap" class="hidden w-full max-w-xs mt-1.5 flex items-center gap-2">
+      <span id="cronometro-texto" class="text-xs font-black text-white bg-red-600 px-2 py-0.5 rounded-full shadow min-w-[46px] text-center tabular-nums">⏱️ 10s</span>
+      <div class="flex-1 h-2.5 bg-[#4e2b10]/70 rounded-full overflow-hidden border border-amber-200/50">
+        <div id="cronometro-barra" class="h-full bg-emerald-400 transition-all duration-100 rounded-full" style="width: 100%"></div>
+      </div>
     </div>
   </div>
 </header>
@@ -297,7 +346,6 @@ input { -webkit-user-select: text; user-select: text; }
 <footer class="madera-dock z-20 w-full max-w-md rounded-t-3xl px-3.5 pt-3.5 pb-3 relative">
   <div class="absolute -top-5 left-4 text-xl transform -rotate-12 pointer-events-none opacity-80" aria-hidden="true">🧽</div>
 
-  <!-- Botones rápidos flotantes: Significado + Me rindo -->
   <div id="barra-acciones-rapidas" class="absolute -top-11 right-3 flex items-center gap-2 z-30">
     <button id="btn-significado" type="button" onclick="window.pedirSignificadoBoton()" class="btn-3d bg-gradient-to-b from-amber-400 to-amber-500 text-[#3d210b] font-black text-xs sm:text-sm py-1.5 px-3 rounded-full shadow-[0_3px_0_#92400e] border-2 border-amber-700 flex items-center gap-1">
       <span aria-hidden="true">📖</span> ¿Qué es?
@@ -307,10 +355,8 @@ input { -webkit-user-select: text; user-select: text; }
     </button>
   </div>
 
-  <!-- Alerta flotante -->
   <div id="alert-box" role="alert" class="hidden absolute -top-20 left-0 right-0 mx-auto w-11/12 bg-gradient-to-r from-red-600 to-rose-600 text-white text-center py-2 px-4 rounded-2xl font-extrabold text-sm shadow-xl border-2 border-white/60 transition-all duration-300 opacity-0 z-50"></div>
 
-  <!-- Controles de voz y texto -->
   <div id="controls-container" class="flex items-center gap-2.5">
     <div class="relative flex-shrink-0">
       <div id="mic-ring-fx" class="hidden mic-ring"></div>
@@ -329,7 +375,6 @@ input { -webkit-user-select: text; user-select: text; }
     </div>
   </div>
 
-  <!-- Botón de reinicio al acabar -->
   <div id="fin-juego-botones" class="hidden flex gap-2">
     <button id="btn-otra-vez" type="button" onclick="window.reiniciarMismaPartida()" class="btn-3d flex-1 bg-gradient-to-b from-emerald-400 to-emerald-600 text-white font-black text-base sm:text-lg py-3 rounded-2xl shadow-[0_4px_0_#065f46] border-2 border-emerald-200/70 uppercase tracking-wide">
       🔄 Otra vez (o di «otra vez»)
@@ -339,26 +384,76 @@ input { -webkit-user-select: text; user-select: text; }
   <div class="text-center mt-2 text-amber-100/95 text-xs sm:text-sm font-bold tracking-wide" id="mic-status" aria-live="polite">Micrófono apagado</div>
 </footer>
 
-<!-- SCRIPT 1: CONTROL DEL MENÚ Y JUGADORES (2 A 4) -->
+</div><!-- FIN #app-shell -->
+
+<!-- SCRIPT 1: CONTROL DEL MENÚ (1-4 JUGADORES, DIFICULTADES Y CRONÓMETRO) -->
 <script>
-window.numJugadores = 2;
+window.numJugadores = 1;
+window.dificultadElegida = 'normal'; // 'facil' | 'normal' | 'dificil'
+window.tiempoTurnoSeg = 10;          // 5 | 10 | 15 | 20
 
 window.alternarAyudaMenu = function() {
   var panel = document.getElementById('panel-ayuda-menu');
   if (panel) panel.classList.toggle('hidden');
 };
 
+window.elegirDificultad = function(dif) {
+  if (dif !== 'facil' && dif !== 'normal' && dif !== 'dificil') dif = 'normal';
+  window.dificultadElegida = dif;
+  try { localStorage.setItem('encadenadas_dif', dif); } catch (e) {}
+
+  var estilosActivos = {
+    facil: "btn-3d bg-emerald-600 text-white font-black text-xs sm:text-sm py-2 rounded-xl border-2 border-emerald-900 shadow-[0_3px_0_#064e3b]",
+    normal: "btn-3d bg-blue-600 text-white font-black text-xs sm:text-sm py-2 rounded-xl border-2 border-blue-900 shadow-[0_3px_0_#1e3a8a]",
+    dificil: "btn-3d bg-red-600 text-white font-black text-xs sm:text-sm py-2 rounded-xl border-2 border-red-900 shadow-[0_3px_0_#7f1d1d]"
+  };
+  var estiloInactivo = "btn-3d bg-amber-50 text-slate-700 font-black text-xs sm:text-sm py-2 rounded-xl border-2 border-[#b0743d] shadow-[0_3px_0_#9a602a]";
+
+  ['facil', 'normal', 'dificil'].forEach(function(k) {
+    var b = document.getElementById('btn-dif-' + k);
+    if (b) b.className = (k === dif) ? estilosActivos[k] : estiloInactivo;
+  });
+
+  var desc = document.getElementById('desc-dificultad');
+  if (desc) {
+    if (dif === 'facil') desc.textContent = "Libre por letras: basta con empezar por las mismas letras de la última sílaba (CA ➔ CALCIO).";
+    else if (dif === 'dificil') desc.textContent = "Sílaba exacta y contrarreloj en cada turno.";
+    else desc.textContent = "Reglas clásicas: empieza por la última sílaba exacta.";
+  }
+
+  var wrapT = document.getElementById('selector-tiempo-wrap');
+  if (wrapT) {
+    if (dif === 'dificil') wrapT.classList.remove('hidden');
+    else wrapT.classList.add('hidden');
+  }
+};
+
+window.elegirTiempoTurno = function(seg) {
+  if ([5, 10, 15, 20].indexOf(seg) === -1) seg = 10;
+  window.tiempoTurnoSeg = seg;
+  try { localStorage.setItem('encadenadas_tiempo', String(seg)); } catch (e) {}
+
+  [5, 10, 15, 20].forEach(function(v) {
+    var b = document.getElementById('btn-tiempo-' + v);
+    if (b) {
+      b.className = (v === seg)
+        ? "btn-3d bg-red-600 text-white font-black text-xs py-1.5 rounded-lg border-2 border-red-900 shadow-[0_2px_0_#7f1d1d]"
+        : "btn-3d bg-amber-50 text-slate-800 font-black text-xs py-1.5 rounded-lg border-2 border-red-300 shadow-[0_2px_0_#991b1b]";
+    }
+  });
+};
+
 window.elegirJugadores = function(n) {
-  if (n < 2) n = 2;
+  if (n < 1) n = 1;
   if (n > 4) n = 4;
   window.numJugadores = n;
   try { localStorage.setItem('encadenadas_num_jug', String(n)); } catch (e) {}
-  for (var i = 2; i <= 4; i++) {
+  for (var i = 1; i <= 4; i++) {
     var btn = document.getElementById('btn-num-' + i);
     if (btn) {
       btn.className = (i === n)
-        ? "btn-3d bg-orange-600 text-white font-black py-2 rounded-xl border-2 border-[#4e2b10] shadow-[0_3px_0_#4e2b10]"
-        : "btn-3d bg-amber-50 text-slate-700 font-black py-2 rounded-xl border-2 border-[#b0743d] shadow-[0_3px_0_#9a602a]";
+        ? "btn-3d bg-orange-600 text-white font-black text-xs sm:text-sm py-1.5 rounded-xl border-2 border-[#4e2b10] shadow-[0_3px_0_#4e2b10]"
+        : "btn-3d bg-amber-50 text-slate-700 font-black text-xs sm:text-sm py-1.5 rounded-xl border-2 border-[#b0743d] shadow-[0_3px_0_#9a602a]";
     }
   }
   for (var j = 1; j <= 4; j++) {
@@ -378,12 +473,25 @@ window.actualizarTextoBotones = function() {
   var n2 = (inp2 && inp2.value.trim()) ? inp2.value.trim() : "Jugador 2";
   var tPve = document.getElementById('txt-pve');
   var tPvp = document.getElementById('txt-pvp');
-  if (tPve) tPve.textContent = "👤 " + n1 + " vs 🤖 Máquina";
-  if (tPvp) {
-    if (window.numJugadores === 2) {
-      tPvp.textContent = "👤 " + n1 + " vs 👤 " + n2;
+  var btnPvp = document.getElementById('btn-pvp-menu');
+
+  if (tPve) {
+    if (window.numJugadores === 1) {
+      tPve.textContent = "👤 " + n1 + " vs 🤖 Máquina";
     } else {
-      tPvp.textContent = "👥 Jugar " + window.numJugadores + " Jugadores";
+      tPve.textContent = "👥 " + window.numJugadores + " Jugadores vs 🤖 Máquina";
+    }
+  }
+  if (btnPvp && tPvp) {
+    if (window.numJugadores === 1) {
+      btnPvp.classList.add('hidden');
+    } else {
+      btnPvp.classList.remove('hidden');
+      if (window.numJugadores === 2) {
+        tPvp.textContent = "👤 " + n1 + " vs 👤 " + n2 + " (Sin máquina)";
+      } else {
+        tPvp.textContent = "👥 Solo " + window.numJugadores + " Jugadores (Sin máquina)";
+      }
     }
   }
 };
@@ -393,9 +501,17 @@ window.cargarDatosMenu = function() {
     var rec = parseInt(localStorage.getItem('encadenadas_record') || '0', 10) || 0;
     document.getElementById('menu-record').textContent = rec;
     document.getElementById('record-palabras').textContent = rec;
-    var guardados = parseInt(localStorage.getItem('encadenadas_num_jug') || '2', 10);
-    if (guardados >= 2 && guardados <= 4) window.numJugadores = guardados;
-    else window.numJugadores = 2;
+
+    var guardados = parseInt(localStorage.getItem('encadenadas_num_jug') || '1', 10);
+    if (guardados >= 1 && guardados <= 4) window.numJugadores = guardados;
+    else window.numJugadores = 1;
+
+    var difGuardada = localStorage.getItem('encadenadas_dif') || 'normal';
+    window.dificultadElegida = (difGuardada === 'facil' || difGuardada === 'dificil') ? difGuardada : 'normal';
+
+    var tiempoGuardado = parseInt(localStorage.getItem('encadenadas_tiempo') || '10', 10);
+    if ([5, 10, 15, 20].indexOf(tiempoGuardado) !== -1) window.tiempoTurnoSeg = tiempoGuardado;
+
     for (var i = 1; i <= 4; i++) {
       var clave = (i === 1) ? 'encadenadas_n1' : (i === 2) ? 'encadenadas_n2' : ('encadenadas_n' + i);
       var val = localStorage.getItem(clave) || "";
@@ -403,12 +519,14 @@ window.cargarDatosMenu = function() {
       if (el) el.value = val;
     }
   } catch (e) {}
+  window.elegirDificultad(window.dificultadElegida);
+  window.elegirTiempoTurno(window.tiempoTurnoSeg);
   window.elegirJugadores(window.numJugadores);
 };
 window.cargarDatosMenu();
 </script>
 
-<!-- SCRIPT 2: MOTOR PROFESIONAL DE ENCADENADAS -->
+<!-- SCRIPT 2: MOTOR PROFESIONAL DE ENCADENADAS (MULTI VS MÁQUINA, 3 DIFICULTADES, CRONÓMETRO) -->
 <script>
 const gameBoard = document.getElementById('game-board');
 const gameBoardList = document.getElementById('game-board-list');
@@ -431,6 +549,10 @@ const spanRecordPalabras = document.getElementById('record-palabras');
 const spanMenuRecord = document.getElementById('menu-record');
 const pillRecord = document.getElementById('pill-record');
 const btnSfx = document.getElementById('btn-sfx');
+const badgeDificultad = document.getElementById('badge-dificultad');
+const cronometroWrap = document.getElementById('cronometro-wrap');
+const cronometroTexto = document.getElementById('cronometro-texto');
+const cronometroBarra = document.getElementById('cronometro-barra');
 
 window._anuncioPantallaCompletaActivo = false;
 
@@ -438,15 +560,26 @@ let partidaId = 0;
 let historialPalabras = [];
 let historialSinTildes = new Set();
 let silabaObjetivo = "";
-let modoActual = "";
+let partidaActivaFlag = false;
+let conMaquina = true;
+let dificultadActual = 'normal'; // 'facil' | 'normal' | 'dificil'
+let tiempoLimiteSeg = 10;
+
+// Participantes: [{ nombre: string, esMaquina: boolean, colorIdx: number }]
+let participantes = [];
+let turnoIndex = 0;
 let esTurnoMaquina = false;
 let enProceso = false;
-let nombres = ["Jugador 1", "Jugador 2"];
-let jugadorActual = 0;
 let juegoTerminado = false;
 let contadorPalabras = 0;
 let recordPalabras = parseInt(localStorage.getItem('encadenadas_record') || '0', 10) || 0;
 let recordSuperadoEnPartida = false;
+
+// Cronómetro de turno (Modo Difícil)
+let cronometroInterval = null;
+let tiempoRestanteMs = 0;
+let cronometroFinTs = 0;
+let ultimoSegundoBeep = -1;
 
 let recon = null;
 let isListening = false;
@@ -458,7 +591,7 @@ let cancelarHablaPrevia = null;
 let wakeLock = null;
 let videoWakeLock = null;
 
-// Preferencia de efectos de sonido táctiles (sin bucles continuos, cero pitidos)
+// Efectos de sonido táctiles (sin pitidos continuos)
 let sfxActivo = (localStorage.getItem('encadenadas_sfx') !== '0');
 let audioCtx = null;
 
@@ -510,6 +643,8 @@ function tocarSonidoFX(tipo) {
     } else if (tipo === 'error') {
       playTone(230, 0, 0.13, 0.11, 'sine');
       playTone(180, 0.09, 0.16, 0.10, 'sine');
+    } else if (tipo === 'tick') {
+      playTone(740, 0, 0.055, 0.08, 'sine');
     } else if (tipo === 'victoria') {
       playTone(523.25, 0, 0.14, 0.14, 'triangle');
       playTone(659.25, 0.10, 0.14, 0.14, 'triangle');
@@ -521,11 +656,13 @@ function tocarSonidoFX(tipo) {
   } catch (e) {}
 }
 
+// 5 paletas: Jugadores 1-4 + Máquina (índice 4)
 const COLORES_JUGADORES = [
-  { bg: "bg-blue-600", border: "border-orange-500", bevel: "#ea580c", text: "text-blue-700", sil: "text-orange-500", badge: "bg-blue-600" },
-  { bg: "bg-purple-600", border: "border-purple-500", bevel: "#7e22ce", text: "text-purple-800", sil: "text-purple-500", badge: "bg-purple-600" },
-  { bg: "bg-emerald-600", border: "border-emerald-500", bevel: "#047857", text: "text-emerald-800", sil: "text-emerald-500", badge: "bg-emerald-600" },
-  { bg: "bg-rose-600", border: "border-rose-500", bevel: "#be123c", text: "text-rose-800", sil: "text-rose-500", badge: "bg-rose-600" }
+  { bg: "bg-blue-600", border: "border-blue-500", bevel: "#1d4ed8", text: "text-blue-700", sil: "text-orange-500", badge: "bg-blue-600" },
+  { bg: "bg-orange-600", border: "border-orange-500", bevel: "#c2410c", text: "text-orange-800", sil: "text-blue-600", badge: "bg-orange-600" },
+  { bg: "bg-emerald-600", border: "border-emerald-500", bevel: "#047857", text: "text-emerald-800", sil: "text-amber-600", badge: "bg-emerald-600" },
+  { bg: "bg-rose-600", border: "border-rose-500", bevel: "#be123c", text: "text-rose-800", sil: "text-orange-500", badge: "bg-rose-600" },
+  { bg: "bg-purple-600", border: "border-purple-500", bevel: "#6b21a8", text: "text-purple-800", sil: "text-purple-500", badge: "bg-purple-600" }
 ];
 
 const MAPA_TILDES = { 'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u', 'ü': 'u' };
@@ -546,6 +683,104 @@ function bajarScrollTablero() {
   requestAnimationFrame(() => {
     gameBoard.scrollTop = gameBoard.scrollHeight;
   });
+}
+
+// ---------- CRONÓMETRO POR TURNO (MODO DIFÍCIL) ----------
+function actualizarBadgeDificultadUI() {
+  if (!badgeDificultad) return;
+  if (dificultadActual === 'facil') {
+    badgeDificultad.textContent = "🟢 Fácil";
+    badgeDificultad.className = "bg-emerald-600 text-white text-[11px] font-black px-2.5 py-0.5 rounded-full border-2 border-white/60 shadow-sm";
+  } else if (dificultadActual === 'dificil') {
+    badgeDificultad.textContent = "🔴 Difícil · " + tiempoLimiteSeg + "s";
+    badgeDificultad.className = "bg-red-600 text-white text-[11px] font-black px-2.5 py-0.5 rounded-full border-2 border-white/60 shadow-sm";
+  } else {
+    badgeDificultad.textContent = "🔵 Normal";
+    badgeDificultad.className = "bg-blue-700 text-white text-[11px] font-black px-2.5 py-0.5 rounded-full border-2 border-white/60 shadow-sm";
+  }
+}
+
+function pintarCronometro(msRestantes) {
+  if (!cronometroWrap || dificultadActual !== 'dificil') return;
+  const totalMs = tiempoLimiteSeg * 1000;
+  const pct = Math.max(0, Math.min(100, (msRestantes / totalMs) * 100));
+  const segs = Math.max(0, Math.ceil(msRestantes / 1000));
+
+  cronometroTexto.textContent = "⏱️ " + segs + "s";
+  cronometroBarra.style.width = pct.toFixed(1) + "%";
+
+  if (segs <= 3) {
+    cronometroBarra.className = "h-full bg-red-500 transition-all duration-100 rounded-full";
+    cronometroTexto.className = "text-xs font-black text-white bg-red-600 px-2 py-0.5 rounded-full shadow min-w-[46px] text-center tabular-nums animate-pulse";
+  } else if (pct <= 45) {
+    cronometroBarra.className = "h-full bg-amber-400 transition-all duration-100 rounded-full";
+    cronometroTexto.className = "text-xs font-black text-[#3d210b] bg-amber-400 px-2 py-0.5 rounded-full shadow min-w-[46px] text-center tabular-nums";
+  } else {
+    cronometroBarra.className = "h-full bg-emerald-400 transition-all duration-100 rounded-full";
+    cronometroTexto.className = "text-xs font-black text-white bg-[#4e2b10] px-2 py-0.5 rounded-full shadow min-w-[46px] text-center tabular-nums";
+  }
+}
+
+function detenerCronometro(ocultar = false) {
+  if (cronometroInterval) {
+    clearInterval(cronometroInterval);
+    cronometroInterval = null;
+  }
+  ultimoSegundoBeep = -1;
+  if (ocultar && cronometroWrap) cronometroWrap.classList.add('hidden');
+}
+
+function pausarCronometro() {
+  if (cronometroInterval) {
+    tiempoRestanteMs = Math.max(0, cronometroFinTs - Date.now());
+    clearInterval(cronometroInterval);
+    cronometroInterval = null;
+  }
+}
+
+function arrancarIntervaloCronometro(idActual) {
+  if (dificultadActual !== 'dificil' || juegoTerminado || !partidaActivaFlag || window._anuncioPantallaCompletaActivo) return;
+  if (cronometroWrap) cronometroWrap.classList.remove('hidden');
+  clearInterval(cronometroInterval);
+  cronometroFinTs = Date.now() + tiempoRestanteMs;
+  ultimoSegundoBeep = Math.ceil(tiempoRestanteMs / 1000) + 1;
+  pintarCronometro(tiempoRestanteMs);
+
+  cronometroInterval = setInterval(() => {
+    if (idActual !== partidaId || juegoTerminado || !partidaActivaFlag || window._anuncioPantallaCompletaActivo) {
+      detenerCronometro();
+      return;
+    }
+    const rem = Math.max(0, cronometroFinTs - Date.now());
+    tiempoRestanteMs = rem;
+    pintarCronometro(rem);
+
+    const segs = Math.ceil(rem / 1000);
+    if (segs <= 3 && segs > 0 && segs !== ultimoSegundoBeep) {
+      ultimoSegundoBeep = segs;
+      tocarSonidoFX('tick');
+    }
+
+    if (rem <= 0) {
+      detenerCronometro(false);
+      onTiempoAgotado(idActual);
+    }
+  }, 100);
+}
+
+function iniciarCronometroTurno() {
+  if (dificultadActual !== 'dificil') {
+    detenerCronometro(true);
+    return;
+  }
+  tiempoRestanteMs = tiempoLimiteSeg * 1000;
+  arrancarIntervaloCronometro(partidaId);
+}
+
+function reanudarCronometroTurno() {
+  if (dificultadActual !== 'dificil') return;
+  if (tiempoRestanteMs < 2000) tiempoRestanteMs = 2000;
+  arrancarIntervaloCronometro(partidaId);
 }
 
 // ---------- PUENTE HTTP UNIVERSAL (ANDROID NATIVO ANTI-CORS + WEB FETCH) ----------
@@ -613,7 +848,7 @@ async function fetchJsonUniversal(url, timeoutMs = 4200) {
   }
 }
 
-// ---------- CACHÉ LOCAL DE DEFINICIONES ONLINE (localStorage) ----------
+// ---------- CACHÉ LOCAL DE DEFINICIONES ONLINE ----------
 const CACHE_DEF_KEY = 'encadenadas_def_cache_v1';
 let cacheDefiniciones = {};
 try {
@@ -638,7 +873,7 @@ function guardarCacheDef(p, obj) {
   } catch (e) {}
 }
 
-// ---------- EXPLOSIÓN DE CONFETI AL GANAR LA PARTIDA ----------
+// ---------- EXPLOSIÓN DE CONFETI AL GANAR ----------
 function lanzarConfeti() {
   try {
     const antiguo = document.getElementById('canvas-confeti');
@@ -646,7 +881,7 @@ function lanzarConfeti() {
 
     const canvas = document.createElement('canvas');
     canvas.id = 'canvas-confeti';
-    canvas.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:80;';
+    canvas.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:85;';
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     document.body.appendChild(canvas);
@@ -698,9 +933,8 @@ function lanzarConfeti() {
         ctx.rotate((p.rot * Math.PI) / 180);
         ctx.fillStyle = p.color;
 
-        if (p.forma === 0) {
-          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-        } else if (p.forma === 1) {
+        if (p.forma === 0) ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        else if (p.forma === 1) {
           ctx.beginPath();
           ctx.arc(0, 0, p.h / 1.8, 0, Math.PI * 2);
           ctx.fill();
@@ -722,7 +956,7 @@ function lanzarConfeti() {
   } catch (e) {}
 }
 
-// ---------- Pronunciación natural de sílabas (sin deletreo, sin "acento agudo", "to->tó", "cil->zil") ----------
+// ---------- Pronunciación natural de sílabas (sin deletreo ni "acento agudo") ----------
 const FONETICA_SILABAS_VOZ = {
   'to': 'tó',
   'cil': 'zil', 'cel': 'zel', 'cir': 'zir', 'cer': 'zer',
@@ -764,7 +998,7 @@ function incrementarContadorPalabras() {
   return superadoAhora;
 }
 
-// ---------- PANTALLA ENCENDIDA SIN AUDIO (ZERO PITIDOS) ----------
+// ---------- PANTALLA ENCENDIDA SIN AUDIO ----------
 async function pedirWakeLock() {
   try {
     if ('wakeLock' in navigator && !wakeLock && document.visibilityState === 'visible') {
@@ -829,11 +1063,11 @@ document.addEventListener('visibilitychange', () => {
     mantenerPantallaActivaTotal();
     if (window._anuncioPantallaCompletaActivo) return;
     try { window.speechSynthesis && window.speechSynthesis.resume(); } catch (e) {}
-    if (micDeseado && !hablando && modoActual !== "") setTimeout(arrancarRecon, 350);
+    if (micDeseado && !hablando && partidaActivaFlag) setTimeout(arrancarRecon, 350);
   }
 });
 
-// ---------- DICCIONARIO BÁSICO INTEGRADO (100% OFFLINE) + FUSIÓN CON diccionario_basico.json Y diccionario.json ----------
+// ---------- DICCIONARIO BÁSICO INTEGRADO (100% OFFLINE) + FUSIÓN ----------
 const DICCIONARIO_BASICO_INTEGRADO = {
   "abeja": "Insecto volador que produce miel y cera.",
   "abrigo": "Prenda gruesa que protege del frío.",
@@ -924,6 +1158,7 @@ const DICCIONARIO_BASICO_INTEGRADO = {
   "cadena": "Serie de eslabones metálicos enlazados entre sí.",
   "café": "Bebida aromática y oscura hecha con granos tostados.",
   "caja": "Recipiente rígido con tapa para guardar objetos.",
+  "calcio": "Elemento químico mineral esencial para los huesos y dientes.",
   "caldo": "Líquido sabroso obtenido al cocer alimentos en agua.",
   "caliente": "Que tiene temperatura elevada o desprende calor.",
   "caliza": "Roca sedimentaria blanquecina rica en carbonato de calcio.",
@@ -1038,6 +1273,7 @@ const DICCIONARIO_BASICO_INTEGRADO = {
   "doctor": "Médico que cuida la salud y trata enfermedades.",
   "dolor": "Sensación molesta o de sufrimiento físico o emocional.",
   "domingo": "Séptimo y último día de la semana.",
+  "donar": "Entregar voluntariamente algo a alguien sin pedir nada a cambio.",
   "dragón": "Criatura fantástica alada que echa fuego por la boca.",
   "ducha": "Chorro de agua en forma de lluvia para asearse.",
   "duende": "Ser mágico y pequeño propio de cuentos y leyendas.",
@@ -1243,6 +1479,7 @@ const DICCIONARIO_BASICO_INTEGRADO = {
   "música": "Arte de combinar sonidos y silencios con ritmo y melodía.",
   "naranja": "Fruta cítrica redonda de color anaranjado y pulpa jugosa.",
   "nariz": "Órgano en el centro de la cara para oler y respirar.",
+  "narrador": "Persona que cuenta o relata una historia.",
   "nata": "Crema espesa y blanca obtenida de la leche.",
   "nave": "Barco grande, vehículo espacial o amplio edificio.",
   "negro": "Color completamente oscuro como el carbón o la noche.",
@@ -1373,6 +1610,7 @@ const DICCIONARIO_BASICO_INTEGRADO = {
   "río": "Corriente natural y continua de agua que llega al mar.",
   "risa": "Expresión alegre con sonido cuando algo hace gracia.",
   "ritmo": "Sucesión regular de sonidos o movimientos en la música.",
+  "rizado": "Que tiene rizos, ondas o bucles.",
   "robot": "Máquina programable capaz de realizar tareas automáticamente.",
   "roca": "Material mineral sólido, duro y grande de la tierra.",
   "rodilla": "Articulación intermedia que permite doblar la pierna.",
@@ -1685,6 +1923,17 @@ function convertirPluralASingularLocal(palabra) {
   return null;
 }
 
+// ---------- REGLA DE ENCADENADO SEGÚN DIFICULTAD (FÁCIL vs NORMAL/DIFÍCIL) ----------
+function cumpleInicioSegunDificultad(palabra, silabaObjNorm, silabasPrecalculadas = null) {
+  if (!palabra || !silabaObjNorm) return false;
+  if (dificultadActual === 'facil') {
+    // En Fácil: basta con que empiece por las mismas letras (ej. CA -> CALCIO, RIZ -> RIZADO, NAR -> NARRADOR)
+    return SinTildes(palabra).startsWith(silabaObjNorm);
+  }
+  const sils = silabasPrecalculadas || silabear(palabra);
+  return sils.length > 0 && normalizarSilaba(sils[0]) === silabaObjNorm;
+}
+
 // ---------- RESUMIDOR DE DEFINICIONES REALES ----------
 function resumirDefinicion(texto) {
   if (!texto) return "";
@@ -1719,7 +1968,7 @@ function resumirDefinicion(texto) {
   return frase.endsWith('.') ? frase : (frase + '.');
 }
 
-// ---------- NIVEL 2: RAE-API.COM (DEFINICIÓN OFICIAL RESUMIDA + BÚSQUEDA DE LEMA) ----------
+// ---------- NIVEL 2: RAE-API.COM ----------
 function extraerMejorAcepcionRae(jsonData, terminoOriginal) {
   if (!jsonData || !jsonData.ok || !jsonData.data) return null;
   const meanings = Array.isArray(jsonData.data.meanings) ? jsonData.data.meanings : [];
@@ -1828,7 +2077,7 @@ async function consultarRaeApiCompleto(p) {
   return null;
 }
 
-// ---------- NIVEL 3: WIKCIONARIO ES (SOLO SECCIÓN ESPAÑOL) + WIKIPEDIA ES ----------
+// ---------- NIVEL 3: WIKCIONARIO ES + WIKIPEDIA ES ----------
 async function obtenerSeccionEspanolWikcionario(termino) {
   const url = 'https://es.wiktionary.org/w/api.php?action=query&prop=revisions&rvprop=content&rvslots=main&titles=' + encodeURIComponent(termino) + '&format=json&origin=*';
   const res = await fetchJsonUniversal(url, 3400);
@@ -1960,7 +2209,6 @@ function buscarDefinicionEnBasico(palabra) {
   return "";
 }
 
-// ---------- ORQUESTADOR DE EXPLICACIÓN REAL EN 4 NIVELES + CACHÉ ----------
 async function obtenerExplicacionPalabra(palabra) {
   await cargarDiccionarioBasico();
   const p = (palabra || "").toLowerCase().trim();
@@ -2186,7 +2434,7 @@ const diccionarioEmojis = {
   'triste': '😢', 'trompa': '🎺', 'trompeta': '🎺', 'truco': '🎩', 'una': '💅',
   'uña': '💅', 'valiente': '🦁', 'violin': '🎻', 'vista': '👀', 'voz': '🗣️',
   'amarillo': '💛', 'azul': '💙', 'blanco': '🤍', 'color': '🎨', 'gris': '🩶',
-  'negro': '🖤', 'rojo': '❤️', 'verde': '💚'
+  'negro': '🖤', 'rojo': '❤️', 'verde': '💚', 'calcio': '🦴', 'narrador': '📖'
 };
 
 function obtenerEmojiPalabra(palabra) {
@@ -2219,6 +2467,7 @@ function pausarReconocimientoMientrasHabla(mensajeEstado) {
 }
 
 window.pausarTodoParaAnuncio = function() {
+  pausarCronometro();
   if (cancelarHablaPrevia) { cancelarHablaPrevia(); cancelarHablaPrevia = null; }
   hablando = false;
   ignorarVozHasta = Date.now() + 60000;
@@ -2262,7 +2511,7 @@ function hablar(texto, callback) {
       hablando = false;
       if (window._anuncioPantallaCompletaActivo || idActual !== partidaId) return;
       if (callback) callback();
-      if (micDeseado && modoActual !== "" && !esTurnoMaquina) arrancarRecon();
+      if (micDeseado && partidaActivaFlag && !esTurnoMaquina) arrancarRecon();
     }, 400);
   };
   cancelarHablaPrevia = cancelar;
@@ -2285,7 +2534,7 @@ function hablar(texto, callback) {
   } catch (e) { fin(); }
 }
 
-// ---------- VALIDACIÓN AMPLIADA: Local + rae-api.com + Wikcionario ES + Datamuse ----------
+// ---------- VALIDACIÓN AMPLIADA ----------
 function cachearPalabraValida(w) {
   if (!w) return;
   if (setDiccionarioRAE) {
@@ -2349,7 +2598,7 @@ async function verificarPalabraEnServidor(palabra) {
   return false;
 }
 
-// ---------- Selección de la máquina: PRIORIZA diccionario básico y evita callejones raros ----------
+// ---------- Selección de la máquina (adaptada a Fácil / Normal / Difícil) ----------
 async function obtenerPalabrasCandidatasMaquina(prefijoNormalizado) {
   await Promise.all([cargarDiccionarioBasico(), cargarDiccionarioRAE()]);
 
@@ -2357,7 +2606,7 @@ async function obtenerPalabrasCandidatasMaquina(prefijoNormalizado) {
     if (p.length < 3 || historialSinTildes.has(SinTildes(p))) return false;
     if (!SOLO_LETRAS.test(p)) return false;
     const silabas = silabear(p);
-    return silabas.length >= 2 && normalizarSilaba(silabas[0]) === prefijoNormalizado;
+    return silabas.length >= 2 && cumpleInicioSegunDificultad(p, prefijoNormalizado, silabas);
   });
   if (basicas.length > 0) return basicas;
 
@@ -2367,7 +2616,7 @@ async function obtenerPalabrasCandidatasMaquina(prefijoNormalizado) {
       if (!SOLO_LETRAS.test(p)) return false;
       if (convertirPluralASingularLocal(p)) return false;
       const silabas = silabear(p);
-      return silabas.length >= 2 && normalizarSilaba(silabas[0]) === prefijoNormalizado;
+      return silabas.length >= 2 && cumpleInicioSegunDificultad(p, prefijoNormalizado, silabas);
     });
     const comunes = todas.filter(p => p.length >= 4 && p.length <= 7);
     return comunes.length > 0 ? comunes : todas;
@@ -2460,10 +2709,15 @@ function actualizarInterfazTurno(htmlTexto, colorBg) {
   indicadorTurno.className = "mt-1.5 text-xs sm:text-sm font-black text-white rounded-full px-4 py-1 inline-flex items-center gap-1.5 shadow-md transition-colors " + colorBg;
 }
 
+function obtenerParticipanteActual() {
+  return participantes[turnoIndex] || { nombre: "Jugador 1", esMaquina: false, colorIdx: 0 };
+}
+
 function mostrarTurnoHumano() {
-  const estilo = COLORES_JUGADORES[jugadorActual % COLORES_JUGADORES.length];
-  const nombreSeguro = escapeHtml(nombres[jugadorActual]);
-  const silSegura = escapeHtml(silabaObjetivo.toUpperCase());
+  const actual = obtenerParticipanteActual();
+  const estilo = COLORES_JUGADORES[actual.colorIdx % COLORES_JUGADORES.length];
+  const nombreSeguro = escapeHtml(actual.nombre);
+  const silSegura = escapeHtml(silabaObjetivo.toUpperCase()) + (dificultadActual === 'facil' ? '…' : '');
   actualizarInterfazTurno(
     '<span>🗣️ Turno de ' + nombreSeguro + '</span><span class="bg-white text-slate-900 px-2 py-0.2 rounded-full font-black tracking-wide shadow-sm">' + silSegura + '</span>',
     estilo.bg
@@ -2485,7 +2739,7 @@ function bloquearInputs(bloquear) {
 
 function mostrarResumenFinUI(titulo, subtitulo, esVictoriaHumana) {
   const card = document.createElement('div');
-  card.className = "anim-entrada w-11/12 max-w-xs mt-3 mb-2 rounded-2xl p-3.5 text-center border-3 shadow-lg " +
+  card.className = "anim-entrada w-11/12 max-w-xs mt-3 mb-2 rounded-2xl p-3.5 text-center border-2 shadow-lg " +
     (esVictoriaHumana ? "bg-emerald-50 border-emerald-500 text-emerald-900" : "bg-amber-50 border-[#8b5523] text-[#4e2b10]");
   card.innerHTML =
     '<div class="text-base font-black">' + escapeHtml(titulo) + '</div>' +
@@ -2495,6 +2749,7 @@ function mostrarResumenFinUI(titulo, subtitulo, esVictoriaHumana) {
 }
 
 function mostrarFinJuego() {
+  detenerCronometro(false);
   juegoTerminado = true;
   esTurnoMaquina = false;
   enProceso = false;
@@ -2510,11 +2765,12 @@ function mostrarFinJuego() {
 window.irAlMenuHome = function() {
   if (window._anuncioPantallaCompletaActivo) return;
   partidaId++;
+  detenerCronometro(true);
   tocarSonidoFX('click');
   if (cancelarHablaPrevia) { cancelarHablaPrevia(); cancelarHablaPrevia = null; }
   hablando = false;
   enProceso = false;
-  modoActual = "";
+  partidaActivaFlag = false;
   juegoTerminado = false;
   esTurnoMaquina = false;
   detenerMicrofono();
@@ -2528,13 +2784,14 @@ window.irAlMenuHome = function() {
 
 window.reiniciarMismaPartida = function() {
   if (window._anuncioPantallaCompletaActivo) return;
-  if (!modoActual) { window.irAlMenuHome(); return; }
+  if (!partidaActivaFlag || participantes.length === 0) { window.irAlMenuHome(); return; }
   partidaId++;
+  detenerCronometro(false);
   tocarSonidoFX('click');
   controlsContainer.classList.remove('hidden');
   if (barraAccionesRapidas) barraAccionesRapidas.classList.remove('hidden');
   finJuegoBotones.classList.add('hidden');
-  jugadorActual = 0;
+  turnoIndex = 0;
   juegoTerminado = false;
   esTurnoMaquina = false;
   enProceso = false;
@@ -2564,7 +2821,6 @@ function formatearTarjetaExplicacion(palabra, explicacion) {
   return "";
 }
 
-// Consulta interactiva al tocar cualquier ficha del tablero
 async function consultarPalabraEnSlot(palabra, slotEl) {
   if (!slotEl || slotEl.dataset.cargando === '1') return;
   if (slotEl.dataset.cargado === '1') {
@@ -2586,15 +2842,13 @@ async function consultarPalabraEnSlot(palabra, slotEl) {
   bajarScrollTablero();
 }
 
-function agregarPalabraUI(palabra, silabas, esInicial = false, indiceColor = 0, etiqueta = "", explicacion = null, autor = "") {
-  // Quitar la animación de respiración de la ficha anterior
+function agregarPalabraUI(palabra, silabas, esInicial = false, indiceColor = 0, etiqueta = "", explicacion = null, autor = "", prefijoEnlazadoLen = 0) {
   const prevActivas = gameBoardList.querySelectorAll('.ficha-activa');
   prevActivas.forEach(el => el.classList.remove('ficha-activa'));
 
   const wrapObj = document.createElement('div');
   wrapObj.className = "anim-entrada flex flex-col items-center w-full relative pt-1";
 
-  // Eslabón metálico SVG realista conectando con la ficha anterior
   if (!esInicial) {
     const link = document.createElement('div');
     link.className = "relative -mt-3 -mb-2 z-0 pointer-events-none flex justify-center";
@@ -2608,7 +2862,6 @@ function agregarPalabraUI(palabra, silabas, esInicial = false, indiceColor = 0, 
 
   const estilo = COLORES_JUGADORES[indiceColor % COLORES_JUGADORES.length];
 
-  // Etiqueta discreta del autor (quién dijo la palabra)
   if (autor) {
     const autorTag = document.createElement('div');
     autorTag.textContent = autor;
@@ -2622,13 +2875,39 @@ function agregarPalabraUI(palabra, silabas, esInicial = false, indiceColor = 0, 
   wordBtn.style.setProperty('--bevel-color', estilo.bevel);
   wordBtn.className = "ficha-palabra ficha-activa flex items-center justify-center text-2xl sm:text-4xl font-black uppercase z-10 px-6 py-2.5 rounded-full bg-white border-4 " + estilo.border + " relative " + estilo.text + " cursor-pointer";
 
-  silabas.forEach((sil, index) => {
-    const span = document.createElement('span');
-    span.textContent = sil;
-    if (index === 0 && !esInicial) span.className = estilo.sil;
-    else if (index === silabas.length - 1) span.className = "text-emerald-600";
-    wordBtn.appendChild(span);
-  });
+  // Resaltado inteligente: en modo Fácil resalta exactamente las letras enlazadas; en Normal/Difícil, las sílabas
+  if (!esInicial && dificultadActual === 'facil' && prefijoEnlazadoLen > 0) {
+    const ultSil = silabas[silabas.length - 1] || "";
+    const finInicio = Math.min(prefijoEnlazadoLen, Math.max(0, palabra.length - ultSil.length));
+    const iniTxt = palabra.slice(0, finInicio);
+    const medTxt = palabra.slice(finInicio, palabra.length - ultSil.length);
+
+    if (iniTxt) {
+      const sIni = document.createElement('span');
+      sIni.textContent = iniTxt;
+      sIni.className = estilo.sil;
+      wordBtn.appendChild(sIni);
+    }
+    if (medTxt) {
+      const sMed = document.createElement('span');
+      sMed.textContent = medTxt;
+      wordBtn.appendChild(sMed);
+    }
+    if (ultSil) {
+      const sFin = document.createElement('span');
+      sFin.textContent = ultSil;
+      sFin.className = "text-emerald-600";
+      wordBtn.appendChild(sFin);
+    }
+  } else {
+    silabas.forEach((sil, index) => {
+      const span = document.createElement('span');
+      span.textContent = sil;
+      if (index === 0 && !esInicial) span.className = estilo.sil;
+      else if (index === silabas.length - 1) span.className = "text-emerald-600";
+      wordBtn.appendChild(span);
+    });
+  }
 
   const emoji = obtenerEmojiPalabra(palabra);
   if (emoji) {
@@ -2687,6 +2966,8 @@ async function responderSignificadoUltimaPalabra() {
   if (historialPalabras.length === 0 || juegoTerminado || enProceso || window._anuncioPantallaCompletaActivo) return;
   const idActual = partidaId;
   const ultima = historialPalabras[historialPalabras.length - 1];
+  const actual = obtenerParticipanteActual();
+  pausarCronometro();
   enProceso = true;
   bloquearInputs(true);
   actualizarInterfazTurno('<span>📖 Buscando «' + escapeHtml(ultima) + '»...</span>', "bg-amber-600");
@@ -2696,13 +2977,17 @@ async function responderSignificadoUltimaPalabra() {
 
   mostrarExplicacionEnUltimaPalabraUI(ultima, explicacion);
 
+  const reglaTexto = dificultadActual === 'facil'
+    ? ("tiene que empezar por las letras " + silabaParaVoz(silabaObjetivo))
+    : ("tiene que empezar por " + silabaParaVoz(silabaObjetivo));
+
   let locucion = "";
   if (explicacion.tipo === 'definicion' || explicacion.tipo === 'externo') {
-    locucion = ultima + ": " + explicacion.texto + " Sigue el turno de " + nombres[jugadorActual] + ", tiene que empezar por " + silabaParaVoz(silabaObjetivo) + ".";
+    locucion = ultima + ": " + explicacion.texto + " Sigue el turno de " + actual.nombre + ", " + reglaTexto + ".";
   } else if (explicacion.tipo === 'sinonimos') {
-    locucion = "Sinónimos de " + ultima + ": " + explicacion.texto + ". Sigue el turno de " + nombres[jugadorActual] + ", tiene que empezar por " + silabaParaVoz(silabaObjetivo) + ".";
+    locucion = "Sinónimos de " + ultima + ": " + explicacion.texto + ". Sigue el turno de " + actual.nombre + ", " + reglaTexto + ".";
   } else {
-    locucion = "No he podido obtener el significado de " + ultima + " en este momento. Sigue el turno de " + nombres[jugadorActual] + ", tiene que empezar por " + silabaParaVoz(silabaObjetivo) + ".";
+    locucion = "No he podido obtener el significado de " + ultima + " en este momento. Sigue el turno de " + actual.nombre + ", " + reglaTexto + ".";
   }
 
   hablar(locucion, () => {
@@ -2710,11 +2995,13 @@ async function responderSignificadoUltimaPalabra() {
     enProceso = false;
     mostrarTurnoHumano();
     bloquearInputs(false);
+    reanudarCronometroTurno();
     arrancarRecon();
   });
 }
 
-window.arranqueVinculado = function(modo) {
+// ---------- ARRANQUE DE PARTIDA (1-4 HUMANOS CON O SIN MÁQUINA + 3 DIFICULTADES) ----------
+window.arranqueVinculado = function(jugarConMaquina) {
   window.cerrarPortada();
   tocarSonidoFX('click');
   try {
@@ -2725,20 +3012,23 @@ window.arranqueVinculado = function(modo) {
     }
   } catch (e) {}
 
-  if (modo === 'pve') {
-    const el1 = document.getElementById('input-nombre-1');
-    nombres = [(el1 && el1.value.trim()) ? el1.value.trim() : "Jugador 1"];
-  } else {
-    nombres = [];
-    for (let i = 1; i <= window.numJugadores; i++) {
-      const el = document.getElementById('input-nombre-' + i);
-      nombres.push((el && el.value.trim()) ? el.value.trim() : ("Jugador " + i));
-    }
+  conMaquina = Boolean(jugarConMaquina) || window.numJugadores === 1;
+  dificultadActual = window.dificultadElegida || 'normal';
+  tiempoLimiteSeg = window.tiempoTurnoSeg || 10;
+
+  participantes = [];
+  for (let i = 1; i <= window.numJugadores; i++) {
+    const el = document.getElementById('input-nombre-' + i);
+    const nom = (el && el.value.trim()) ? el.value.trim() : ("Jugador " + i);
+    participantes.push({ nombre: nom, esMaquina: false, colorIdx: i - 1 });
+  }
+  if (conMaquina) {
+    participantes.push({ nombre: "Máquina", esMaquina: true, colorIdx: 4 });
   }
 
   partidaId++;
-  modoActual = modo;
-  jugadorActual = 0;
+  partidaActivaFlag = true;
+  turnoIndex = 0;
   juegoTerminado = false;
   esTurnoMaquina = false;
   enProceso = false;
@@ -2746,6 +3036,14 @@ window.arranqueVinculado = function(modo) {
   recordSuperadoEnPartida = false;
   ignorarVozHasta = 0;
   actualizarMarcadoresUI();
+  actualizarBadgeDificultadUI();
+
+  if (dificultadActual === 'dificil' && cronometroWrap) {
+    cronometroWrap.classList.remove('hidden');
+    pintarCronometro(tiempoLimiteSeg * 1000);
+  } else {
+    detenerCronometro(true);
+  }
 
   controlsContainer.classList.remove('hidden');
   if (barraAccionesRapidas) barraAccionesRapidas.classList.remove('hidden');
@@ -2764,6 +3062,7 @@ window.arranqueVinculado = function(modo) {
 function iniciarJuegoTablero(esReinicio = false) {
   if (window._anuncioPantallaCompletaActivo) return;
   const idActual = partidaId;
+  detenerCronometro(dificultadActual !== 'dificil');
   historialPalabras = [];
   historialSinTildes = new Set();
   gameBoardList.innerHTML = '';
@@ -2776,32 +3075,38 @@ function iniciarJuegoTablero(esReinicio = false) {
   silabaObjetivo = silabasIniciales[silabasIniciales.length - 1];
   agregarPalabraUI(palabraInicial, silabasIniciales, true, 0, "", null, "🎯 Salida");
 
+  turnoIndex = 0;
   esTurnoMaquina = false;
   enProceso = true;
   bloquearInputs(true);
   actualizarInterfazTurno("<span>🔊 Presentando primera palabra...</span>", "bg-amber-700");
 
-  const listaSaludo = nombres.length > 1
-    ? (nombres.slice(0, -1).join(', ') + ' y ' + nombres[nombres.length - 1])
-    : nombres[0];
+  const humanos = participantes.filter(p => !p.esMaquina).map(p => p.nombre);
+  const listaSaludo = humanos.length > 1
+    ? (humanos.slice(0, -1).join(', ') + ' y ' + humanos[humanos.length - 1])
+    : humanos[0];
 
   const fraseInicio = esReinicio
     ? ("¡Vamos otra vez! Primera palabra: " + palabraInicial + ".")
     : ("¡Hola " + listaSaludo + "! Primera palabra: " + palabraInicial + ".");
+
+  if (dificultadActual === 'dificil') pintarCronometro(tiempoLimiteSeg * 1000);
 
   hablar(fraseInicio, () => {
     if (idActual !== partidaId) return;
     enProceso = false;
     mostrarTurnoHumano();
     bloquearInputs(false);
+    iniciarCronometroTurno();
     arrancarRecon();
   });
 }
 
 async function juegaMaquina() {
-  if (modoActual !== 'pve' || juegoTerminado || window._anuncioPantallaCompletaActivo) return;
+  if (!conMaquina || juegoTerminado || window._anuncioPantallaCompletaActivo) return;
   const idActual = partidaId;
-  actualizarInterfazTurno("<span>📚 Pensando palabra...</span>", "bg-purple-600");
+  detenerCronometro(false);
+  actualizarInterfazTurno("<span>🤖 Máquina pensando palabra...</span>", "bg-purple-600");
 
   const prefijo = normalizarSilaba(silabaObjetivo);
   const candidatas = await obtenerPalabrasCandidatasMaquina(prefijo);
@@ -2811,33 +3116,59 @@ async function juegaMaquina() {
     const elegida = candidatas[Math.floor(Math.random() * candidatas.length)];
     await window.procesarEntrada(elegida, true);
   } else {
-    actualizarInterfazTurno("<span>🎉 ¡Victoria de " + escapeHtml(nombres[0]) + "!</span>", "bg-emerald-600");
+    const humanos = participantes.filter(p => !p.esMaquina);
+    const tituloWin = humanos.length === 1
+      ? ("🎉 ¡Victoria de " + humanos[0].nombre + "!")
+      : "🎉 ¡Victoria de los jugadores!";
+    const vozWin = humanos.length === 1
+      ? ("¡Has ganado, " + humanos[0].nombre + "!")
+      : "¡Habéis ganado a la máquina!";
+
+    actualizarInterfazTurno("<span>" + escapeHtml(tituloWin) + "</span>", "bg-emerald-600");
     tocarSonidoFX('victoria');
     lanzarConfeti();
-    mostrarResumenFinUI("🎉 ¡Has vencido a la máquina!", "Total: " + contadorPalabras + " palabras encadenadas", true);
-    hablar("¡No me quedan palabras que empiecen por " + silabaParaVoz(silabaObjetivo) + "! ¡Has ganado, " + nombres[0] + "! Di otra vez para jugar de nuevo.", () => {
+    mostrarResumenFinUI(tituloWin, "Total: " + contadorPalabras + " palabras encadenadas", true);
+    hablar("¡No me quedan palabras que empiecen por " + silabaParaVoz(silabaObjetivo) + "! " + vozWin + " Di otra vez para jugar de nuevo.", () => {
       if (idActual !== partidaId) return;
       mostrarFinJuego();
     });
   }
 }
 
-window.meRindo = async function() {
-  if (esTurnoMaquina || textInput.disabled || juegoTerminado || enProceso || window._anuncioPantallaCompletaActivo) return;
+async function finalizarPorFalloHumano(motivo) {
   const idActual = partidaId;
+  detenerCronometro(false);
   enProceso = true;
   bloquearInputs(true);
   tocarSonidoFX('error');
 
-  const rindiente = nombres[jugadorActual];
-  const ganaHumano = (modoActual === 'pvp' && nombres.length === 2);
-  let textoGanador = (modoActual === 'pve')
-    ? "¡Gana la máquina!"
-    : (nombres.length === 2 ? ("¡Gana " + nombres[1 - jugadorActual] + "!") : ("¡Fin de la partida por rendición de " + rindiente + "!"));
+  const perdedor = obtenerParticipanteActual();
+  const soloDosHumanos = !conMaquina && participantes.length === 2;
+  const ganaHumano = soloDosHumanos;
+
+  let textoGanador = "";
+  if (conMaquina) {
+    textoGanador = "¡Gana la máquina!";
+  } else if (soloDosHumanos) {
+    const otro = participantes[1 - turnoIndex];
+    textoGanador = "¡Gana " + otro.nombre + "!";
+  } else {
+    textoGanador = motivo === 'tiempo'
+      ? ("¡Tiempo agotado para " + perdedor.nombre + "!")
+      : ("¡" + perdedor.nombre + " se rinde!");
+  }
+
+  const fraseInicio = motivo === 'tiempo'
+    ? ("¡Se acabó el tiempo para " + perdedor.nombre + "! Buscando una palabra válida...")
+    : (perdedor.nombre + " se rinde. Buscando una palabra válida...");
+
+  if (motivo === 'tiempo') {
+    mostrarAlerta("⏱️ ¡Tiempo agotado para " + perdedor.nombre + "!");
+  }
 
   actualizarInterfazTurno("<span>Buscando palabra válida...</span>", "bg-red-600");
 
-  hablar(rindiente + " se rinde. Buscando una palabra válida...", async () => {
+  hablar(fraseInicio, async () => {
     if (idActual !== partidaId) return;
     const prefijo = normalizarSilaba(silabaObjetivo);
     const candidatas = await obtenerPalabrasCandidatasMaquina(prefijo);
@@ -2852,7 +3183,7 @@ window.meRindo = async function() {
       historialPalabras.push(elegida);
       historialSinTildes.add(SinTildes(elegida));
       silabaObjetivo = silabasElegida[silabasElegida.length - 1];
-      agregarPalabraUI(elegida, silabasElegida, false, 1, "💡 Esta valía", explicacion, "🤖 Solución");
+      agregarPalabraUI(elegida, silabasElegida, false, 4, "💡 Esta valía", explicacion, "🤖 Solución", prefijo.length);
       actualizarInterfazTurno("<span>🏆 " + escapeHtml(textoGanador) + "</span>", "bg-emerald-600");
 
       if (ganaHumano) {
@@ -2873,12 +3204,22 @@ window.meRindo = async function() {
     } else {
       actualizarInterfazTurno("<span>🤝 Empate técnico</span>", "bg-slate-600");
       mostrarResumenFinUI("🤝 Empate técnico", "No quedaban palabras con " + silabaObjetivo.toUpperCase(), false);
-      hablar("No existía ninguna palabra con la sílaba " + silabaParaVoz(silabaObjetivo) + ". ¡Empate técnico! Di otra vez para reiniciar.", () => {
+      hablar("No existía ninguna palabra con " + silabaParaVoz(silabaObjetivo) + ". ¡Empate técnico! Di otra vez para reiniciar.", () => {
         if (idActual !== partidaId) return;
         mostrarFinJuego();
       });
     }
   });
+}
+
+function onTiempoAgotado(idActual) {
+  if (idActual !== partidaId || juegoTerminado || esTurnoMaquina || enProceso || window._anuncioPantallaCompletaActivo) return;
+  finalizarPorFalloHumano('tiempo');
+}
+
+window.meRindo = function() {
+  if (esTurnoMaquina || textInput.disabled || juegoTerminado || enProceso || window._anuncioPantallaCompletaActivo) return;
+  finalizarPorFalloHumano('rendicion');
 };
 
 function esPreguntaDeSignificado(texto) {
@@ -2902,8 +3243,12 @@ window.procesarEntrada = async function(texto, esMaquina = false) {
 
   if (!esMaquina && /^otra vez$/i.test(textoBruto)) {
     textInput.value = "";
+    pausarCronometro();
     mostrarAlerta("La orden «otra vez» solo funciona cuando acaba la partida.");
-    hablar("La partida aún no ha terminado. Tiene que empezar por " + silabaParaVoz(silabaObjetivo) + ".");
+    hablar("La partida aún no ha terminado. Tiene que empezar por " + silabaParaVoz(silabaObjetivo) + ".", () => {
+      if (idActual !== partidaId) return;
+      reanudarCronometroTurno();
+    });
     return;
   }
 
@@ -2918,25 +3263,34 @@ window.procesarEntrada = async function(texto, esMaquina = false) {
     return;
   }
   if (historialSinTildes.has(SinTildes(palabra))) {
+    pausarCronometro();
     tocarSonidoFX('error');
     mostrarAlerta("La palabra '" + palabra + "' ya se ha usado.");
     textInput.value = "";
-    hablar("La palabra " + palabra + " ya se ha usado. Prueba con otra.");
+    hablar("La palabra " + palabra + " ya se ha usado. Prueba con otra.", () => {
+      if (idActual !== partidaId) return;
+      reanudarCronometroTurno();
+    });
     return;
   }
 
+  pausarCronometro();
   enProceso = true;
   bloquearInputs(true);
   textInput.value = "";
 
   let silabasWord = silabear(palabra);
-  let s1 = normalizarSilaba(silabasWord[0]);
-
   let jugadaValida = false;
   let vozError = "";
-  if (s1 !== s2) {
-    mostrarAlerta(palabra.toUpperCase() + " ¡NO VALE! Tiene que empezar por '" + silabaObjetivo.toUpperCase() + "', no por '" + silabasWord[0].toUpperCase() + "'.");
-    vozError = palabra + ", ¡no vale! Tiene que empezar por " + silabaParaVoz(silabaObjetivo) + ", no por " + silabaParaVoz(silabasWord[0]) + ". Inténtalo otra vez.";
+
+  if (!cumpleInicioSegunDificultad(palabra, s2, silabasWord)) {
+    if (dificultadActual === 'facil') {
+      mostrarAlerta(palabra.toUpperCase() + " ¡NO VALE! Tiene que empezar por las letras '" + silabaObjetivo.toUpperCase() + "'.");
+      vozError = palabra + ", ¡no vale! Tiene que empezar por las letras " + silabaParaVoz(silabaObjetivo) + ". Inténtalo otra vez.";
+    } else {
+      mostrarAlerta(palabra.toUpperCase() + " ¡NO VALE! Tiene que empezar por '" + silabaObjetivo.toUpperCase() + "', no por '" + silabasWord[0].toUpperCase() + "'.");
+      vozError = palabra + ", ¡no vale! Tiene que empezar por " + silabaParaVoz(silabaObjetivo) + ", no por " + silabaParaVoz(silabasWord[0]) + ". Inténtalo otra vez.";
+    }
   } else if (esMaquina) {
     jugadaValida = true;
   } else {
@@ -2946,11 +3300,8 @@ window.procesarEntrada = async function(texto, esMaquina = false) {
 
     if (formaValida && typeof formaValida === 'string') {
       const silabasForma = silabear(formaValida);
-      const s1Forma = normalizarSilaba(silabasForma[0]);
-
-      if (s1Forma !== s2) {
-        // Caso especial: ej. dijo "peces" (pe-ces) -> singular "pez" (empieza por PEZ, no por PE)
-        mostrarAlerta(palabra.toUpperCase() + " en singular es '" + formaValida.toUpperCase() + "' (empieza por '" + silabasForma[0].toUpperCase() + "', no por '" + silabaObjetivo.toUpperCase() + "').");
+      if (!cumpleInicioSegunDificultad(formaValida, s2, silabasForma)) {
+        mostrarAlerta(palabra.toUpperCase() + " en singular es '" + formaValida.toUpperCase() + "' y no empieza por '" + silabaObjetivo.toUpperCase() + "'.");
         vozError = palabra + ", en singular es " + formaValida + ", que empieza por " + silabaParaVoz(silabasForma[0]) + " y no por " + silabaParaVoz(silabaObjetivo) + ". Inténtalo otra vez.";
       } else if (historialSinTildes.has(SinTildes(formaValida))) {
         mostrarAlerta("La palabra '" + formaValida + "' ya se ha usado.");
@@ -2973,53 +3324,51 @@ window.procesarEntrada = async function(texto, esMaquina = false) {
     enProceso = false;
     hablar(vozError, () => {
       if (idActual !== partidaId) return;
+      reanudarCronometroTurno();
       arrancarRecon();
     });
     return;
   }
 
+  detenerCronometro(false);
   const previoRecord = recordPalabras;
   const esNuevoRecord = incrementarContadorPalabras();
   const etiquetaRecord = (esNuevoRecord && previoRecord > 0) ? "🔥 ¡Nuevo Récord!" : "";
   tocarSonidoFX((esNuevoRecord && previoRecord > 0) ? 'record' : 'pop');
 
+  const jugadorQueJugo = obtenerParticipanteActual();
+  const prefijoMatchLen = s2.length;
+
   historialPalabras.push(palabra);
   historialSinTildes.add(SinTildes(palabra));
   silabaObjetivo = silabasWord[silabasWord.length - 1];
 
-  const indiceColor = esMaquina ? 1 : jugadorActual;
-  const autorEtiqueta = esMaquina ? "🤖 Máquina" : ("👤 " + nombres[jugadorActual]);
-  agregarPalabraUI(palabra, silabasWord, false, indiceColor, etiquetaRecord, null, autorEtiqueta);
+  const autorEtiqueta = jugadorQueJugo.esMaquina ? "🤖 Máquina" : ("👤 " + jugadorQueJugo.nombre);
+  agregarPalabraUI(palabra, silabasWord, false, jugadorQueJugo.colorIdx, etiquetaRecord, null, autorEtiqueta, prefijoMatchLen);
 
-  if (modoActual === 'pve') {
-    if (esMaquina) {
-      hablar(palabra, () => {
+  // Avanzar al siguiente participante en la rotación (humanos y máquina si está activada)
+  turnoIndex = (turnoIndex + 1) % participantes.length;
+  const siguiente = obtenerParticipanteActual();
+
+  if (siguiente.esMaquina) {
+    esTurnoMaquina = true;
+    actualizarInterfazTurno("<span>🤖 Turno de la Máquina...</span>", "bg-purple-600");
+    const coletilla = coletillas[Math.floor(Math.random() * coletillas.length)];
+    hablar(palabra + ". " + coletilla, () => {
+      if (idActual !== partidaId) return;
+      setTimeout(() => {
         if (idActual !== partidaId) return;
-        esTurnoMaquina = false;
-        enProceso = false;
-        mostrarTurnoHumano();
-        bloquearInputs(false);
-        arrancarRecon();
-      });
-    } else {
-      esTurnoMaquina = true;
-      actualizarInterfazTurno("<span>🤖 Máquina pensando...</span>", "bg-purple-600");
-      const coletilla = coletillas[Math.floor(Math.random() * coletillas.length)];
-      hablar(palabra + ". " + coletilla, () => {
-        if (idActual !== partidaId) return;
-        setTimeout(() => {
-          if (idActual !== partidaId) return;
-          juegaMaquina();
-        }, 380);
-      });
-    }
+        juegaMaquina();
+      }, 360);
+    });
   } else {
-    jugadorActual = (jugadorActual + 1) % nombres.length;
+    esTurnoMaquina = false;
     hablar(palabra, () => {
       if (idActual !== partidaId) return;
       enProceso = false;
       mostrarTurnoHumano();
       bloquearInputs(false);
+      iniciarCronometroTurno();
       arrancarRecon();
     });
   }
@@ -3042,7 +3391,7 @@ function uiMic(encendido) {
 }
 
 function procesarFraseVoz(rawInput) {
-  if (modoActual === "" || hablando || window._anuncioPantallaCompletaActivo || Date.now() < ignorarVozHasta) return;
+  if (!partidaActivaFlag || hablando || window._anuncioPantallaCompletaActivo || Date.now() < ignorarVozHasta) return;
   const alternativas = (rawInput || "").split('|').map(s => s.trim().toLowerCase()).filter(Boolean);
   if (alternativas.length === 0) return;
 
@@ -3060,8 +3409,13 @@ function procesarFraseVoz(rawInput) {
 
   for (const alt of alternativas) {
     if (/^(otra vez|jugar otra vez)$/.test(alt)) {
+      const idActual = partidaId;
+      pausarCronometro();
       mostrarAlerta("«Otra vez» solo funciona cuando acaba la partida.");
-      hablar("La orden otra vez solo funciona cuando haya acabado la partida. Te toca con " + silabaParaVoz(silabaObjetivo) + ".");
+      hablar("La orden otra vez solo funciona cuando haya acabado la partida. Te toca con " + silabaParaVoz(silabaObjetivo) + ".", () => {
+        if (idActual !== partidaId) return;
+        reanudarCronometroTurno();
+      });
       return;
     }
   }
@@ -3090,12 +3444,9 @@ function procesarFraseVoz(rawInput) {
   let mejorPalabra = null;
   for (const alt of alternativas) {
     const primera = normalizarTokenVoz(alt.split(/\s+/)[0], sObj);
-    if (primera && SOLO_LETRAS.test(primera)) {
-      const sils = silabear(primera);
-      if (sils.length > 0 && normalizarSilaba(sils[0]) === sObj) {
-        mejorPalabra = primera;
-        break;
-      }
+    if (primera && SOLO_LETRAS.test(primera) && cumpleInicioSegunDificultad(primera, sObj)) {
+      mejorPalabra = primera;
+      break;
     }
   }
 
@@ -3133,7 +3484,7 @@ try {
     };
     window._onNativeSrEnd = () => {
       isListening = false;
-      if (micDeseado && modoActual !== "" && !hablando && !window._anuncioPantallaCompletaActivo) setTimeout(arrancarRecon, 350);
+      if (micDeseado && partidaActivaFlag && !hablando && !window._anuncioPantallaCompletaActivo) setTimeout(arrancarRecon, 350);
       else if (!micDeseado) uiMic(false);
     };
   } else if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -3171,7 +3522,7 @@ try {
     };
     recon.onend = () => {
       isListening = false;
-      if (micDeseado && modoActual !== "" && !hablando && !window._anuncioPantallaCompletaActivo) {
+      if (micDeseado && partidaActivaFlag && !hablando && !window._anuncioPantallaCompletaActivo) {
         micStatus.textContent = "Reconectando micrófono...";
         setTimeout(arrancarRecon, 300);
       } else if (!micDeseado) {
@@ -3185,20 +3536,20 @@ try {
 } catch (e) {}
 
 setInterval(() => {
-  if (micDeseado && !isListening && !hablando && !window._anuncioPantallaCompletaActivo && modoActual !== "" && document.visibilityState === 'visible') {
+  if (micDeseado && !isListening && !hablando && !window._anuncioPantallaCompletaActivo && partidaActivaFlag && document.visibilityState === 'visible') {
     arrancarRecon();
   }
 }, 2500);
 
 function arrancarRecon(intentos = 0) {
-  if (!recon || !micDeseado || isListening || hablando || window._anuncioPantallaCompletaActivo || modoActual === "") return;
+  if (!recon || !micDeseado || isListening || hablando || window._anuncioPantallaCompletaActivo || !partidaActivaFlag) return;
   try { recon.start(); } catch (err) {
     if (intentos < 20) setTimeout(() => arrancarRecon(intentos + 1), 300);
   }
 }
 
 function iniciarMicrofono() {
-  if (!recon || modoActual === "") return;
+  if (!recon || !partidaActivaFlag) return;
   micDeseado = true;
   if (!hablando && !window._anuncioPantallaCompletaActivo) arrancarRecon();
 }
@@ -3220,7 +3571,7 @@ function detenerMicrofono() {
 pedirWakeLock();
 </script>
 
-<!-- SCRIPT 3: CONEXIÓN BLINDADA GOOGLE ADMOB CON RECUPERACIÓN COMPLETA DE AUDIO Y MICRÓFONO -->
+<!-- SCRIPT 3: CONEXIÓN BLINDADA GOOGLE ADMOB -->
 <script>
 (function initAdMob() {
   try {
